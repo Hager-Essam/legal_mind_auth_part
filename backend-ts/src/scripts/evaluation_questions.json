@@ -1,0 +1,216 @@
+[
+  {
+    "id": "corporate_ref_001",
+    "query": "ما هي الشروط القانونية لتأسيس شركة ذات مسؤولية محدودة في مصر؟",
+    "category": "corporate",
+    "type": "general",
+    "expected_concept": "LLC formation requirements, minimum capital, partners, registration steps"
+  },
+  {
+    "id": "corporate_ref_002",
+    "query": "ما هي حقوق المساهمين في الشركات المساهمة وفقاً للقانون المصري؟",
+    "category": "corporate",
+    "type": "general",
+    "expected_concept": "shareholder rights, dividends, voting, general assembly"
+  },
+  {
+    "id": "corporate_ref_003",
+    "query": "كيف يتم تصفية الشركة وتوزيع أصولها في حالة الإفلاس؟",
+    "category": "corporate",
+    "type": "general",
+    "expected_concept": "liquidation process, asset distribution, creditor priority, bankruptcy"
+  },
+  {
+    "id": "labor_001",
+    "query": "ما هي شروط إنهاء عقد العمل في مصر؟",
+    "category": "labor",
+    "type": "general",
+    "expected_concept": "conditions for contract termination, notice period, severance pay"
+  },
+  {
+    "id": "labor_002",
+    "query": "ما هي المادة 69 من قانون العمل المصري؟",
+    "category": "labor",
+    "type": "article_lookup",
+    "expected_concept": "disciplinary dismissal grounds, just cause for termination"
+  },
+  {
+    "id": "labor_003",
+    "query": "ما هي حقوق العامل في فترة التجربة؟",
+    "category": "labor",
+    "type": "general",
+    "expected_concept": "probation period rights, maximum duration, termination during probation"
+  },
+  {
+    "id": "labor_004",
+    "query": "كم تبلغ مدة إجازة الأمومة وما هي حقوق المرأة العاملة أثناءها؟",
+    "category": "labor",
+    "type": "general",
+    "expected_concept": "maternity leave duration, salary during leave, job protection"
+  },
+  {
+    "id": "labor_005",
+    "query": "ما هي قواعد ساعات العمل الإضافي والمقابل المادي لها في مصر؟",
+    "category": "labor",
+    "type": "general",
+    "expected_concept": "overtime rules, overtime pay rate, maximum hours per week"
+  },
+  {
+    "id": "labor_006",
+    "query": "متى يحق للعامل الحصول على مكافأة نهاية الخدمة؟",
+    "category": "labor",
+    "type": "general",
+    "expected_concept": "end-of-service gratuity eligibility, calculation, years of service"
+  },
+  {
+    "id": "labor_007",
+    "query": "ما هي إجراءات تسوية النزاعات العمالية بين صاحب العمل والعامل؟",
+    "category": "labor",
+    "type": "general",
+    "expected_concept": "labor dispute resolution, conciliation committee, arbitration, labor courts"
+  },
+  {
+    "id": "criminal_001",
+    "query": "ما هي عقوبة السرقة في القانون الجنائي المصري؟",
+    "category": "criminal",
+    "type": "general",
+    "expected_concept": "theft penalties, imprisonment term, aggravated theft"
+  },
+  {
+    "id": "criminal_002",
+    "query": "ما هي أركان جريمة الاختلاس في القانون المصري؟",
+    "category": "criminal",
+    "type": "general",
+    "expected_concept": "embezzlement elements, public official, entrusted funds, criminal intent"
+  },
+  {
+    "id": "criminal_003",
+    "query": "ما هي عقوبة جريمة الرشوة في القانون المصري؟",
+    "category": "criminal",
+    "type": "general",
+    "expected_concept": "bribery penalties, public official, imprisonment, fine"
+  },
+  {
+    "id": "criminal_004",
+    "query": "ما هو الفرق بين القتل العمد والقتل الخطأ في القانون المصري؟",
+    "category": "criminal",
+    "type": "general",
+    "expected_concept": "murder vs manslaughter, premeditation, intent, penalties"
+  },
+  {
+    "id": "criminal_005",
+    "query": "ما هي شروط الدفاع الشرعي في القانون الجنائي المصري؟",
+    "category": "criminal",
+    "type": "general",
+    "expected_concept": "self-defense conditions, imminent danger, proportionality"
+  },
+  {
+    "id": "personal_status_001",
+    "query": "ما هي شروط الخلع في القانون المصري؟",
+    "category": "personal_status",
+    "type": "general",
+    "expected_concept": "khul divorce conditions, financial compensation, court procedure"
+  },
+  {
+    "id": "personal_status_002",
+    "query": "كيف تحسب نفقة الأطفال وما هي معايير التقدير القضائي؟",
+    "category": "personal_status",
+    "type": "general",
+    "expected_concept": "child support calculation, father income, child needs, judicial discretion"
+  },
+  {
+    "id": "personal_status_003",
+    "query": "ما هي شروط الحضانة ومتى تنتقل من الأم إلى الأب؟",
+    "category": "personal_status",
+    "type": "general",
+    "expected_concept": "child custody conditions, age thresholds, mother vs father custody"
+  },
+  {
+    "id": "personal_status_004",
+    "query": "ما هي أسباب الطلاق للضرر وكيف يثبت القضاء الضرر؟",
+    "category": "personal_status",
+    "type": "general",
+    "expected_concept": "divorce for harm, proof of harm, judicial evidence, court ruling"
+  },
+  {
+    "id": "personal_status_005",
+    "query": "ما هي حقوق المرأة في الميراث وفقاً للقانون المصري؟",
+    "category": "personal_status",
+    "type": "general",
+    "expected_concept": "inheritance rights, widow share, daughter share, Islamic law basis"
+  },
+  {
+    "id": "corporate_002",
+    "query": "ما هي واجبات مجلس الإدارة في الشركات المساهمة المصرية؟",
+    "category": "corporate",
+    "type": "general",
+    "expected_concept": "board of directors duties, fiduciary duty, disclosure obligations"
+  },
+  {
+    "id": "tax_001",
+    "query": "ما هو معدل ضريبة الدخل على الأفراد في مصر وما هي الشرائح الضريبية؟",
+    "category": "tax",
+    "type": "general",
+    "expected_concept": "income tax brackets, progressive rates, annual income threshold, exemptions"
+  },
+  {
+    "id": "tax_002",
+    "query": "ما هي ضريبة القيمة المضافة في مصر وما هي السلع المعفاة؟",
+    "category": "tax",
+    "type": "general",
+    "expected_concept": "VAT rate, exempt goods, registration threshold, filing obligations"
+  },
+  {
+    "id": "lease_001",
+    "query": "ما هي حقوق المستأجر عند انتهاء عقد الإيجار أو طلب الإخلاء؟",
+    "category": "lease",
+    "type": "general",
+    "expected_concept": "tenant rights at lease end, eviction procedures, notice period, legal protection"
+  },
+  {
+    "id": "property_001",
+    "query": "ما هي إجراءات تسجيل عقد البيع العقاري في مصر؟",
+    "category": "property",
+    "type": "general",
+    "expected_concept": "real estate sale registration, notary, land registry, documentation required"
+  },
+  {
+    "id": "administrative_001",
+    "query": "ما هي إجراءات الطعن في القرارات الإدارية أمام القضاء الإداري في مصر؟",
+    "category": "administrative",
+    "type": "general",
+    "expected_concept": "administrative court, judicial review, filing deadlines, grounds for appeal"
+  },
+  {
+    "id": "colloquial_001",
+    "query": "اتطردت من شغلي من غير سبب إيه حقوقي دلوقتي؟",
+    "category": "labor",
+    "type": "colloquial",
+    "note": "Tests query-rewrite path: colloquial Egyptian Arabic -> formal legal Arabic",
+    "expected_concept": "unlawful dismissal, compensation, notice period, labor court"
+  },
+  {
+    "id": "colloquial_002",
+    "query": "جوزي عايز يطلقني وأنا مش عارفه ايه اللي هياخده وايه اللي هياخده",
+    "category": "personal_status",
+    "type": "colloquial",
+    "note": "Tests query-rewrite path: colloquial divorce question",
+    "expected_concept": "divorce rights, alimony, custody, mahr, mut'a"
+  },
+  {
+    "id": "colloquial_003",
+    "query": "صاحبي سرق مني فلوس عايز أعمل بلاغ إيه اللي هيحصله؟",
+    "category": "criminal",
+    "type": "colloquial",
+    "note": "Tests query-rewrite path: colloquial theft complaint question",
+    "expected_concept": "theft complaint, police report, criminal procedure, penalties"
+  },
+  {
+    "id": "article_lookup_001",
+    "query": "ما هي المادة 109 من قانون العمل المصري رقم 12 لسنة 2003؟",
+    "category": "labor",
+    "type": "article_lookup",
+    "note": "Tests law_ref exact-lookup path — should return the article directly without full RAG",
+    "expected_concept": "wrongful termination compensation, two months salary, severance"
+  }
+]

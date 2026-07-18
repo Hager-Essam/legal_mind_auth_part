@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalMind Test UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+            border-left: 5px solid #667eea;
+        }
+
+        .result h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .answer {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+            font-size: 1.05em;
+            color: #333;
+        }
+
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metadata-item {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metadata-label {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .metadata-value {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .sources {
+            margin-top: 20px;
+        }
+
+        .source-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 3px solid #764ba2;
+        }
+
+        .source-title {
+            font-weight: 600;
+            color: #764ba2;
+            margin-bottom: 8px;
+        }
+
+        .source-content {
+            color: #555;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+            border-left: 5px solid #c33;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏛️ LegalMind</h1>
+        <p class="subtitle">مساعد قانوني ذكي - Legal AI Assistant</p>
+
+        <div class="status" id="status"></div>
+
+        <form id="queryForm">
+            <div class="form-group">
+                <label for="query">السؤال القانوني / Legal Query:</label>
+                <textarea 
+                    id="query" 
+                    name="query" 
+                    placeholder="أدخل سؤالك القانوني هنا... مثال: ما هي عقوبة السرقة في القانون المصري؟"
+                    required
+                ></textarea>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="top_k">عدد النتائج / Top K:</label>
+                    <input type="number" id="top_k" name="top_k" value="5" min="1" max="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="user_role">دور المستخدم / Role:</label>
+                    <select id="user_role" name="user_role">
+                        <option value="citizen">مواطن / Citizen</option>
+                        <option value="lawyer">محامي / Lawyer</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="law_category">فئة القانون / Category:</label>
+                    <input type="text" id="law_category" name="law_category" placeholder="اختياري / Optional">
+                </div>
+            </div>
+
+            <button type="submit" id="submitBtn">
+                🔍 البحث / Search
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #667eea;">جاري المعالجة... Processing...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <h2>📋 النتيجة / Result</h2>
+            
+            <div class="answer" id="answer"></div>
+
+            <div class="metadata">
+                <div class="metadata-item">
+                    <div class="metadata-label">التصنيف / Category</div>
+                    <div class="metadata-value" id="category"></div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">الوقت / Latency</div>
+                    <div class="metadata-value" id="latency"></div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">مزود LLM / Provider</div>
+                    <div class="metadata-value" id="provider"></div>
+                </div>
+                <div class="metadata-item">
+                    <div class="metadata-label">الثقة / Confidence</div>
+                    <div class="metadata-value" id="confidence"></div>
+                </div>
+            </div>
+
+            <div class="sources">
+                <h3 style="color: #764ba2; margin-bottom: 15px;">📚 المصادر / Sources</h3>
+                <div id="sourcesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api/v1/query';
+
+        // Check server status on load
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('http://localhost:3000/health', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const status = document.getElementById('status');
+                status.className = 'status success';
+                status.textContent = '✅ Server is running - ' + data.status;
+                status.style.display = 'block';
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                console.error('Health check failed:', error);
+                const status = document.getElementById('status');
+                status.className = 'status error';
+                status.textContent = '❌ Server is not running. Error: ' + error.message + ' - Please start the backend with: npm run dev';
+                status.style.display = 'block';
+            }
+        }
+
+        document.getElementById('queryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const error = document.getElementById('error');
+
+            // Hide previous results
+            result.style.display = 'none';
+            error.style.display = 'none';
+
+            // Show loading
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+
+            // Prepare request data
+            const formData = new FormData(e.target);
+            const data = {
+                query: formData.get('query'),
+                top_k: parseInt(formData.get('top_k')),
+                user_role: formData.get('user_role')
+            };
+
+            if (formData.get('law_category')) {
+                data.law_category = formData.get('law_category');
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(responseData.message || 'Request failed');
+                }
+
+                // Display results
+                document.getElementById('answer').textContent = responseData.answer;
+                document.getElementById('category').textContent = responseData.category;
+                document.getElementById('latency').textContent = `${responseData.latency_ms}ms`;
+                document.getElementById('provider').textContent = responseData.llm_provider_used || 'N/A';
+                
+                // Display confidence score with color coding
+                const confidenceEl = document.getElementById('confidence');
+                if (responseData.confidence_score !== undefined) {
+                    const score = (responseData.confidence_score * 100).toFixed(1);
+                    confidenceEl.textContent = `${score}%`;
+                    // Color code: green > 70%, yellow 40-70%, red < 40%
+                    if (responseData.confidence_score > 0.7) {
+                        confidenceEl.style.color = '#28a745';
+                    } else if (responseData.confidence_score > 0.4) {
+                        confidenceEl.style.color = '#ffc107';
+                    } else {
+                        confidenceEl.style.color = '#dc3545';
+                    }
+                } else {
+                    confidenceEl.textContent = 'N/A';
+                }
+
+                // Display sources
+                const sourcesList = document.getElementById('sourcesList');
+                sourcesList.innerHTML = '';
+                
+                if (responseData.source_chunks && responseData.source_chunks.length > 0) {
+                    responseData.source_chunks.forEach((chunk, index) => {
+                        const sourceItem = document.createElement('div');
+                        sourceItem.className = 'source-item';
+                        sourceItem.innerHTML = `
+                            <div class="source-title">Source ${index + 1}: ${chunk.law_name || 'Unknown'}</div>
+                            <div class="source-content">${chunk.content || 'No content'}</div>
+                        `;
+                        sourcesList.appendChild(sourceItem);
+                    });
+                } else {
+                    sourcesList.innerHTML = '<p style="color: #666;">No source chunks available</p>';
+                }
+
+                result.style.display = 'block';
+
+            } catch (err) {
+                error.textContent = '❌ Error: ' + err.message;
+                error.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Check status on page load
+        checkServerStatus();
+    </script>
+</body>
+</html>
