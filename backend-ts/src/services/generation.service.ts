@@ -108,10 +108,10 @@ export class GenerationService {
 8. رتب إجابتك على النحو التالي: (أ) الحكم القانوني الرئيسي، (ب) الأساس القانوني بالتفصيل، (ج) الاستثناءات أو الشروط إن وُجدت.
 9. لا تخترع مواداً قانونية أو أرقام مواد غير موجودة في السياق المسترجع.
 10. إذا كان السؤال يتطلب معلومة غير موجودة في السياق، اقترح على المستخدم التحقق من مصدر قانوني موثوق.`,
-          },
-          {
-            role: "user",
-            content: `أمثلة على الإجابات المطلوبة:
+            },
+            {
+              role: "user",
+              content: `أمثلة على الإجابات المطلوبة:
 
 ---مثال 1---
 السؤال: ما هي جريمة النصب وعقوبتها؟
@@ -139,7 +139,7 @@ export class GenerationService {
 "يحق للعامل فسخ عقد العمل في أي من الحالات التالية: (ب) إذا لم يُدفع له أجره في مواعيد الدفع المحددة في العقد أو في القانون".
 
 [المادة 111 من قانون العمل]
-"يجب على العامل قبل فسخ العقد أن يوجه إخطاراً كتابياً למעسوبه بفسخ العقد بعد مرور شهر من تاريخ الإخطار إذا لم يُدفع الأجر خلال هذه المدة".
+"يجب على العامل قبل فسخ العقد أن يوجه إخطاراً كتابياً למעسוبه بفسخ العقد بعد مرور شهر من تاريخ الإخطار إذا لم يُدفع الأجر خلال هذه المدة".
 
 الإجابة:
 الحكم القانوني الرئيسي: نعم، يحق للموظف فسخ عقد العمل إذا لم يحصل على راتبه، لكن بشروط إجرائية محددة.
@@ -172,31 +172,31 @@ export class GenerationService {
 السياق القانوني المسترجع:\n${params.context}\n\nالسؤال: ${params.question}
 
 ملاحظة: عدد المصادر المسترجعة: ${params.evidenceCount}. استخدمها جميعاً إذا كانت ذات صلة.`,
-          },
-        ],
-        temperature: 0.2,
-        max_tokens: 2048,
-      }),
-      signal: controller.signal,
-    });
+            },
+          ],
+          temperature: 0.2,
+          max_tokens: 2048,
+        }),
+        signal: controller.signal,
+      });
 
-    const text = await response.text();
+      const text = await response.text();
 
-    if (!text || !text.trim()) {
-      throw new Error(`DashScope grounded returned empty response (status ${response.status})`);
+      if (!text || !text.trim()) {
+        throw new Error(`DashScope grounded returned empty response (status ${response.status})`);
+      }
+
+      const payload = JSON.parse(text) as DashScopeChatCompletionResponse;
+      if (!response.ok) throw new Error(this.buildErrorMessage(payload, response.status));
+
+      const answer = this.extractAnswerText(payload);
+      if (!answer) throw new Error("DashScope chat completion returned an empty answer.");
+
+      return answer;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    const payload = JSON.parse(text) as DashScopeChatCompletionResponse;
-    if (!response.ok) throw new Error(this.buildErrorMessage(payload, response.status));
-
-    const answer = this.extractAnswerText(payload);
-    if (!answer) throw new Error("DashScope chat completion returned an empty answer.");
-
-    return answer;
-  } finally {
-    clearTimeout(timeoutId);
   }
-}
 
   private extractAnswerText(payload: DashScopeChatCompletionResponse): string {
     const content = payload.choices?.[0]?.message?.content;
