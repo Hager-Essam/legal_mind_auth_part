@@ -1,0 +1,440 @@
+{
+  "info": {
+    "name": "LegalMind API",
+    "description": "Complete API collection for LegalMind legal consultation system. This includes all endpoints with example requests and responses.\n\n**Features:**\n- Legal query with RAG (Retrieval-Augmented Generation)\n- Health checks\n- Confidence scoring\n- Rate limiting (20 req/min)\n- Response time: 10-15 seconds\n\n**Environment Variables:**\n- `base_url`: Your API base URL (e.g., http://localhost:3000 or https://legalmind-api.onrender.com)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "12345"
+  },
+  "item": [
+    {
+      "name": "Health & Status",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the API and database are healthy.\n\n**Response:**\n- `status`: \"ok\" or \"error\"\n- `database.connected`: MongoDB connection status\n- `database.pingOk`: Can ping MongoDB"
+          },
+          "response": [
+            {
+              "name": "Health Check - Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/health",
+                  "host": ["{{base_url}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"database\": {\n    \"connected\": true,\n    \"pingOk\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "API Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Get API information, version, and available routes."
+          },
+          "response": [
+            {
+              "name": "API Info - Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/",
+                  "host": ["{{base_url}}"],
+                  "path": [""]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"name\": \"LegalMind API TS\",\n  \"environment\": \"production\",\n  \"version\": \"0.1.0\",\n  \"provider_summary\": {\n    \"llmProvider\": \"modelstudio\",\n    \"llmModel\": \"qwen-turbo\",\n    \"embeddingModel\": \"text-embedding-v4\"\n  },\n  \"routes\": [\n    \"/health\",\n    \"/ready\",\n    \"/api/v1/query\"\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Ready Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ready",
+              "host": ["{{base_url}}"],
+              "path": ["ready"]
+            },
+            "description": "Quick readiness check without database ping (faster than /health)."
+          },
+          "response": []
+        }
+      ],
+      "description": "Health check and status endpoints to verify API availability."
+    },
+    {
+      "name": "Legal Queries",
+      "item": [
+        {
+          "name": "Query - Criminal Law (Arabic)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"ما عقوبة السرقة في القانون المصري؟\",\n  \"top_k\": 5,\n  \"user_role\": \"citizen\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/query",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "query"]
+            },
+            "description": "Query about criminal law penalties in Egyptian law.\n\n**Request Body:**\n- `query` (required): Legal question in Arabic\n- `top_k` (optional): Number of sources to retrieve (1-50, default: 5)\n- `user_role` (optional): \"lawyer\" or \"citizen\" (default: \"citizen\")\n\n**Response:**\n- `answer`: Legal answer in Arabic\n- `source_chunks`: Retrieved legal documents\n- `category`: Question category (arabic_rag, law_ref, chat)\n- `latency_ms`: Response time in milliseconds\n- `confidence_score`: Answer confidence (0-1)\n- `llm_provider_used`: AI provider used"
+          },
+          "response": [
+            {
+              "name": "Query - Criminal Law - Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"query\": \"ما عقوبة السرقة في القانون المصري؟\",\n  \"top_k\": 5,\n  \"user_role\": \"citizen\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/query",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "query"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"answer\": \"الحكم القانوني الرئيسي: عقوبة السرقة تختلف حسب ظروف الجريمة...\\n\\n[المصدر: قانون العقوبات - المادة 313]\",\n  \"source_chunks\": [\n    {\n      \"text\": \"المادة 313: يعاقب بالأشغال الشاقة المؤبدة من وقعت منه سرقة...\",\n      \"law_name\": \"قانون العقوبات\",\n      \"article_number\": \"313\",\n      \"rerank_score\": 0.89\n    }\n  ],\n  \"category\": \"arabic_rag\",\n  \"latency_ms\": 12450,\n  \"confidence_score\": 0.89,\n  \"llm_provider_used\": \"modelstudio\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Query - Labor Law",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"ما هي حقوق العامل في قانون العمل المصري؟\",\n  \"top_k\": 5,\n  \"user_role\": \"citizen\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/query",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "query"]
+            },
+            "description": "Query about employee rights in Egyptian labor law."
+          },
+          "response": []
+        },
+        {
+          "name": "Query - Family Law",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"ما هي شروط الزواج في القانون المصري؟\",\n  \"top_k\": 5,\n  \"user_role\": \"lawyer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/query",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "query"]
+            },
+            "description": "Query about marriage requirements in Egyptian law (lawyer role)."
+          },
+          "response": []
+        },
+        {
+          "name": "Query - Commercial Law",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"ما هي أنواع الشركات في القانون التجاري؟\",\n  \"top_k\": 10,\n  \"user_role\": \"lawyer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/query",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "query"]
+            },
+            "description": "Query about company types in Egyptian commercial law."
+          },
+          "response": []
+        },
+        {
+          "name": "Query - Civil Law",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"ما هي شروط صحة العقد؟\",\n  \"top_k\": 5,\n  \"user_role\": \"citizen\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/query",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "query"]
+            },
+            "description": "Query about contract validity requirements in civil law."
+          },
+          "response": []
+        },
+        {
+          "name": "Query - General Greeting",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"مرحباً\",\n  \"top_k\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/query",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "query"]
+            },
+            "description": "Test greeting/chat functionality (category: chat)."
+          },
+          "response": []
+        }
+      ],
+      "description": "Legal query endpoints using RAG (Retrieval-Augmented Generation) to answer questions based on Egyptian law."
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Query - Missing Required Field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"top_k\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/query",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "query"]
+            },
+            "description": "Test validation error when query field is missing."
+          },
+          "response": [
+            {
+              "name": "Query - Validation Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"top_k\": 5\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/query",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "query"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"ValidationError\",\n  \"message\": \"Required field 'query' is missing\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Query - Rate Limit Exceeded",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"ما عقوبة السرقة؟\",\n  \"top_k\": 5\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/query",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "query"]
+            },
+            "description": "Test rate limit (after 20 requests in 1 minute)."
+          },
+          "response": [
+            {
+              "name": "Query - Rate Limit",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"query\": \"ما عقوبة السرقة؟\",\n  \"top_k\": 5\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/query",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "query"]
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"TooManyRequests\",\n  \"message\": \"Please wait before sending more queries. Rate limit: 20 requests per minute.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Not Found",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/nonexistent",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "nonexistent"]
+            },
+            "description": "Test 404 Not Found error."
+          },
+          "response": [
+            {
+              "name": "Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/api/v1/nonexistent",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "nonexistent"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"NotFound\",\n  \"message\": \"Route not found\"\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Test error handling and edge cases."
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}
