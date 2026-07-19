@@ -40,7 +40,6 @@ export class GenerationService {
   async generateChatAnswer(question: string): Promise<string> {
     const provider = this.providerConfigService.getSummary();
     const apiKey = this.providerConfigService.getDashScopeApiKey();
-
     const url = `${provider.baseUrl}/chat/completions`;
 
     const controller = new AbortController();
@@ -63,10 +62,7 @@ export class GenerationService {
       });
 
       const text = await response.text();
-
-      if (!text || !text.trim()) {
-        throw new Error(`DashScope chat returned empty response (status ${response.status})`);
-      }
+      if (!text || !text.trim()) throw new Error(`DashScope chat returned empty response (status ${response.status})`);
 
       const payload = JSON.parse(text) as DashScopeChatCompletionResponse;
       if (!response.ok) throw new Error(this.buildErrorMessage(payload, response.status));
@@ -80,7 +76,6 @@ export class GenerationService {
   private async generateChatCompletion(model: string, params: GroundedArabicAnswerParams): Promise<string> {
     const apiKey = this.providerConfigService.getDashScopeApiKey();
     const provider = this.providerConfigService.getSummary();
-
     const url = `${provider.baseUrl}/chat/completions`;
 
     const controller = new AbortController();
@@ -95,7 +90,7 @@ export class GenerationService {
           messages: [
             {
               role: "system",
-              content: `أنت مستشار قانوني مصري متخصص تابع لمنصة LegalMind. مهمتك تقديم إجابات قانونية دقيقة ومُوثَّقة بالعربية الفصحى الرسمية.
+              content: `أنت مستشار قانوني مصري متخصص . مهمتك تقديم إجابات قانونية دقيقة ومُوثَّقة بالعربية الفصحى الرسمية.
 
 القواعد الصارمة:
 1. أجب حصرياً بناءً على النصوص القانونية المسترجعة في السياق. لا تستخدم معرفتك الخارجية إطلاقاً.
@@ -139,7 +134,7 @@ export class GenerationService {
 "يحق للعامل فسخ عقد العمل في أي من الحالات التالية: (ب) إذا لم يُدفع له أجره في مواعيد الدفع المحددة في العقد أو في القانون".
 
 [المادة 111 من قانون العمل]
-"يجب على العامل قبل فسخ العقد أن يوجه إخطاراً كتابياً למעسוبه بفسخ العقد بعد مرور شهر من تاريخ الإخطار إذا لم يُدفع الأجر خلال هذه المدة".
+"يجب على العامل قبل فسخ العقد أن يوجه إخطاراً كتابياً لمستخدمه بفسخ العقد بعد مرور شهر من تاريخ الإخطار إذا لم يُدفع الأجر خلال هذه المدة".
 
 الإجابة:
 الحكم القانوني الرئيسي: نعم، يحق للموظف فسخ عقد العمل إذا لم يحصل على راتبه، لكن بشروط إجرائية محددة.
@@ -181,10 +176,7 @@ export class GenerationService {
       });
 
       const text = await response.text();
-
-      if (!text || !text.trim()) {
-        throw new Error(`DashScope grounded returned empty response (status ${response.status})`);
-      }
+      if (!text || !text.trim()) throw new Error(`DashScope grounded returned empty response (status ${response.status})`);
 
       const payload = JSON.parse(text) as DashScopeChatCompletionResponse;
       if (!response.ok) throw new Error(this.buildErrorMessage(payload, response.status));

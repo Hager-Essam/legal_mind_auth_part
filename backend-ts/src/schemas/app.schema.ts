@@ -6,5 +6,4 @@ export const appInfoSchema = z.object({
   host: z.string(),
   port: z.number().int().min(1).max(65535),
 });
-
 export type AppInfo = z.infer<typeof appInfoSchema>;

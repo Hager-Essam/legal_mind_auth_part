@@ -1,6 +1,5 @@
 import type { ParsedLegalReference } from "../utils/legal-ref-parser";
 import type { ChunkDocument } from "../models/chunk.model";
-import { toLegalChunk } from "../utils/chunk-mapper";
 
 export class LegalRefService {
   buildExactMatchAnswer(doc: ChunkDocument): string {
@@ -10,7 +9,8 @@ export class LegalRefService {
     return `تم العثور على المادة المطلوبة.\n\n[المصدر: ${lawName} - المادة ${articleNumber}]\n\n${content}`;
   }
 
-  buildRulingAnswer(doc: ChunkDocument): string {
+  buildRulingAnswer(doc: ChunkDocument): string 
+  {
     const appealNumber = doc.appeal_number ?? "غير معروف";
     const judicialYear = doc.judicial_year ?? "غير معروف";
     const date = doc.ruling_date ?? "";
@@ -26,12 +26,11 @@ export class LegalRefService {
   }
 
   buildNoExactMatchAnswer(ref: ParsedLegalReference): string {
-    const target =
-      ref.articleNumber && ref.lawName
-        ? `المادة ${ref.articleNumber} من ${ref.lawName}`
-        : ref.articleNumber
-          ? `المادة ${ref.articleNumber}`
-          : "المرجع القانوني المطلوب";
+    const target = ref.articleNumber && ref.lawName
+      ? `المادة ${ref.articleNumber} من ${ref.lawName}`
+      : ref.articleNumber
+        ? `المادة ${ref.articleNumber}`
+        : "المرجع القانوني المطلوب";
     return `لم يتم العثور على تطابق مباشر لـ ${target}. سيتم البحث في قاعدة البيانات للعثور على أقرب نص قانوني ذي صلة.`;
   }
 

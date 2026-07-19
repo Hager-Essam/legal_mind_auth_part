@@ -1,15 +1,9 @@
 import type { ChunkDocument } from "../models/chunk.model";
 import type { LegalChunks } from "../schemas/chunk.schema";
 
-// Maps a raw DB document into the API-facing LegalChunks shape.
-// `score` is the search relevance score (vector/text) — when omitted the
-// `similarity_score` field is left out (used for exact-match DB lookups that
-// have no search score).
-
+// Maps a raw DB document into the API-facing LegalChunks shape
 export function toLegalChunk(doc: ChunkDocument, score?: number): LegalChunks {
-  const similarity_score =
-    typeof score === "number" ? Number(score.toFixed(6)) : undefined;
-
+  const similarity_score = typeof score === "number" ? Number(score.toFixed(6)) : undefined;
   return {
     chunk_id: doc.chunk_id ?? String(doc._id ?? ""),
     source_file: doc.source_file ?? undefined,
@@ -29,8 +23,7 @@ export function toLegalChunk(doc: ChunkDocument, score?: number): LegalChunks {
     judicial_year: doc.judicial_year ?? undefined,
     ruling_date: doc.ruling_date ?? undefined,
     case_subject: doc.case_subject ?? undefined,
-    child_index:
-      typeof doc.child_index === "number" ? doc.child_index : undefined,
+    child_index: typeof doc.child_index === "number" ? doc.child_index : undefined,
     parent_chunk_id: doc.parent_chunk_id ?? undefined,
     ...(similarity_score !== undefined ? { similarity_score } : {}),
   };

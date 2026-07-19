@@ -1,7 +1,6 @@
 import { TASHKEEL_RE, TATWEEL_RE, ARABIC_TO_WESTERN_DIGITS } from "../regex/arabic.patterns";
 
-// General Arabic query normalization — used for query rewriting, overlap
-// scoring, and any context where ة→ه collapsing is acceptable.
+// General Arabic query normalization — used for query rewriting, overlap scoring
 export const normalizeArabicQuery = (text: string): string =>
   text
     .replace(TASHKEEL_RE, "")
@@ -16,8 +15,7 @@ export const normalizeArabicQuery = (text: string): string =>
     .replace(/\s+/g, " ")
     .trim();
 
-// Law-name normalization — used to match user-supplied law names against the
-// DB's law_name_normalized field. Intentionally does NOT apply ة→ه.
+// Law-name normalization — used to match user-supplied law names against the DB's law_name_normalized field
 export const normalizeLawName = (text: string): string =>
   text
     .replace(TASHKEEL_RE, "")

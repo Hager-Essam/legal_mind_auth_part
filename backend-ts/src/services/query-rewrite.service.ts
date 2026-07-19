@@ -25,72 +25,52 @@ const isArabicClean = (text: string): boolean => {
 export class QueryRewriteService {
   constructor(private readonly providerConfigService: ProviderConfigService) {}
 
-  private mappingOnly(query: string): RewriteResult {
+  private mappingOnly(query: string): RewriteResult 
+  {
     const normalized = normalizeArabicQuery(query);
     const mappingResult = rewriteWithMapping(normalized);
+
     if (mappingResult.matched) {
-      return {
-        originalQuery: query,
-        rewrittenQuery: mappingResult.rewritten,
-        usedMapping: true,
-        usedLlm: false,
-        mappingMatch: mappingResult.matchedTerm,
-      };
+      return { originalQuery: query, rewrittenQuery: mappingResult.rewritten, usedMapping: true, usedLlm: false, mappingMatch: mappingResult.matchedTerm };
     }
-    return {
-      originalQuery: query,
-      rewrittenQuery: normalized,
-      usedMapping: false,
-      usedLlm: false,
-      mappingMatch: null,
-    };
+
+    return { originalQuery: query, rewrittenQuery: normalized, usedMapping: false, usedLlm: false, mappingMatch: null };
   }
 
-  async rewrite(query: string, userRole?: "lawyer" | "citizen"): Promise<RewriteResult> {
+  async rewrite(query: string, userRole?: "lawyer" | "citizen"): Promise<RewriteResult> 
+  {
     const role = userRole ?? env.defaultUserRole;
 
-    if (role === "lawyer" || !env.enableQueryRewrite) {
-      return {
-        originalQuery: query,
-        rewrittenQuery: query,
-        usedMapping: false,
-        usedLlm: false,
-        mappingMatch: null,
-      };
+    // Lawyers: mapping only (no LLM) — they already use legal terminology
+    if (role === "lawyer") 
+    {
+      return this.mappingOnly(query);
     }
 
-    try {
-      const llmResult = await this.rewriteWithLlm(query);
+    // If query rewrite is disabled, just normalize and try mapping
+    if (!env.enableQueryRewrite) 
+    {
+      return this.mappingOnly(query);
+    }
 
-      if (!isArabicClean(llmResult)) {
-        return this.mappingOnly(query);
-      }
+    // Full rewrite for citizens: LLM + mapping
+    try 
+    {
+      const llmResult = await this.rewriteWithLlm(query);
+      if (!isArabicClean(llmResult)) return this.mappingOnly(query);
 
       const normalizedLlm = normalizeArabicQuery(llmResult);
       const mappingResult = rewriteWithMapping(normalizedLlm);
 
       if (mappingResult.matched && mappingResult.appendedLaw) {
-        return {
-          originalQuery: query,
-          rewrittenQuery: `${llmResult} ${mappingResult.appendedLaw}`,
-          usedMapping: true,
-          usedLlm: true,
-          mappingMatch: mappingResult.matchedTerm,
-        };
+        return { originalQuery: query, rewrittenQuery: `${llmResult} ${mappingResult.appendedLaw}`, usedMapping: true, usedLlm: true, mappingMatch: mappingResult.matchedTerm };
       }
 
-      return {
-        originalQuery: query,
-        rewrittenQuery: llmResult,
-        usedMapping: mappingResult.matched,
-        usedLlm: true,
-        mappingMatch: mappingResult.matchedTerm,
-      };
-    } catch (error) {
-      console.error(
-        "[QueryRewriteService] LLM rewrite failed, falling back to mapping-only:",
-        error,
-      );
+      return { originalQuery: query, rewrittenQuery: llmResult, usedMapping: mappingResult.matched, usedLlm: true, mappingMatch: mappingResult.matchedTerm };
+    } 
+    catch (error) 
+    {
+      console.error("[QueryRewriteService] LLM rewrite failed, falling back to mapping-only:", error);
       return this.mappingOnly(query);
     }
   }
@@ -103,10 +83,7 @@ export class QueryRewriteService {
     try {
       const response = await fetch(`${env.dashscopeCompatUrl}/chat/completions`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
           model: env.llmRewriteModel,
           messages: [
@@ -122,29 +99,16 @@ export class QueryRewriteService {
       const text = await response.text();
       console.log(`[QueryRewriteService] response ${response.status}: ${text.slice(0, 200)}`);
 
-      // Handle empty response
       if (!text || !text.trim()) {
         console.warn("[QueryRewriteService] Empty response from DashScope API, using original query");
         return query;
       }
 
-      const payload = JSON.parse(text) as {
-        choices?: Array<{ message?: { content?: string } }>;
-        error?: { message?: string };
-      };
-
-      if (!response.ok) {
-        throw new Error(
-          payload.error?.message ??
-            `LLM rewrite failed with status ${response.status}`,
-        );
-      }
+      const payload = JSON.parse(text) as { choices?: Array<{ message?: { content?: string } }>; error?: { message?: string } };
+      if (!response.ok) throw new Error(payload.error?.message ?? `LLM rewrite failed with status ${response.status}`);
 
       const content = payload.choices?.[0]?.message?.content;
-      if (typeof content === "string" && content.trim().length > 0) {
-        return content.trim();
-      }
-
+      if (typeof content === "string" && content.trim().length > 0) return content.trim();
       return query;
     } finally {
       clearTimeout(timeoutId);

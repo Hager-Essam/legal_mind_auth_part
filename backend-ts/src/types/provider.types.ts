@@ -1,6 +1,3 @@
-// ── Provider types ───────────────────────────────────────────────────────────
-// Types for the AI provider configuration.
-
 export type ProviderSummary = {
   llmProvider: string;
   embeddingProvider: string;

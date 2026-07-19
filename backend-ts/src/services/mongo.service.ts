@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 import { env } from "../config/env";
 
 export class MongoService {
@@ -11,11 +10,7 @@ export class MongoService {
 
   async health(): Promise<{ connected: boolean; pingOk: boolean }> {
     try {
-      // Don't attempt reconnection - just check current state
-      if (mongoose.connection.readyState !== 1) {
-        return { connected: false, pingOk: false };
-      }
-      // Use existing connection for a fast ping
+      if (mongoose.connection.readyState !== 1) return { connected: false, pingOk: false };
       await mongoose.connection.db!.command({ ping: 1 });
       return { connected: true, pingOk: true };
     } catch {
