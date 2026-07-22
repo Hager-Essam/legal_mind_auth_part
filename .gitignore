@@ -27,3 +27,14 @@ Thumbs.db
 # Build
 dist/
 build/
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Test files
+test-*.js
+view-db.js
+
+# Vercel
+.vercel
