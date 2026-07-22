@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 const config = require('./config/env');
 const errorHandler = require('./middlewares/error-handler.middleware');
 const authRoutes = require('./modules/auth/auth.routes');
@@ -11,7 +12,6 @@ const { specs, swaggerUi } = require('./config/swagger');
 
 const app = express();
 
-// Middlewares
 app.use(
   cors({
     origin: config.cors.allowedOrigins,
@@ -21,41 +21,49 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(morgan('dev'));
 
-// Serve static files
-app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
 
-// Swagger Documentation
+app.use(express.static(path.join(__dirname, '../public')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
   customCss: '.swagger-ui .topbar { display: none }',
   customSiteTitle: 'LegalMind API Docs',
 }));
 
-// Health check
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'LegalMind API',
+    version: '1.0.0',
+    docs: '/api-docs',
+  });
+});
+
 app.get('/health', (req, res) => {
   res.json({
     success: true,
     message: 'Server is running',
     timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
   });
 });
 
-// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/users', bookmarkRoutes);
 
-// 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
     message: 'Route not found',
+    path: req.originalUrl,
   });
 });
 
-// Error handler (must be last)
 app.use(errorHandler);
 
 module.exports = app;
