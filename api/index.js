@@ -1,7 +1,8 @@
-module.exports = (req, res) => {
-  res.json({
+module.exports = function handler(req, res) {
+  return res.status(200).json({
     success: true,
-    message: 'Minimal handler working',
-    timestamp: new Date().toISOString(),
+    message: 'Working!',
+    url: req.url,
+    method: req.method,
   });
 };
