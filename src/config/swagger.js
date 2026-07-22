@@ -1,5 +1,6 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const path = require('path');
 const config = require('./env');
 
 const options = {
@@ -161,7 +162,10 @@ const options = {
       },
     ],
   },
-  apis: ['./src/modules/auth/*.js', './src/modules/**/*.js'],
+  apis: [
+    path.join(__dirname, '../modules/auth/*.js'),
+    path.join(__dirname, '../modules/**/*.js')
+  ],
 };
 
 const specs = swaggerJsdoc(options);
