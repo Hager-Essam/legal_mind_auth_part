@@ -3,6 +3,7 @@ const config = require('./env');
 
 const connectDB = async () => {
   try {
+    console.log(config.mongodb.uri);
     const conn = await mongoose.connect(config.mongodb.uri, {
       dbName: config.mongodb.dbName,
     });

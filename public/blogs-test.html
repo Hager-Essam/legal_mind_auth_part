@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LegalMind - Blogs Hub Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .auth-status {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .auth-status span {
+            padding: 5px 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .blog-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .blog-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .blog-card h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .blog-meta {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        .blog-author {
+            font-weight: 600;
+            color: #3498db;
+        }
+
+        .blog-excerpt {
+            color: #555;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        .blog-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+
+        .tag {
+            padding: 3px 8px;
+            background: #ecf0f1;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .blog-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .blog-actions button {
+            padding: 8px 15px;
+            font-size: 13px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-published {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-pending {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filters input, .filters select {
+            width: auto;
+            min-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏛️ LegalMind - Blogs Hub</h1>
+            <p>Test Interface for Blogs & Bookmarks</p>
+            <div class="auth-status">
+                <span id="authStatus">Not Logged In</span>
+                <button class="btn btn-primary" onclick="showLoginForm()">Login</button>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Login Form -->
+        <div id="loginSection" class="section" style="display: none;">
+            <h2>Login</h2>
+            <div id="loginMessage"></div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password">
+            </div>
+            <button class="btn btn-success" onclick="login()">Login</button>
+        </div>
+
+        <!-- Create Blog Form -->
+        <div id="createBlogSection" class="section" style="display: none;">
+            <h2>Create New Blog</h2>
+            <div id="createMessage"></div>
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" id="blogTitle" placeholder="Enter blog title">
+            </div>
+            <div class="form-group">
+                <label>Excerpt</label>
+                <input type="text" id="blogExcerpt" placeholder="Short description">
+            </div>
+            <div class="form-group">
+                <label>Content *</label>
+                <textarea id="blogContent" placeholder="Write your blog content here..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Category *</label>
+                <select id="blogCategory">
+                    <option value="">Select Category</option>
+                    <option value="Criminal Law">Criminal Law</option>
+                    <option value="Civil Law">Civil Law</option>
+                    <option value="Corporate Law">Corporate Law</option>
+                    <option value="Family Law">Family Law</option>
+                    <option value="Labor Law">Labor Law</option>
+                    <option value="Tax Law">Tax Law</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tags (comma-separated)</label>
+                <input type="text" id="blogTags" placeholder="law, legal, advice">
+            </div>
+            <div class="form-group">
+                <label>Cover Image URL</label>
+                <input type="text" id="blogCoverImage" placeholder="https://example.com/image.jpg">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="blogStatus">
+                    <option value="draft">Draft</option>
+                    <option value="pending">Pending Review</option>
+                    <option value="published">Published</option>
+                </select>
+            </div>
+            <button class="btn btn-success" onclick="createBlog()">Create Blog</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="section">
+            <h2>Browse Blogs</h2>
+            <div class="filters">
+                <input type="text" id="searchQuery" placeholder="Search by title..." onkeyup="searchBlogs()">
+                <select id="filterCategory" onchange="filterBlogs()">
+                    <option value="">All Categories</option>
+                    <option value="Criminal Law">Criminal Law</option>
+                    <option value="Civil Law">Civil Law</option>
+                    <option value="Corporate Law">Corporate Law</option>
+                    <option value="Family Law">Family Law</option>
+                    <option value="Labor Law">Labor Law</option>
+                    <option value="Tax Law">Tax Law</option>
+                    <option value="Other">Other</option>
+                </select>
+                <select id="sortBy" onchange="loadBlogs()">
+                    <option value="newest">Newest First</option>
+                    <option value="popular">Most Viewed</option>
+                </select>
+                <button class="btn btn-primary" onclick="loadBlogs()">Refresh</button>
+            </div>
+        </div>
+
+        <!-- Blogs List -->
+        <div class="section">
+            <h2>All Blogs</h2>
+            <div id="blogsLoading" class="loading" style="display: none;">Loading blogs...</div>
+            <div id="blogsList" class="blog-list"></div>
+        </div>
+
+        <!-- My Blogs -->
+        <div id="myBlogsSection" class="section" style="display: none;">
+            <h2>My Blogs</h2>
+            <div id="myBlogsList" class="blog-list"></div>
+        </div>
+
+        <!-- My Bookmarks -->
+        <div id="bookmarksSection" class="section" style="display: none;">
+            <h2>My Bookmarks</h2>
+            <div id="bookmarksList" class="blog-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5001/api';
+        let authToken = localStorage.getItem('authToken');
+
+        // Initialize
+        window.onload = function() {
+            checkAuthStatus();
+            loadBlogs();
+        };
+
+        function checkAuthStatus() {
+            if (authToken) {
+                document.getElementById('authStatus').textContent = 'Logged In ✓';
+                document.getElementById('authStatus').style.background = 'rgba(46, 204, 113, 0.3)';
+                document.getElementById('createBlogSection').style.display = 'block';
+                document.getElementById('myBlogsSection').style.display = 'block';
+                document.getElementById('bookmarksSection').style.display = 'block';
+                loadMyBlogs();
+                loadBookmarks();
+            } else {
+                document.getElementById('authStatus').textContent = 'Not Logged In';
+                document.getElementById('authStatus').style.background = 'rgba(231, 76, 60, 0.3)';
+                document.getElementById('createBlogSection').style.display = 'none';
+                document.getElementById('myBlogsSection').style.display = 'none';
+                document.getElementById('bookmarksSection').style.display = 'none';
+            }
+        }
+
+        function showLoginForm() {
+            const section = document.getElementById('loginSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const messageEl = document.getElementById('loginMessage');
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    authToken = data.data.accessToken;
+                    localStorage.setItem('authToken', authToken);
+                    messageEl.innerHTML = '<div class="success">Login successful!</div>';
+                    document.getElementById('loginSection').style.display = 'none';
+                    checkAuthStatus();
+                } else {
+                    messageEl.innerHTML = `<div class="error">${data.message}</div>`;
+                }
+            } catch (error) {
+                messageEl.innerHTML = `<div class="error">Login failed: ${error.message}</div>`;
+            }
+        }
+
+        function logout() {
+            authToken = null;
+            localStorage.removeItem('authToken');
+            checkAuthStatus();
+            loadBlogs();
+        }
+
+        async function createBlog() {
+            const messageEl = document.getElementById('createMessage');
+            const tags = document.getElementById('blogTags').value
+                .split(',')
+                .map(t => t.trim())
+                .filter(t => t);
+
+            const blogData = {
+                title: document.getElementById('blogTitle').value,
+                excerpt: document.getElementById('blogExcerpt').value,
+                content: document.getElementById('blogContent').value,
+                category: document.getElementById('blogCategory').value,
+                tags: tags,
+                coverImage: document.getElementById('blogCoverImage').value,
+                status: document.getElementById('blogStatus').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/blogs`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(blogData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    messageEl.innerHTML = '<div class="success">Blog created successfully!</div>';
+                    document.getElementById('blogTitle').value = '';
+                    document.getElementById('blogExcerpt').value = '';
+                    document.getElementById('blogContent').value = '';
+                    document.getElementById('blogTags').value = '';
+                    document.getElementById('blogCoverImage').value = '';
+                    loadBlogs();
+                    loadMyBlogs();
+                } else {
+                    messageEl.innerHTML = `<div class="error">${data.message}</div>`;
+                }
+            } catch (error) {
+                messageEl.innerHTML = `<div class="error">Failed to create blog: ${error.message}</div>`;
+            }
+        }
+
+        async function loadBlogs() {
+            const loadingEl = document.getElementById('blogsLoading');
+            const listEl = document.getElementById('blogsList');
+            
+            loadingEl.style.display = 'block';
+            
+            const sortBy = document.getElementById('sortBy').value;
+            const category = document.getElementById('filterCategory').value;
+            const search = document.getElementById('searchQuery').value;
+
+            let url = `${API_URL}/blogs?sort=${sortBy}`;
+            if (category) url += `&category=${category}`;
+            if (search) url += `&search=${search}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                loadingEl.style.display = 'none';
+
+                if (data.success && data.data.blogs) {
+                    renderBlogs(data.data.blogs, listEl);
+                } else {
+                    listEl.innerHTML = '<p>No blogs found</p>';
+                }
+            } catch (error) {
+                loadingEl.style.display = 'none';
+                listEl.innerHTML = `<div class="error">Failed to load blogs: ${error.message}</div>`;
+            }
+        }
+
+        async function loadMyBlogs() {
+            if (!authToken) return;
+
+            try {
+                const response = await fetch(`${API_URL}/blogs/me/my-blogs`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    renderBlogs(data.data.blogs, document.getElementById('myBlogsList'), true);
+                }
+            } catch (error) {
+                console.error('Failed to load my blogs:', error);
+            }
+        }
+
+        async function loadBookmarks() {
+            if (!authToken) return;
+
+            try {
+                const response = await fetch(`${API_URL}/users/me/bookmarks`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    renderBlogs(data.data.bookmarks, document.getElementById('bookmarksList'));
+                }
+            } catch (error) {
+                console.error('Failed to load bookmarks:', error);
+            }
+        }
+
+        function renderBlogs(blogs, container, showEdit = false) {
+            if (!blogs || blogs.length === 0) {
+                container.innerHTML = '<p>No blogs found</p>';
+                return;
+            }
+
+            container.innerHTML = blogs.map(blog => {
+                // Get author name - handle both fullName and firstName/lastName
+                const authorName = blog.author?.fullName || 
+                                  `${blog.author?.firstName || ''} ${blog.author?.lastName || ''}`.trim() ||
+                                  blog.author?.email ||
+                                  'Unknown Author';
+
+                return `
+                <div class="blog-card">
+                    ${blog.coverImage ? `<img src="${blog.coverImage}" alt="${blog.title}" style="width:100%; border-radius:4px; margin-bottom:10px;">` : ''}
+                    <h3>${blog.title}</h3>
+                    <div class="blog-meta">
+                        <span class="blog-author">👤 ${authorName}</span>
+                        <span>📂 ${blog.category}</span>
+                        <span>👁️ ${blog.views || 0}</span>
+                    </div>
+                    <span class="status-badge status-${blog.status}">${blog.status}</span>
+                    <p class="blog-excerpt">${blog.excerpt || blog.content.substring(0, 150) + '...'}</p>
+                    <div class="blog-tags">
+                        ${(blog.tags || []).map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                    <div class="blog-actions">
+                        <button class="btn btn-primary" onclick="viewBlog('${blog._id}')">View</button>
+                        ${authToken ? `<button class="btn btn-success" onclick="toggleBookmark('${blog._id}')">💾 Bookmark</button>` : ''}
+                        ${showEdit ? `<button class="btn btn-danger" onclick="deleteBlog('${blog._id}')">Delete</button>` : ''}
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        async function viewBlog(blogId) {
+            // Open detailed blog page
+            window.open(`/blog-detail.html?id=${blogId}`, '_blank');
+        }
+
+        async function toggleBookmark(blogId) {
+            if (!authToken) {
+                alert('Please login to bookmark blogs');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/blogs/${blogId}/bookmark`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.data.bookmarked ? 'Blog bookmarked!' : 'Bookmark removed!');
+                    loadBookmarks();
+                }
+            } catch (error) {
+                alert('Failed to toggle bookmark');
+            }
+        }
+
+        async function deleteBlog(blogId) {
+            if (!confirm('Are you sure you want to delete this blog?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/blogs/${blogId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('Blog deleted successfully');
+                    loadBlogs();
+                    loadMyBlogs();
+                }
+            } catch (error) {
+                alert('Failed to delete blog');
+            }
+        }
+
+        function searchBlogs() {
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(() => {
+                loadBlogs();
+            }, 500);
+        }
+
+        function filterBlogs() {
+            loadBlogs();
+        }
+    </script>
+</body>
+</html>

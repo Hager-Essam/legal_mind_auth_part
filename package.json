@@ -7,7 +7,10 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "diagnose": "node test-server.js"
+    "diagnose": "node test-server.js",
+    "view-db": "node view-db.js",
+    "export-swagger": "node export-swagger.js",
+    "test-email": "node test-email.js"
   },
   "keywords": [],
   "author": "",
@@ -21,9 +24,11 @@
     "express": "^4.19.2",
     "express-validator": "^7.3.2",
     "joi": "^17.13.3",
+    "js-yaml": "^5.2.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.1",
     "morgan": "^1.10.0",
+    "multer": "^2.2.0",
     "nodemailer": "^9.0.3",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"

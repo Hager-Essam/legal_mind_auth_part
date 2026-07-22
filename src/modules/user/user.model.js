@@ -36,17 +36,17 @@ const userSchema = new mongoose.Schema(
     barAssociationNumber: {
       type: String,
       trim: true,
-      sparse: true, // Allows multiple null values (optional field)
+      sparse: true,
+    },
+    lawyerIdDocument: {
+      type: String,
+      required: [true, 'Lawyer ID document is required'],
+      trim: true,
     },
     teamSize: {
       type: String,
       required: [true, 'Team size is required'],
-      enum: [
-        'solo',              // فردي
-        'small',             // شركاء متخصصون (2-10)
-        'medium',            // فريق متوسط (11-50)
-        'large',             // فريق كبير (50+)
-      ],
+      enum: ['solo', 'small', 'medium', 'large'],
     },
     
     // System fields

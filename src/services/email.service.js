@@ -23,12 +23,18 @@ class EmailService {
     };
 
     try {
+      console.log(`📧 Sending email to: ${to}`);
+      console.log(`📧 Subject: ${subject}`);
+      
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Email sent: ', info.messageId);
+      console.log('✅ Email sent successfully!');
+      console.log('📧 Message ID:', info.messageId);
       return info;
     } catch (error) {
-      console.error('Error sending email: ', error);
-      throw new Error('Failed to send email');
+      console.error('❌ Error sending email:');
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      throw new Error(`Failed to send email: ${error.message}`);
     }
   }
 

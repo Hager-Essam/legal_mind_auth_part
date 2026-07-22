@@ -49,7 +49,43 @@ const authorize = (...roles) => {
   };
 };
 
+// Optional authentication - allows viewing content without authentication
+// but attaches user if token is provided
+const optionalAuth = async (req, res, next) => {
+  try {
+    // Get token from header
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      // No token provided - continue without user
+      req.user = null;
+      return next();
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    // Verify token
+    const decoded = authService.verifyAccessToken(token);
+
+    // Get user from database
+    const user = await userRepository.findById(decoded.id);
+    if (!user || !user.isActive) {
+      // Invalid or inactive user - continue without user
+      req.user = null;
+      return next();
+    }
+
+    // Attach user to request
+    req.user = user;
+    next();
+  } catch (error) {
+    // Token verification failed - continue without user
+    req.user = null;
+    next();
+  }
+};
+
 module.exports = {
   authenticate,
   authorize,
+  optionalAuth,
 };

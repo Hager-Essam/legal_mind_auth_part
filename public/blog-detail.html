@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Detail - LegalMind</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .back-button:hover {
+            background: #2980b9;
+        }
+
+        .blog-detail {
+            background: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .blog-cover {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .blog-header {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 20px;
+        }
+
+        .blog-title {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .blog-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            color: #7f8c8d;
+            font-size: 0.95em;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .author-name {
+            font-weight: 600;
+            color: #3498db;
+            font-size: 1.1em;
+        }
+
+        .blog-excerpt {
+            font-size: 1.2em;
+            color: #555;
+            font-style: italic;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+
+        .blog-content {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #444;
+            margin-bottom: 30px;
+        }
+
+        .blog-content p {
+            margin-bottom: 15px;
+        }
+
+        .blog-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .tag {
+            padding: 6px 12px;
+            background: #ecf0f1;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .blog-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status-published {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-pending {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #7f8c8d;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="/blogs-test.html" class="back-button">← Back to Blogs</a>
+            <h1>🏛️ LegalMind - Blog Detail</h1>
+        </header>
+
+        <div id="loading" class="loading">Loading blog...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="blogDetail" class="blog-detail" style="display: none;"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5001/api';
+        const authToken = localStorage.getItem('authToken');
+
+        // Get blog ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const blogId = urlParams.get('id');
+
+        if (!blogId) {
+            showError('No blog ID provided');
+        } else {
+            loadBlog();
+        }
+
+        async function loadBlog() {
+            try {
+                const headers = {};
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+
+                const response = await fetch(`${API_URL}/blogs/${blogId}`, { headers });
+                const data = await response.json();
+
+                if (data.success) {
+                    renderBlog(data.data.blog);
+                } else {
+                    showError(data.message || 'Failed to load blog');
+                }
+            } catch (error) {
+                showError(`Error loading blog: ${error.message}`);
+            }
+        }
+
+        function renderBlog(blog) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('blogDetail').style.display = 'block';
+
+            // Get author name
+            const authorName = blog.author?.fullName || 
+                              `${blog.author?.firstName || ''} ${blog.author?.lastName || ''}`.trim() ||
+                              blog.author?.email ||
+                              'Unknown Author';
+
+            const html = `
+                ${blog.coverImage ? `<img src="${blog.coverImage}" alt="${blog.title}" class="blog-cover">` : ''}
+                
+                <div class="blog-header">
+                    <h1 class="blog-title">${blog.title}</h1>
+                    
+                    <div class="blog-meta">
+                        <div class="meta-item">
+                            <span>✍️</span>
+                            <span class="author-name">${authorName}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>📂</span>
+                            <span>${blog.category}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>👁️</span>
+                            <span>${blog.views || 0} views</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>💾</span>
+                            <span>${blog.bookmarksCount || 0} bookmarks</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>📅</span>
+                            <span>${new Date(blog.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="status-badge status-${blog.status}">${blog.status}</span>
+                        </div>
+                    </div>
+                </div>
+
+                ${blog.excerpt ? `<div class="blog-excerpt">${blog.excerpt}</div>` : ''}
+
+                <div class="blog-content">
+                    ${formatContent(blog.content)}
+                </div>
+
+                ${blog.tags && blog.tags.length > 0 ? `
+                    <div class="blog-tags">
+                        ${blog.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+                    </div>
+                ` : ''}
+
+                <div class="blog-actions">
+                    <button class="btn btn-success" onclick="toggleBookmark('${blog._id}')">
+                        💾 Bookmark
+                    </button>
+                    <a href="/blogs-test.html" class="btn btn-primary">← Back to List</a>
+                </div>
+            `;
+
+            document.getElementById('blogDetail').innerHTML = html;
+        }
+
+        function formatContent(content) {
+            // Simple formatting: convert line breaks to paragraphs
+            return content
+                .split('\n\n')
+                .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+        }
+
+        async function toggleBookmark(blogId) {
+            if (!authToken) {
+                alert('Please login to bookmark blogs');
+                window.location.href = '/blogs-test.html';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/blogs/${blogId}/bookmark`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert(data.data.bookmarked ? 'Blog bookmarked!' : 'Bookmark removed!');
+                    loadBlog(); // Reload to update bookmark count
+                } else {
+                    alert(data.message || 'Failed to toggle bookmark');
+                }
+            } catch (error) {
+                alert('Failed to toggle bookmark');
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

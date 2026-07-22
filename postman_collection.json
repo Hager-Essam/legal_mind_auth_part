@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Legal Mind API",
-    "description": "Legal Mind Authentication API Collection",
+    "name": "LegalMind API - Complete Collection",
+    "description": "Complete API collection for testing all LegalMind endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -9,7 +9,23 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Register",
+          "name": "1. Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('accessToken', jsonData.data.accessToken);",
+                  "    pm.environment.set('userId', jsonData.data.user._id);",
+                  "    console.log('✅ User registered successfully');",
+                  "    console.log('Access Token saved to environment');",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -20,18 +36,34 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"هاجر عصام حسن بكر\",\n  \"email\": \"hajar@example.com\",\n  \"password\": \"Password123\",\n  \"officeName\": \"مكتب العدالة للمحاماة\",\n  \"barAssociationNumber\": \"12345\",\n  \"teamSize\": \"small\",\n  \"phone\": \"+201234567890\"\n}"
+              "raw": "{\n  \"fullName\": \"هاجر عصام حسن بكر\",\n  \"email\": \"hagergogo2372@gmail.com\",\n  \"password\": \"Test123456\",\n  \"officeName\": \"مكتب العدالة للمحاماة\",\n  \"barAssociationNumber\": \"12345\",\n  \"teamSize\": \"small\",\n  \"phone\": \"+201234567890\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/register",
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "register"]
             },
-            "description": "Register a new user with multi-step form data.\n\nTeam Size Options:\n- solo: Individual lawyer (فردي)\n- small: Specialized partners (2-10) (شركاء متخصصون)\n- medium: Medium team (11-50) (فريق متوسط)\n- large: Large team (50+) (فريق كبير)"
-          }
+            "description": "Register a new user with all required fields"
+          },
+          "response": []
         },
         {
-          "name": "Login",
+          "name": "2. Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('accessToken', jsonData.data.accessToken);",
+                  "    console.log('✅ Login successful');",
+                  "    console.log('Access Token saved to environment');",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -42,97 +74,39 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\"\n}"
+              "raw": "{\n  \"email\": \"hagergogo2372@gmail.com\",\n  \"password\": \"Test123456\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "login"]
-            }
-          }
-        },
-        {
-          "name": "Refresh Token",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/refresh-token",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "refresh-token"]
-            }
-          }
+            "description": "Login with email and password"
+          },
+          "response": []
         },
         {
-          "name": "Logout",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "logout"]
-            }
-          }
-        },
-        {
-          "name": "Logout All",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/logout-all",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "logout-all"]
-            }
-          }
-        },
-        {
-          "name": "Get Me",
+          "name": "3. Get Current User (Me)",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{accessToken}}"
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT token from login/register"
               }
             ],
             "url": {
               "raw": "{{baseUrl}}/api/auth/me",
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "me"]
-            }
-          }
+            },
+            "description": "Get current authenticated user profile"
+          },
+          "response": []
         },
         {
-          "name": "Forgot Password",
+          "name": "4. Forgot Password",
           "request": {
             "method": "POST",
             "header": [
@@ -143,18 +117,34 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"john@example.com\"\n}"
+              "raw": "{\n  \"email\": \"hagergogo2372@gmail.com\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/forgot-password",
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "forgot-password"]
             },
-            "description": "Request a password reset email. Check your email for the reset token."
-          }
+            "description": "Request password reset email. Check your inbox for the reset token!"
+          },
+          "response": []
         },
         {
-          "name": "Reset Password",
+          "name": "5. Reset Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('accessToken', jsonData.data.accessToken);",
+                  "    console.log('✅ Password reset successful');",
+                  "    console.log('New Access Token saved to environment');",
+                  "}"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -172,8 +162,433 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "reset-password"]
             },
-            "description": "Reset password using the token from email. The token is found in the email link after ?token="
-          }
+            "description": "Reset password using token from email. Update {{resetToken}} variable with token from your email!"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('accessToken', jsonData.data.accessToken);",
+                  "    console.log('✅ Token refreshed');",
+                  "    console.log('New Access Token saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh-token"]
+            },
+            "description": "Get new access token using refresh token (usually from cookie)"
+          },
+          "response": []
+        },
+        {
+          "name": "7. Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Logout from current device"
+          },
+          "response": []
+        },
+        {
+          "name": "8. Logout All Devices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "JWT token required"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout-all"]
+            },
+            "description": "Logout from all devices (revoke all refresh tokens)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Blogs",
+      "item": [
+        {
+          "name": "1. Get All Blogs (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs?page=1&limit=10&sort=newest",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                },
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "description": "newest or popular"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search in title/content",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "description": "Filter by category",
+                  "disabled": true
+                },
+                {
+                  "key": "tags",
+                  "value": "",
+                  "description": "Filter by tags (comma-separated)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get all published blogs with pagination, search, and filters. No authentication required."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Create Blog",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('blogId', jsonData.data.blog._id);",
+                  "    console.log('✅ Blog created successfully');",
+                  "    console.log('Blog ID saved to environment');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Required - Login first!"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"فهم القانون الجنائي المصري\",\n  \"content\": \"القانون الجنائي في مصر يحكمه في المقام الأول قانون العقوبات لعام 1937. يحدد هذا القانون الجرائم المختلفة والعقوبات المرتبطة بها. من المهم للمحامين والمواطنين فهم الأساسيات...\",\n  \"excerpt\": \"دليل شامل للقانون الجنائي في مصر\",\n  \"category\": \"Criminal Law\",\n  \"tags\": [\"criminal\", \"egypt\", \"law\", \"penal code\"],\n  \"coverImage\": \"https://images.unsplash.com/photo-1589829545856-d10d557cf95f\",\n  \"status\": \"published\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs"]
+            },
+            "description": "Create a new blog post. Authentication required."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Blog by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Optional - adds user context",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "{{blogId}}"]
+            },
+            "description": "Get single blog details and increment view count. Authentication optional."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get My Blogs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Required"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/me/my-blogs?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "me", "my-blogs"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all blogs created by the logged-in user"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Update Blog",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Required - Only author can update"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"فهم القانون الجنائي المصري - محدث\",\n  \"content\": \"محتوى محدث للمقال...\",\n  \"status\": \"published\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "{{blogId}}"]
+            },
+            "description": "Update a blog. Only the author can update their own blogs."
+          },
+          "response": []
+        },
+        {
+          "name": "6. Delete Blog",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Required - Author or Admin"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "{{blogId}}"]
+            },
+            "description": "Delete a blog. Only author or admin can delete."
+          },
+          "response": []
+        },
+        {
+          "name": "7. Get Popular Blogs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/popular?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "popular"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get popular blogs sorted by view count"
+          },
+          "response": []
+        },
+        {
+          "name": "8. Get Trending Blogs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/trending?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "trending"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get trending blogs (recent posts with high engagement)"
+          },
+          "response": []
+        },
+        {
+          "name": "9. Toggle Bookmark",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Required"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/{{blogId}}/bookmark",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "{{blogId}}", "bookmark"]
+            },
+            "description": "Add or remove bookmark. First call adds, second call removes."
+          },
+          "response": []
+        },
+        {
+          "name": "10. Update Blog Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Required - Admin only"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"published\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/{{blogId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "{{blogId}}", "status"]
+            },
+            "description": "Update blog status. Admin only. Valid: draft, pending, published, rejected"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bookmarks",
+      "item": [
+        {
+          "name": "1. Get My Bookmarks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Required"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me/bookmarks?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "me", "bookmarks"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all bookmarked blogs for the logged-in user"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Remove Bookmark",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "Required"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookmarks/{{bookmarkId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bookmarks", "{{bookmarkId}}"]
+            },
+            "description": "Remove a bookmark by ID"
+          },
+          "response": []
         }
       ]
     },
@@ -186,27 +601,49 @@
           "raw": "{{baseUrl}}/health",
           "host": ["{{baseUrl}}"],
           "path": ["health"]
-        }
-      }
+        },
+        "description": "Check if server is running"
+      },
+      "response": []
     }
   ],
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:5000"
+      "value": "http://localhost:5001",
+      "type": "string"
     },
     {
       "key": "accessToken",
-      "value": ""
+      "value": "",
+      "type": "string"
     },
     {
       "key": "refreshToken",
-      "value": ""
+      "value": "",
+      "type": "string"
     },
     {
       "key": "resetToken",
       "value": "",
-      "description": "Token received via email for password reset"
+      "type": "string",
+      "description": "Get this from the email after requesting forgot password"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "blogId",
+      "value": "",
+      "type": "string",
+      "description": "Auto-saved when you create a blog"
+    },
+    {
+      "key": "bookmarkId",
+      "value": "",
+      "type": "string"
     }
   ]
 }

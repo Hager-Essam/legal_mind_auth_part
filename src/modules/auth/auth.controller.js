@@ -5,14 +5,23 @@ const HTTP_STATUS = require('../../shared/constants/http-status');
 class AuthController {
   async register(req, res, next) {
     try {
-      const result = await authService.register(req.body);
+      if (!req.file) {
+        return ResponseHelper.badRequest(res, 'Lawyer ID document is required');
+      }
 
-      // Set refresh token as httpOnly cookie
+      const lawyerIdDocument = `/uploads/lawyer-ids/${req.file.filename}`;
+      const userData = {
+        ...req.body,
+        lawyerIdDocument,
+      };
+
+      const result = await authService.register(userData);
+
       res.cookie('refreshToken', result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       return ResponseHelper.created(res, 'User registered successfully', {

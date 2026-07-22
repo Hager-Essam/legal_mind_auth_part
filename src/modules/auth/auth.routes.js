@@ -1,6 +1,7 @@
 const express = require('express');
 const authController = require('./auth.controller');
 const validate = require('../../middlewares/validation.middleware');
+const upload = require('../../middlewares/upload.middleware');
 const { authenticate } = require('./auth.middleware');
 const {
   registerSchema,
@@ -116,7 +117,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/register', validate(registerSchema), authController.register);
+router.post('/register', upload.single('lawyerIdDocument'), validate(registerSchema), authController.register);
 
 /**
  * @swagger

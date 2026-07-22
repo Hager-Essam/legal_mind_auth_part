@@ -5,6 +5,8 @@ const cookieParser = require('cookie-parser');
 const config = require('./config/env');
 const errorHandler = require('./middlewares/error-handler.middleware');
 const authRoutes = require('./modules/auth/auth.routes');
+const blogRoutes = require('./modules/blog/blog.routes');
+const bookmarkRoutes = require('./modules/bookmark/bookmark.routes');
 const { specs, swaggerUi } = require('./config/swagger');
 
 const app = express();
@@ -20,6 +22,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan('dev'));
+
+// Serve static files
+app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
@@ -38,6 +44,8 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/blogs', blogRoutes);
+app.use('/api/users', bookmarkRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
