@@ -2,20 +2,14 @@
   "name": "legalmind-server",
   "version": "1.0.0",
   "description": "Legal Mind Server with MongoDB",
-  "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "diagnose": "node test-server.js",
-    "view-db": "node view-db.js",
-    "export-swagger": "node export-swagger.js",
-    "test-email": "node test-email.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
@@ -37,5 +31,8 @@
     "eslint": "^8.57.0",
     "nodemon": "^3.1.4",
     "prettier": "^3.3.2"
+  },
+  "engines": {
+    "node": ">=18.x"
   }
 }
