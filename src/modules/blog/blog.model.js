@@ -109,6 +109,7 @@ blogSchema.index({ tags: 1, status: 1 }); // Tags filter
 
 // Virtual for reading time (average reading speed: 200 words/minute)
 blogSchema.virtual('readingTime').get(function () {
+  if (!this.content) return 0;
   const wordsPerMinute = 200;
   const wordCount = this.content.split(/\s+/).length;
   const minutes = Math.ceil(wordCount / wordsPerMinute);

@@ -131,8 +131,8 @@ class AuthController {
 
   async forgotPassword(req, res, next) {
     try {
-      const { email } = req.body;
-      const result = await authService.forgotPassword(email);
+      const userEmail = req.user.email;
+      const result = await authService.forgotPassword(userEmail);
       return ResponseHelper.ok(res, result.message);
     } catch (error) {
       next(error);

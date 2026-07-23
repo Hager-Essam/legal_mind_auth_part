@@ -163,20 +163,14 @@ class AuthService {
   }
 
   async forgotPassword(email) {
-    // Find user by email
     const user = await userRepository.findByEmailWithoutPassword(email);
     if (!user) {
-      // Don't reveal if user exists or not for security
-      return {
-        message: 'If an account exists with that email, a password reset link has been sent.',
-      };
+      throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
     }
 
-    // Generate reset token
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
 
-    // Send email
     const emailService = require('../../services/email.service');
     try {
       await emailService.sendPasswordResetEmail(
@@ -192,7 +186,7 @@ class AuthService {
     }
 
     return {
-      message: 'If an account exists with that email, a password reset link has been sent.',
+      message: 'Password reset link has been sent to your email.',
     };
   }
 

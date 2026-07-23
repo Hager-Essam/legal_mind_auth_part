@@ -3,7 +3,7 @@
   "info": {
     "title": "LegalMind API Documentation",
     "version": "1.0.0",
-    "description": "Complete API documentation for LegalMind authentication system",
+    "description": "Complete API documentation for LegalMind authentication system with blogs, comments, and bookmarks",
     "contact": {
       "name": "LegalMind Team",
       "email": "support@legalmind.com"
@@ -155,6 +155,59 @@
             "type": "object"
           }
         }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "Comment ID"
+          },
+          "content": {
+            "type": "string",
+            "description": "Comment content"
+          },
+          "author": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string"
+              },
+              "fullName": {
+                "type": "string"
+              },
+              "avatar": {
+                "type": "string"
+              }
+            }
+          },
+          "blog": {
+            "type": "string",
+            "description": "Blog ID"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CommentInput": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "properties": {
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "description": "Comment content"
+          }
+        }
       }
     }
   },
@@ -162,6 +215,18 @@
     {
       "name": "Authentication",
       "description": "User authentication and authorization endpoints"
+    },
+    {
+      "name": "Blogs",
+      "description": "Blog management endpoints"
+    },
+    {
+      "name": "Comments",
+      "description": "Blog comments management"
+    },
+    {
+      "name": "Bookmarks",
+      "description": "Blog bookmarks management"
     }
   ],
   "paths": {
@@ -521,34 +586,19 @@
     },
     "/api/auth/forgot-password": {
       "post": {
-        "summary": "Request password reset",
-        "description": "Sends a password reset email to the user if the account exists. Always returns success for security reasons.",
+        "summary": "Request password reset for logged-in user",
+        "description": "Sends a password reset token to the authenticated user's email address. User must be logged in.",
         "tags": [
           "Authentication"
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "email"
-                ],
-                "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email",
-                    "example": "john.doe@example.com"
-                  }
-                }
-              }
-            }
+        "security": [
+          {
+            "bearerAuth": []
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "Password reset email sent if account exists",
+            "description": "Password reset email sent successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -560,15 +610,15 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "If an account exists with that email, a password reset link has been sent."
+                      "example": "Password reset link has been sent to your email."
                     }
                   }
                 }
               }
             }
           },
-          "400": {
-            "description": "Validation error",
+          "401": {
+            "description": "Unauthorized - User not logged in",
             "content": {
               "application/json": {
                 "schema": {
@@ -762,110 +812,6 @@
                 }
               }
             }
-          }
-        }
-      }
-    },
-    "/api/users/me/bookmarks": {
-      "get": {
-        "summary": "Get my bookmarks",
-        "description": "Get all bookmarked blogs for authenticated user",
-        "tags": [
-          "Bookmarks"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "page",
-            "schema": {
-              "type": "integer",
-              "default": 1
-            },
-            "description": "Page number"
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "type": "integer",
-              "default": 10
-            },
-            "description": "Items per page"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Bookmarks retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "bookmarks": {
-                          "type": "array",
-                          "items": {
-                            "type": "object"
-                          }
-                        },
-                        "pagination": {
-                          "type": "object"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        }
-      }
-    },
-    "/api/bookmarks/{id}": {
-      "delete": {
-        "summary": "Remove bookmark",
-        "description": "Remove a specific bookmark",
-        "tags": [
-          "Bookmarks"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Bookmark ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Bookmark removed successfully"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "404": {
-            "description": "Bookmark not found"
           }
         }
       }
@@ -1279,9 +1225,9 @@
     "/api/blogs/{id}/bookmark": {
       "post": {
         "summary": "Toggle bookmark",
-        "description": "Add or remove blog bookmark (toggle)",
+        "description": "Add or remove a bookmark for a blog (toggle behavior)",
         "tags": [
-          "Blogs"
+          "Bookmarks"
         ],
         "security": [
           {
@@ -1308,16 +1254,26 @@
                   "type": "object",
                   "properties": {
                     "success": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "example": true
                     },
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "example": "Blog bookmarked successfully"
                     },
                     "data": {
                       "type": "object",
                       "properties": {
                         "bookmarked": {
-                          "type": "boolean"
+                          "type": "boolean",
+                          "description": "True if bookmarked, false if removed"
+                        },
+                        "action": {
+                          "type": "string",
+                          "enum": [
+                            "added",
+                            "removed"
+                          ]
                         }
                       }
                     }
@@ -1396,6 +1352,458 @@
           },
           "404": {
             "description": "Blog not found"
+          }
+        }
+      }
+    },
+    "/api/blogs/{blogId}/comments": {
+      "post": {
+        "summary": "Create a comment on a blog",
+        "description": "Create a new comment on a published blog (requires authentication)",
+        "tags": [
+          "Comments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blogId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Blog ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comment created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Comment created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "comment": {
+                          "$ref": "#/components/schemas/Comment"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input or blog not published"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication required"
+          },
+          "404": {
+            "description": "Blog not found"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all comments for a blog",
+        "description": "Retrieve all comments for a specific blog (public access)",
+        "tags": [
+          "Comments"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "blogId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Blog ID"
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            },
+            "description": "Number of comments per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comments retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Comments retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "comments": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Comment"
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "limit": {
+                              "type": "integer"
+                            },
+                            "total": {
+                              "type": "integer"
+                            },
+                            "pages": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Blog not found"
+          }
+        }
+      }
+    },
+    "/api/comments/{id}": {
+      "put": {
+        "summary": "Update your own comment",
+        "description": "Update the content of your own comment (requires authentication)",
+        "tags": [
+          "Comments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comment ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommentInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Comment updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Comment updated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "comment": {
+                          "$ref": "#/components/schemas/Comment"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized - Authentication required"
+          },
+          "403": {
+            "description": "Forbidden - Not the comment owner"
+          },
+          "404": {
+            "description": "Comment not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete your own comment",
+        "description": "Delete your own comment (requires authentication, admins can delete any comment)",
+        "tags": [
+          "Comments"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comment ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comment deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Comment deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Authentication required"
+          },
+          "403": {
+            "description": "Forbidden - Not the comment owner"
+          },
+          "404": {
+            "description": "Comment not found"
+          }
+        }
+      }
+    },
+    "/api/users/me/bookmarks": {
+      "get": {
+        "summary": "Get my bookmarks",
+        "description": "Get all bookmarked blogs for authenticated user with pagination",
+        "tags": [
+          "Bookmarks"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Items per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookmarks retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Bookmarks retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "bookmarks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string"
+                              },
+                              "user": {
+                                "type": "string"
+                              },
+                              "blog": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": {
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "excerpt": {
+                                    "type": "string"
+                                  },
+                                  "category": {
+                                    "type": "string"
+                                  },
+                                  "views": {
+                                    "type": "integer"
+                                  },
+                                  "author": {
+                                    "type": "object"
+                                  }
+                                }
+                              },
+                              "createdAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            }
+                          }
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "limit": {
+                              "type": "integer"
+                            },
+                            "total": {
+                              "type": "integer"
+                            },
+                            "pages": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/bookmarks/{id}": {
+      "delete": {
+        "summary": "Remove bookmark",
+        "description": "Remove a specific bookmark",
+        "tags": [
+          "Bookmarks"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bookmark ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bookmark removed successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Bookmark not found"
           }
         }
       }

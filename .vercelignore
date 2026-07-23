@@ -1,9 +1,0 @@
-node_modules
-.env
-.git
-.gitignore
-*.log
-test-*.js
-view-db.js
-uploads/*
-!uploads/.gitkeep

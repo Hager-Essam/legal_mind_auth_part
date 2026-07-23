@@ -9,7 +9,7 @@ const options = {
     info: {
       title: 'LegalMind API Documentation',
       version: '1.0.0',
-      description: 'Complete API documentation for LegalMind authentication system',
+      description: 'Complete API documentation for LegalMind authentication system with blogs, comments, and bookmarks',
       contact: {
         name: 'LegalMind Team',
         email: 'support@legalmind.com',
@@ -160,11 +160,25 @@ const options = {
         name: 'Authentication',
         description: 'User authentication and authorization endpoints',
       },
+      {
+        name: 'Blogs',
+        description: 'Blog management endpoints',
+      },
+      {
+        name: 'Comments',
+        description: 'Blog comments management',
+      },
+      {
+        name: 'Bookmarks',
+        description: 'Blog bookmarks management',
+      },
     ],
   },
   apis: [
-    path.join(__dirname, '../modules/auth/*.js'),
-    path.join(__dirname, '../modules/**/*.js')
+    path.join(__dirname, '../modules/auth/auth.routes.js'),
+    path.join(__dirname, '../modules/blog/blog.routes.js'),
+    path.join(__dirname, '../modules/comment/comment.routes.js'),
+    path.join(__dirname, '../modules/bookmark/bookmark.routes.js'),
   ],
 };
 

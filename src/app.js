@@ -8,13 +8,24 @@ const errorHandler = require('./middlewares/error-handler.middleware');
 const authRoutes = require('./modules/auth/auth.routes');
 const blogRoutes = require('./modules/blog/blog.routes');
 const bookmarkRoutes = require('./modules/bookmark/bookmark.routes');
+const commentRoutes = require('./modules/comment/comment.routes');
 const { specs, swaggerUi } = require('./config/swagger');
 
 const app = express();
 
 app.use(
   cors({
-    origin: config.cors.allowedOrigins,
+    origin: function (origin, callback) {
+      const allowedOrigins = config.cors.allowedOrigins;
+      
+      if (allowedOrigins.includes('*')) {
+        callback(null, true);
+      } else if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );
@@ -55,6 +66,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/users', bookmarkRoutes);
+app.use('/api', commentRoutes);
 
 app.use('*', (req, res) => {
   res.status(404).json({

@@ -265,25 +265,14 @@ router.post('/logout', authController.logout);
  * @swagger
  * /api/auth/forgot-password:
  *   post:
- *     summary: Request password reset
- *     description: Sends a password reset email to the user if the account exists. Always returns success for security reasons.
+ *     summary: Request password reset for logged-in user
+ *     description: Sends a password reset token to the authenticated user's email address. User must be logged in.
  *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: john.doe@example.com
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Password reset email sent if account exists
+ *         description: Password reset email sent successfully
  *         content:
  *           application/json:
  *             schema:
@@ -294,9 +283,9 @@ router.post('/logout', authController.logout);
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: If an account exists with that email, a password reset link has been sent.
- *       400:
- *         description: Validation error
+ *                   example: Password reset link has been sent to your email.
+ *       401:
+ *         description: Unauthorized - User not logged in
  *         content:
  *           application/json:
  *             schema:
@@ -308,7 +297,7 @@ router.post('/logout', authController.logout);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword);
+router.post('/forgot-password', authenticate, authController.forgotPassword);
 
 /**
  * @swagger

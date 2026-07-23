@@ -108,6 +108,16 @@
         {
           "name": "4. Forgot Password",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "POST",
             "header": [
               {
@@ -117,14 +127,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"hagergogo2372@gmail.com\"\n}"
+              "raw": "{}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/forgot-password",
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "forgot-password"]
             },
-            "description": "Request password reset email. Check your inbox for the reset token!"
+            "description": "Request password reset for the currently logged-in user. Requires authentication token. Reset link will be sent to the user's email."
           },
           "response": []
         },

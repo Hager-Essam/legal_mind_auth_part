@@ -7,6 +7,7 @@ class BlogService {
     const blog = await blogRepository.create({
       ...blogData,
       author: authorId,
+      status: 'published',
     });
 
     return blog;
@@ -70,7 +71,6 @@ class BlogService {
       throw new AppError('Blog not found', HTTP_STATUS.NOT_FOUND);
     }
 
-    // Check authorization
     if (!blog.isAuthor(userId) && userRole !== 'admin') {
       throw new AppError(
         'You are not authorized to delete this blog',
@@ -78,9 +78,11 @@ class BlogService {
       );
     }
 
-    // Delete associated bookmarks
     const Bookmark = require('../bookmark/bookmark.model');
     await Bookmark.deleteMany({ blog: id });
+
+    const commentRepository = require('../comment/comment.repository');
+    await commentRepository.deleteByBlog(id);
 
     await blogRepository.delete(id);
     return true;
