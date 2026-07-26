@@ -603,6 +603,121 @@
       ]
     },
     {
+      "name": "Contract Analysis",
+      "item": [
+        {
+          "name": "1. Upload Contract for Analysis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('jobId', jsonData.jobId);",
+                  "    console.log('✅ Contract analysis started');",
+                  "    console.log('Job ID saved to environment');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "Upload an employment contract PDF, DOCX, image, or text file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/analyze",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analyze"]
+            },
+            "description": "Upload a contract file to start the analyzer job"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get Job Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analyze/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analyze", "{{jobId}}"]
+            },
+            "description": "Retrieve the current status and results for a contract analysis job"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get All Jobs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/jobs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "jobs"]
+            },
+            "description": "List all contract analysis jobs"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get Job Progress Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analyze/{{jobId}}/progress",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analyze", "{{jobId}}", "progress"]
+            },
+            "description": "Get the progress log entries for a job"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Stream Job Progress (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analyze/{{jobId}}/stream",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analyze", "{{jobId}}", "stream"]
+            },
+            "description": "Open a Server-Sent Events stream for live progress updates"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Delete Job",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analyze/{{jobId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analyze", "{{jobId}}"]
+            },
+            "description": "Delete a contract analysis job and its uploaded file"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Health Check",
       "request": {
         "method": "GET",
@@ -654,6 +769,12 @@
       "key": "bookmarkId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "jobId",
+      "value": "",
+      "type": "string",
+      "description": "Auto-saved when you upload a contract for analysis"
     }
   ]
 }

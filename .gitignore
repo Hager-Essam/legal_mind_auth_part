@@ -32,6 +32,10 @@ build/
 uploads/*
 !uploads/.gitkeep
 
+# Temporary files
+temp/
+src/temp/
+
 # Test files
 test-*.js
 view-db.js
