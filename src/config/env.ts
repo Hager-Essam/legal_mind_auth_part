@@ -27,6 +27,13 @@ const config = {
   app: {
     clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
   },
+  r2: {
+    accountId: process.env.R2_ACCOUNT_ID || '',
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
+    bucketName: process.env.R2_BUCKET_NAME || 'legal-mind-contracts',
+    publicUrl: process.env.R2_PUBLIC_URL || '', // Optional: Custom domain for public access
+  },
 };
 
 export default config;

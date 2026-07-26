@@ -9,6 +9,7 @@ import authRoutes from './modules/auth/auth.routes';
 import blogRoutes from './modules/blog/blog.routes';
 import bookmarkRoutes from './modules/bookmark/bookmark.routes';
 import commentRoutes from './modules/comment/comment.routes';
+import contractAnalysisRoutes from './modules/contract-analysis/contract-analysis.routes';
 import { specs, swaggerUi } from './config/swagger';
 
 const app: Application = express();
@@ -40,6 +41,15 @@ if (process.env.NODE_ENV !== 'production') {
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  const normalizedUrl = req.originalUrl.replace(/\/+/g, '/');
+  if (normalizedUrl !== req.originalUrl) {
+    req.url = normalizedUrl;
+    req.originalUrl = normalizedUrl;
+  }
+  next();
+});
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
   customCss: '.swagger-ui .topbar { display: none }',
   customSiteTitle: 'LegalMind API Docs',
@@ -66,6 +76,7 @@ app.get('/health', (_req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/users', bookmarkRoutes);
+app.use('/api', contractAnalysisRoutes);
 app.use('/api', commentRoutes);
 
 app.use('*', (req: Request, res: Response) => {
