@@ -17,10 +17,8 @@
                 "exec": [
                   "if (pm.response.code === 201) {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('accessToken', jsonData.data.accessToken);",
                   "    pm.environment.set('userId', jsonData.data.user._id);",
-                  "    console.log('✅ User registered successfully');",
-                  "    console.log('Access Token saved to environment');",
+                  "    console.log('تم التسجيل بنجاح');",
                   "}"
                 ]
               }
@@ -28,22 +26,59 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "header": [],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"هاجر عصام حسن بكر\",\n  \"email\": \"hagergogo2372@gmail.com\",\n  \"password\": \"Test123456\",\n  \"officeName\": \"مكتب العدالة للمحاماة\",\n  \"barAssociationNumber\": \"12345\",\n  \"teamSize\": \"small\",\n  \"phone\": \"+201234567890\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "fullName",
+                  "value": "هاجر عصام حسن بكر",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "hagergogo2372@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "Test123456",
+                  "type": "text"
+                },
+                {
+                  "key": "officeName",
+                  "value": "مكتب العدالة للمحاماة",
+                  "type": "text"
+                },
+                {
+                  "key": "barAssociationNumber",
+                  "value": "12345",
+                  "type": "text"
+                },
+                {
+                  "key": "teamSize",
+                  "value": "small",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+201234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "lawyerIdDocument",
+                  "type": "file",
+                  "src": "",
+                  "description": "مستند هوية المحامي (PDF أو صورة)"
+                }
+              ]
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/register",
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "register"]
             },
-            "description": "Register a new user with all required fields"
+            "description": "تسجيل مستخدم جديد. يتطلب ملف مستند هوية المحامي."
           },
           "response": []
         },
@@ -57,8 +92,8 @@
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    pm.environment.set('accessToken', jsonData.data.accessToken);",
-                  "    console.log('✅ Login successful');",
-                  "    console.log('Access Token saved to environment');",
+                  "    console.log('تم تسجيل الدخول بنجاح');",
+                  "    console.log('تم حفظ التوكن');",
                   "}"
                 ]
               }
@@ -81,7 +116,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "login"]
             },
-            "description": "Login with email and password"
+            "description": "تسجيل الدخول بالبريد الإلكتروني وكلمة المرور"
           },
           "response": []
         },
@@ -93,7 +128,7 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "JWT token from login/register"
+                "description": "توكن JWT من تسجيل الدخول"
               }
             ],
             "url": {
@@ -101,12 +136,58 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "me"]
             },
-            "description": "Get current authenticated user profile"
+            "description": "جلب بيانات المستخدم الحالي"
           },
           "response": []
         },
         {
-          "name": "4. Forgot Password",
+          "name": "4. Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{verifyToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify-email"]
+            },
+            "description": "تفعيل البريد الإلكتروني باستخدام الرمز المرسل"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Resend Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"hagergogo2372@gmail.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/resend-verification",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "resend-verification"]
+            },
+            "description": "إعادة إرسال رمز تفعيل البريد الإلكتروني"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Forgot Password",
           "request": {
             "auth": {
               "type": "bearer",
@@ -134,12 +215,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "forgot-password"]
             },
-            "description": "Request password reset for the currently logged-in user. Requires authentication token. Reset link will be sent to the user's email."
+            "description": "طلب إعادة تعيين كلمة المرور. يُرسل رمز إعادة التعيين إلى البريد الإلكتروني."
           },
           "response": []
         },
         {
-          "name": "5. Reset Password",
+          "name": "7. Reset Password",
           "event": [
             {
               "listen": "test",
@@ -148,8 +229,7 @@
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    pm.environment.set('accessToken', jsonData.data.accessToken);",
-                  "    console.log('✅ Password reset successful');",
-                  "    console.log('New Access Token saved to environment');",
+                  "    console.log('تم إعادة تعيين كلمة المرور بنجاح');",
                   "}"
                 ]
               }
@@ -172,12 +252,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "reset-password"]
             },
-            "description": "Reset password using token from email. Update {{resetToken}} variable with token from your email!"
+            "description": "إعادة تعيين كلمة المرور باستخدام الرمز المرسل. حدّث متغير {{resetToken}} بالرمز من البريد الإلكتروني."
           },
           "response": []
         },
         {
-          "name": "6. Refresh Token",
+          "name": "8. Refresh Token",
           "event": [
             {
               "listen": "test",
@@ -186,8 +266,7 @@
                   "if (pm.response.code === 200) {",
                   "    var jsonData = pm.response.json();",
                   "    pm.environment.set('accessToken', jsonData.data.accessToken);",
-                  "    console.log('✅ Token refreshed');",
-                  "    console.log('New Access Token saved');",
+                  "    console.log('تم تحديث التوكن بنجاح');",
                   "}"
                 ]
               }
@@ -210,12 +289,12 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "refresh-token"]
             },
-            "description": "Get new access token using refresh token (usually from cookie)"
+            "description": "الحصول على توكن جديد باستخدام رمز التحديث"
           },
           "response": []
         },
         {
-          "name": "7. Logout",
+          "name": "9. Logout",
           "request": {
             "method": "POST",
             "header": [
@@ -233,23 +312,19 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "logout"]
             },
-            "description": "Logout from current device"
+            "description": "تسجيل الخروج من الجهاز الحالي"
           },
           "response": []
         },
         {
-          "name": "8. Logout All Devices",
+          "name": "10. Logout All Devices",
           "request": {
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "JWT token required"
+                "description": "مطلوب"
               }
             ],
             "url": {
@@ -257,7 +332,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "logout-all"]
             },
-            "description": "Logout from all devices (revoke all refresh tokens)"
+            "description": "تسجيل الخروج من جميع الأجهزة"
           },
           "response": []
         }
@@ -276,47 +351,75 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "blogs"],
               "query": [
-                {
-                  "key": "page",
-                  "value": "1",
-                  "description": "Page number"
-                },
-                {
-                  "key": "limit",
-                  "value": "10",
-                  "description": "Items per page"
-                },
-                {
-                  "key": "sort",
-                  "value": "newest",
-                  "description": "newest or popular"
-                },
-                {
-                  "key": "search",
-                  "value": "",
-                  "description": "Search in title/content",
-                  "disabled": true
-                },
-                {
-                  "key": "category",
-                  "value": "",
-                  "description": "Filter by category",
-                  "disabled": true
-                },
-                {
-                  "key": "tags",
-                  "value": "",
-                  "description": "Filter by tags (comma-separated)",
-                  "disabled": true
-                }
+                { "key": "page", "value": "1", "description": "رقم الصفحة" },
+                { "key": "limit", "value": "10", "description": "عدد العناصر في الصفحة" },
+                { "key": "sort", "value": "newest", "description": "newest أو popular" },
+                { "key": "search", "value": "", "description": "بحث في العنوان والمحتوى", "disabled": true },
+                { "key": "category", "value": "", "description": "فلتر حسب التصنيف", "disabled": true },
+                { "key": "tags", "value": "", "description": "فلتر حسب الوسوم (مفصولة بفاصلة)", "disabled": true }
               ]
             },
-            "description": "Get all published blogs with pagination, search, and filters. No authentication required."
+            "description": "جلب جميع المقالات المنشورة مع إمكانية البحث والفلترة. لا يتطلب تسجيل الدخول."
           },
           "response": []
         },
         {
-          "name": "2. Create Blog",
+          "name": "2. Get Popular Blogs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/popular?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "popular"],
+              "query": [
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "جلب المقالات الأكثر مشاهدة"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Trending Blogs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/trending?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "trending"],
+              "query": [
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "جلب المقالات الرائجة (الأحدث مع تفاعل عالي)"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get Blog by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "اختياري - يضيف سياق المستخدم",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/{{blogId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "{{blogId}}"]
+            },
+            "description": "جلب تفاصيل مقال واحد وزيادة عداد المشاهدات"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Create Blog",
           "event": [
             {
               "listen": "test",
@@ -325,8 +428,8 @@
                   "if (pm.response.code === 201) {",
                   "    var jsonData = pm.response.json();",
                   "    pm.environment.set('blogId', jsonData.data.blog._id);",
-                  "    console.log('✅ Blog created successfully');",
-                  "    console.log('Blog ID saved to environment');",
+                  "    console.log('تم إنشاء المقال بنجاح');",
+                  "    console.log('معرّف المقال: ' + jsonData.data.blog._id);",
                   "}"
                 ]
               }
@@ -342,52 +445,31 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "Required - Login first!"
+                "description": "مطلوب"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"فهم القانون الجنائي المصري\",\n  \"content\": \"القانون الجنائي في مصر يحكمه في المقام الأول قانون العقوبات لعام 1937. يحدد هذا القانون الجرائم المختلفة والعقوبات المرتبطة بها. من المهم للمحامين والمواطنين فهم الأساسيات...\",\n  \"excerpt\": \"دليل شامل للقانون الجنائي في مصر\",\n  \"category\": \"Criminal Law\",\n  \"tags\": [\"criminal\", \"egypt\", \"law\", \"penal code\"],\n  \"coverImage\": \"https://images.unsplash.com/photo-1589829545856-d10d557cf95f\",\n  \"status\": \"published\"\n}"
+              "raw": "{\n  \"title\": \"فهم القانون الجنائي المصري\",\n  \"content\": \"القانون الجنائي في مصر يحكمه في المقام الأول قانون العقوبات لعام 1937. يحدد هذا القانون الجرائم المختلفة والعقوبات المرتبطة بها. من المهم للمحامين والمواطنين فهم الأساسيات...\",\n  \"excerpt\": \"دليل شامل للقانون الجنائي في مصر\",\n  \"category\": \"Criminal Law\",\n  \"tags\": [\"criminal\", \"egypt\", \"law\"],\n  \"coverImage\": \"https://images.unsplash.com/photo-1589829545856-d10d557cf95f\",\n  \"status\": \"published\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/blogs",
               "host": ["{{baseUrl}}"],
               "path": ["api", "blogs"]
             },
-            "description": "Create a new blog post. Authentication required."
+            "description": "إنشاء مقال جديد. يتطلب تسجيل الدخول."
           },
           "response": []
         },
         {
-          "name": "3. Get Blog by ID",
+          "name": "6. Get My Blogs",
           "request": {
             "method": "GET",
             "header": [
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "Optional - adds user context",
-                "disabled": true
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/blogs/{{blogId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "{{blogId}}"]
-            },
-            "description": "Get single blog details and increment view count. Authentication optional."
-          },
-          "response": []
-        },
-        {
-          "name": "4. Get My Blogs",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{accessToken}}",
-                "description": "Required"
+                "description": "مطلوب"
               }
             ],
             "url": {
@@ -395,22 +477,16 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "blogs", "me", "my-blogs"],
               "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
               ]
             },
-            "description": "Get all blogs created by the logged-in user"
+            "description": "جلب جميع المقالات التي أنشأها المستخدم الحالي"
           },
           "response": []
         },
         {
-          "name": "5. Update Blog",
+          "name": "7. Update Blog",
           "request": {
             "method": "PUT",
             "header": [
@@ -421,7 +497,7 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "Required - Only author can update"
+                "description": "مطلوب - الكاتب فقط"
               }
             ],
             "body": {
@@ -433,19 +509,19 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "blogs", "{{blogId}}"]
             },
-            "description": "Update a blog. Only the author can update their own blogs."
+            "description": "تحديث مقال. الكاتب فقط يمكنه التحديث."
           },
           "response": []
         },
         {
-          "name": "6. Delete Blog",
+          "name": "8. Delete Blog",
           "request": {
             "method": "DELETE",
             "header": [
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "Required - Author or Admin"
+                "description": "مطلوب - الكاتب أو المشرف"
               }
             ],
             "url": {
@@ -453,47 +529,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "blogs", "{{blogId}}"]
             },
-            "description": "Delete a blog. Only author or admin can delete."
-          },
-          "response": []
-        },
-        {
-          "name": "7. Get Popular Blogs",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/blogs/popular?limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "popular"],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            },
-            "description": "Get popular blogs sorted by view count"
-          },
-          "response": []
-        },
-        {
-          "name": "8. Get Trending Blogs",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/blogs/trending?limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "trending"],
-              "query": [
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
-            },
-            "description": "Get trending blogs (recent posts with high engagement)"
+            "description": "حذف مقال. الكاتب أو المشرف فقط يمكنه الحذف."
           },
           "response": []
         },
@@ -505,7 +541,7 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "Required"
+                "description": "مطلوب"
               }
             ],
             "url": {
@@ -513,7 +549,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "blogs", "{{blogId}}", "bookmark"]
             },
-            "description": "Add or remove bookmark. First call adds, second call removes."
+            "description": "إضافة أو إزالة إشارة مرجعية. النداء الأول يضيف، والثاني يزيل."
           },
           "response": []
         },
@@ -529,7 +565,7 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "Required - Admin only"
+                "description": "مطلوب - المشرف فقط"
               }
             ],
             "body": {
@@ -541,7 +577,121 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "blogs", "{{blogId}}", "status"]
             },
-            "description": "Update blog status. Admin only. Valid: draft, pending, published, rejected"
+            "description": "تحديث حالة المقال. المشرف فقط. القيم الصالحة: draft, pending, published, rejected"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "1. Get Comments for Blog",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/{{blogId}}/comments?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "{{blogId}}", "comments"],
+              "query": [
+                { "key": "page", "value": "1", "description": "رقم الصفحة" },
+                { "key": "limit", "value": "20", "description": "عدد التعليقات في الصفحة" }
+              ]
+            },
+            "description": "جلب جميع التعليقات على مقال. لا يتطلب تسجيل الدخول."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Create Comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('commentId', jsonData.data.comment._id);",
+                  "    console.log('تم إنشاء التعليق بنجاح');",
+                  "    console.log('معرّف التعليق: ' + jsonData.data.comment._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"مقال ممتاز ومفيد جداً!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/{{blogId}}/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "{{blogId}}", "comments"]
+            },
+            "description": "إنشاء تعليق جديد على مقال. يتطلب تسجيل الدخول."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Update Comment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب - صاحب التعليق فقط"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"تعليق محدث\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments", "{{commentId}}"]
+            },
+            "description": "تحديث محتوى التعليق. صاحب التعليق فقط."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب - صاحب التعليق أو المشرف"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/comments/{{commentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments", "{{commentId}}"]
+            },
+            "description": "حذف تعليق. صاحب التعليق أو المشرف فقط."
           },
           "response": []
         }
@@ -558,7 +708,7 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "Required"
+                "description": "مطلوب"
               }
             ],
             "url": {
@@ -566,17 +716,11 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "users", "me", "bookmarks"],
               "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
               ]
             },
-            "description": "Get all bookmarked blogs for the logged-in user"
+            "description": "جلب جميع الإشارات المرجعية للمستخدم الحالي"
           },
           "response": []
         },
@@ -588,15 +732,15 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}",
-                "description": "Required"
+                "description": "مطلوب"
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/bookmarks/{{bookmarkId}}",
+              "raw": "{{baseUrl}}/api/users/{{bookmarkId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "bookmarks", "{{bookmarkId}}"]
+              "path": ["api", "users", "{{bookmarkId}}"]
             },
-            "description": "Remove a bookmark by ID"
+            "description": "إزالة إشارة مرجعية بالمعرّف"
           },
           "response": []
         }
@@ -606,17 +750,17 @@
       "name": "Contract Analysis",
       "item": [
         {
-          "name": "1. Upload Contract for Analysis",
+          "name": "1. Upload Contract",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "if (pm.response.code === 202) {",
+                  "if (pm.response.code === 201) {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('jobId', jsonData.jobId);",
-                  "    console.log('✅ Contract analysis started');",
-                  "    console.log('Job ID saved to environment');",
+                  "    pm.environment.set('jobId', jsonData.data.jobId);",
+                  "    console.log('تم رفع العقد بنجاح');",
+                  "    console.log('معرّف العقد: ' + jsonData.data.jobId);",
                   "}"
                 ]
               }
@@ -624,7 +768,13 @@
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -632,7 +782,7 @@
                   "key": "file",
                   "type": "file",
                   "src": "",
-                  "description": "Upload an employment contract PDF, DOCX, image, or text file"
+                  "description": "ملف العقد (PDF, DOCX, صورة، أو نص)"
                 }
               ]
             },
@@ -641,77 +791,159 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "analyze"]
             },
-            "description": "Upload a contract file to start the analyzer job"
+            "description": "رفع ملف عقد العمل للتحليل. يُرجع معرّف العقد (jobId) لاستخدامه في بدء التحليل."
           },
           "response": []
         },
         {
-          "name": "2. Get Job Status",
+          "name": "2. Start Analysis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    console.log('تم بدء التحليل بنجاح');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analyze/{{jobId}}/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analyze", "{{jobId}}", "start"]
+            },
+            "description": "بدء تحليل العقد الذي تم رفعه مسبقاً. يجب أن تكون حالة العقد queued."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Job Status",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "analyze", "{{jobId}}"]
             },
-            "description": "Retrieve the current status and results for a contract analysis job"
+            "description": "جلب الحالة الحالية للعقد ونتائجه إن وُجدت."
           },
           "response": []
         },
         {
-          "name": "3. Get All Jobs",
+          "name": "4. Get All My Jobs",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/api/jobs",
+              "raw": "{{baseUrl}}/api/analyze",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "jobs"]
+              "path": ["api", "analyze"]
             },
-            "description": "List all contract analysis jobs"
+            "description": "جلب جميع العقود المرتبطة بالمستخدم الحالي."
           },
           "response": []
         },
         {
-          "name": "4. Get Job Progress Logs",
+          "name": "5. Get Job Progress Logs",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}/progress",
               "host": ["{{baseUrl}}"],
               "path": ["api", "analyze", "{{jobId}}", "progress"]
             },
-            "description": "Get the progress log entries for a job"
+            "description": "جلب سجلات التقدم للعقد."
           },
           "response": []
         },
         {
-          "name": "5. Stream Job Progress (SSE)",
+          "name": "6. Stream Job Progress (SSE)",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}/stream",
               "host": ["{{baseUrl}}"],
               "path": ["api", "analyze", "{{jobId}}", "stream"]
             },
-            "description": "Open a Server-Sent Events stream for live progress updates"
+            "description": "فتح اتصال Server-Sent Events لمتابعة تقدم التحليل لحظياً."
           },
           "response": []
         },
         {
-          "name": "6. Delete Job",
+          "name": "7. Download Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analyze/{{jobId}}/report/download",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analyze", "{{jobId}}", "report", "download"]
+            },
+            "description": "تحميل تقرير التحليل كملف Markdown. يجب أن يكون التحليل مكتملاً."
+          },
+          "response": []
+        },
+        {
+          "name": "8. Delete Job",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "analyze", "{{jobId}}"]
             },
-            "description": "Delete a contract analysis job and its uploaded file"
+            "description": "حذف العقد وجميع البيانات المرتبطة به."
           },
           "response": []
         }
@@ -727,7 +959,7 @@
           "host": ["{{baseUrl}}"],
           "path": ["health"]
         },
-        "description": "Check if server is running"
+        "description": "التحقق من حالة الخادم"
       },
       "response": []
     }
@@ -752,7 +984,13 @@
       "key": "resetToken",
       "value": "",
       "type": "string",
-      "description": "Get this from the email after requesting forgot password"
+      "description": "الحصول على هذا الرمز من البريد الإلكتروني بعد طلب إعادة التعيين"
+    },
+    {
+      "key": "verifyToken",
+      "value": "",
+      "type": "string",
+      "description": "الحصول على هذا الرمز من البريد الإلكتروني لتفعيل الحساب"
     },
     {
       "key": "userId",
@@ -763,7 +1001,13 @@
       "key": "blogId",
       "value": "",
       "type": "string",
-      "description": "Auto-saved when you create a blog"
+      "description": "يُحفظ تلقائياً عند إنشاء مقال"
+    },
+    {
+      "key": "commentId",
+      "value": "",
+      "type": "string",
+      "description": "يُحفظ تلقائياً عند إنشاء تعليق"
     },
     {
       "key": "bookmarkId",
@@ -774,7 +1018,7 @@
       "key": "jobId",
       "value": "",
       "type": "string",
-      "description": "Auto-saved when you upload a contract for analysis"
+      "description": "يُحفظ تلقائياً عند رفع عقد للتحليل"
     }
   ]
 }

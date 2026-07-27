@@ -10,7 +10,7 @@ export interface IProgressLog {
 export interface IJob extends Document {
   id: string;
   status: 'queued' | 'processing' | 'completed' | 'failed';
-  userId?: string; // Optional: link to user who uploaded
+  userId: string; // Link to user who uploaded
   originalFileName: string;
   fileSize: number;
   fileType: string;
@@ -64,6 +64,7 @@ const JobSchema = new Schema<IJob>(
     },
     userId: {
       type: String,
+      required: true,
       index: true,
     },
     originalFileName: {

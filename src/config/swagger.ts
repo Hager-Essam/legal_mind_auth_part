@@ -172,6 +172,10 @@ const options: swaggerJsdoc.Options = {
         name: 'Bookmarks',
         description: 'Blog bookmarks management',
       },
+      {
+        name: 'Contract Analysis',
+        description: 'Contract analysis endpoints - upload, analyze, and download reports for Egyptian employment contracts',
+      },
     ],
   },
   apis: [
@@ -179,6 +183,7 @@ const options: swaggerJsdoc.Options = {
     path.join(__dirname, '../modules/blog/blog.routes.{js,ts}'),
     path.join(__dirname, '../modules/comment/comment.routes.{js,ts}'),
     path.join(__dirname, '../modules/bookmark/bookmark.routes.{js,ts}'),
+    path.join(__dirname, '../modules/contract-analysis/contract-analysis.routes.{js,ts}'),
   ],
 };
 

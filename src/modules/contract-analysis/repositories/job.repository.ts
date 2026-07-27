@@ -18,6 +18,13 @@ export class JobRepository {
   }
 
   /**
+   * Find job by ID and userId (ownership check)
+   */
+  async findByIdAndUserId(jobId: string, userId: string): Promise<IJob | null> {
+    return await Job.findOne({ id: jobId, userId }).exec();
+  }
+
+  /**
    * Find job by MongoDB _id
    */
   async findByMongoId(mongoId: string): Promise<IJob | null> {
