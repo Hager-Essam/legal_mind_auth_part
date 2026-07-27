@@ -1,19 +1,22 @@
 import { Router } from 'express';
 import { upload } from '../../middlewares/contract-analysis-upload.middleware';
+import { authenticate } from '../auth/auth.middleware';
 import * as analyzeController from './contract-analysis.controller';
 
 const router = Router();
 
 router.get('/health', analyzeController.healthCheck);
-router.post('/analyze', upload.single('file'), analyzeController.uploadContract);
-router.get('/analyze', analyzeController.getJobStatus);
-router.get('/analyze/', analyzeController.getJobStatus);
-router.get('/analyze/progress', analyzeController.getJobProgress);
-router.get('/analyze/stream', analyzeController.streamJobProgress);
-router.get('/analyze/:jobId', analyzeController.getJobStatus);
-router.get('/analyze/:jobId/progress', analyzeController.getJobProgress);
-router.get('/analyze/:jobId/stream', analyzeController.streamJobProgress);
-router.get('/jobs', analyzeController.getAllJobs);
-router.delete('/analyze/:jobId', analyzeController.deleteJob);
+
+router.post('/analyze', authenticate, upload.single('file'), analyzeController.uploadContract);
+router.post('/analyze/:jobId/start', authenticate, analyzeController.startAnalysis);
+router.get('/analyze', authenticate, analyzeController.getAllJobs);
+router.get('/analyze/progress', authenticate, analyzeController.getJobProgress);
+router.get('/analyze/stream', authenticate, analyzeController.streamJobProgress);
+router.get('/analyze/:jobId', authenticate, analyzeController.getJobStatus);
+router.get('/analyze/:jobId/progress', authenticate, analyzeController.getJobProgress);
+router.get('/analyze/:jobId/stream', authenticate, analyzeController.streamJobProgress);
+router.get('/analyze/:jobId/report/download', authenticate, analyzeController.downloadReport);
+router.get('/jobs', authenticate, analyzeController.getAllJobs);
+router.delete('/analyze/:jobId', authenticate, analyzeController.deleteJob);
 
 export default router;

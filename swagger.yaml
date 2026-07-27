@@ -114,43 +114,6 @@ components:
           example: Operation successful
         data:
           type: object
-    Comment:
-      type: object
-      properties:
-        _id:
-          type: string
-          description: Comment ID
-        content:
-          type: string
-          description: Comment content
-        author:
-          type: object
-          properties:
-            _id:
-              type: string
-            fullName:
-              type: string
-            avatar:
-              type: string
-        blog:
-          type: string
-          description: Blog ID
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    CommentInput:
-      type: object
-      required:
-        - content
-      properties:
-        content:
-          type: string
-          minLength: 1
-          maxLength: 1000
-          description: Comment content
 tags:
   - name: Authentication
     description: User authentication and authorization endpoints
@@ -160,6 +123,10 @@ tags:
     description: Blog comments management
   - name: Bookmarks
     description: Blog bookmarks management
+  - name: Contract Analysis
+    description: >-
+      Contract analysis endpoints - upload, analyze, and download reports for
+      Egyptian employment contracts
 paths:
   /api/auth/register:
     post:
@@ -169,7 +136,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               required:
@@ -178,97 +145,26 @@ paths:
                 - password
                 - officeName
                 - teamSize
+                - lawyerIdDocument
               properties:
                 fullName:
                   type: string
-                  minLength: 2
-                  maxLength: 100
-                  example: هاجر عصام حسن بكر
-                  description: Full name of the user (Step 1)
                 email:
                   type: string
-                  format: email
-                  example: hajar.essam@example.com
-                  description: Work email address (Step 1)
                 password:
                   type: string
-                  minLength: 8
-                  example: Password123
-                  description: Must contain uppercase, lowercase, and number (Step 1)
                 officeName:
                   type: string
-                  maxLength: 200
-                  example: مكتب العدالة للمحاماة
-                  description: Office or law firm name (Step 2)
-                barAssociationNumber:
-                  type: string
-                  example: '12345'
-                  description: Bar association registration number (Optional - Step 2)
                 teamSize:
                   type: string
-                  enum:
-                    - solo
-                    - small
-                    - medium
-                    - large
-                  example: small
-                  description: |
-                    Team size (Step 2):
-                    - solo: Individual lawyer (فردي)
-                    - small: Specialized partners (2-10) (شركاء متخصصون)
-                    - medium: Medium team (11-50) (فريق متوسط)
-                    - large: Large team (50+) (فريق كبير)
-                phone:
+                barAssociationNumber:
                   type: string
-                  example: 201234567890
-                  description: Phone number (Optional)
-                role:
+                lawyerIdDocument:
                   type: string
-                  enum:
-                    - user
-                    - lawyer
-                  default: lawyer
-                  example: lawyer
-                  description: User role (Optional, defaults to lawyer)
+                  format: binary
       responses:
         '201':
           description: User registered successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: User registered successfully
-                  data:
-                    type: object
-                    properties:
-                      user:
-                        $ref: '#/components/schemas/User'
-                      accessToken:
-                        type: string
-                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-                example: refreshToken=abc123; HttpOnly; Secure; SameSite=Strict
-        '400':
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '409':
-          description: Email already exists
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /api/auth/login:
     post:
       summary: Login user
@@ -286,159 +182,40 @@ paths:
               properties:
                 email:
                   type: string
-                  format: email
-                  example: john.doe@example.com
                 password:
                   type: string
-                  example: Password123
       responses:
         '200':
           description: Login successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Login successful
-                  data:
-                    type: object
-                    properties:
-                      user:
-                        $ref: '#/components/schemas/User'
-                      accessToken:
-                        type: string
-                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-                example: refreshToken=abc123; HttpOnly; Secure; SameSite=Strict
-        '401':
-          description: Invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '403':
-          description: Account is deactivated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /api/auth/refresh-token:
     post:
       summary: Refresh access token
       tags:
         - Authentication
-      security:
-        - cookieAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                refreshToken:
-                  type: string
-                  description: Optional if provided in cookie
-                  example: abc123def456...
       responses:
         '200':
           description: Token refreshed successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Token refreshed successfully
-                  data:
-                    type: object
-                    properties:
-                      user:
-                        $ref: '#/components/schemas/User'
-                      accessToken:
-                        type: string
-                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        '401':
-          description: Invalid or expired refresh token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /api/auth/logout:
     post:
       summary: Logout user
       tags:
         - Authentication
-      security:
-        - cookieAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                refreshToken:
-                  type: string
-                  description: Optional if provided in cookie
-                  example: abc123def456...
       responses:
         '200':
           description: Logout successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
   /api/auth/forgot-password:
     post:
-      summary: Request password reset for logged-in user
-      description: >-
-        Sends a password reset token to the authenticated user's email address.
-        User must be logged in.
+      summary: Request password reset
       tags:
         - Authentication
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Password reset email sent successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Password reset link has been sent to your email.
-        '401':
-          description: Unauthorized - User not logged in
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Email sending error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: Password reset email sent
   /api/auth/reset-password:
     post:
       summary: Reset password with token
-      description: Resets the user password using the token received via email
       tags:
         - Authentication
       requestBody:
@@ -453,48 +230,11 @@ paths:
               properties:
                 token:
                   type: string
-                  example: a1b2c3d4e5f6...
-                  description: The reset token received via email
                 password:
                   type: string
-                  minLength: 8
-                  example: NewPassword123
-                  description: >-
-                    Must contain at least one uppercase, one lowercase, and one
-                    number
       responses:
         '200':
           description: Password reset successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Password has been reset successfully
-                  data:
-                    type: object
-                    properties:
-                      user:
-                        $ref: '#/components/schemas/User'
-                      accessToken:
-                        type: string
-                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
-                example: refreshToken=abc123; HttpOnly; Secure; SameSite=Strict
-        '400':
-          description: Invalid or expired token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /api/auth/logout-all:
     post:
       summary: Logout from all devices
@@ -505,16 +245,6 @@ paths:
       responses:
         '200':
           description: Logged out from all devices
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /api/auth/me:
     get:
       summary: Get current user profile
@@ -525,383 +255,17 @@ paths:
       responses:
         '200':
           description: User retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: User retrieved successfully
-                  data:
-                    type: object
-                    properties:
-                      user:
-                        $ref: '#/components/schemas/User'
-        '401':
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
   /api/blogs:
     get:
       summary: Get all published blogs
-      description: Retrieve all published blogs with pagination, search, and filtering
       tags:
         - Blogs
-      parameters:
-        - in: query
-          name: page
-          schema:
-            type: integer
-            default: 1
-          description: Page number
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            default: 10
-          description: Number of items per page
-        - in: query
-          name: search
-          schema:
-            type: string
-          description: Search in title and content
-        - in: query
-          name: category
-          schema:
-            type: string
-            enum:
-              - Criminal Law
-              - Civil Law
-              - Corporate Law
-              - Family Law
-              - Labor Law
-              - Tax Law
-              - Other
-          description: Filter by category
-        - in: query
-          name: tags
-          schema:
-            type: string
-          description: Filter by tags (comma-separated)
-        - in: query
-          name: sort
-          schema:
-            type: string
-            enum:
-              - newest
-              - popular
-            default: newest
-          description: Sort order
       responses:
         '200':
-          description: List of blogs retrieved successfully
-    post:
-      summary: Create new blog
-      description: Create a new blog post (authentication required)
-      tags:
-        - Blogs
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - title
-                - content
-                - category
-              properties:
-                title:
-                  type: string
-                  minLength: 5
-                  maxLength: 200
-                  example: Understanding Egyptian Criminal Law
-                content:
-                  type: string
-                  minLength: 20
-                  example: Criminal law in Egypt is primarily governed by...
-                excerpt:
-                  type: string
-                  maxLength: 500
-                  example: A comprehensive guide to criminal law
-                category:
-                  type: string
-                  enum:
-                    - Criminal Law
-                    - Civil Law
-                    - Corporate Law
-                    - Family Law
-                    - Labor Law
-                    - Tax Law
-                    - Other
-                  example: Criminal Law
-                tags:
-                  type: array
-                  items:
-                    type: string
-                  maxItems: 10
-                  example:
-                    - criminal
-                    - egypt
-                    - law
-                coverImage:
-                  type: string
-                  format: uri
-                  example: https://example.com/image.jpg
-                status:
-                  type: string
-                  enum:
-                    - draft
-                    - pending
-                    - published
-                  default: draft
-      responses:
-        '201':
-          description: Blog created successfully
-        '401':
-          description: Unauthorized
-        '422':
-          description: Validation error
-  /api/blogs/popular:
-    get:
-      summary: Get popular blogs
-      description: Get most viewed blogs
-      tags:
-        - Blogs
-      parameters:
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            default: 10
-          description: Number of blogs to return
-      responses:
-        '200':
-          description: Popular blogs retrieved successfully
-  /api/blogs/trending:
-    get:
-      summary: Get trending blogs
-      description: Get trending blogs from last 7 days
-      tags:
-        - Blogs
-      parameters:
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            default: 10
-          description: Number of blogs to return
-      responses:
-        '200':
-          description: Trending blogs retrieved successfully
-  /api/blogs/{id}:
-    get:
-      summary: Get blog by ID
-      description: Get single blog details and increment view count
-      tags:
-        - Blogs
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: Blog ID
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Blog retrieved successfully
-        '404':
-          description: Blog not found
-    put:
-      summary: Update blog
-      description: Update blog (author only)
-      tags:
-        - Blogs
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                content:
-                  type: string
-                excerpt:
-                  type: string
-                category:
-                  type: string
-                tags:
-                  type: array
-                  items:
-                    type: string
-                coverImage:
-                  type: string
-                status:
-                  type: string
-      responses:
-        '200':
-          description: Blog updated successfully
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden - not the author
-        '404':
-          description: Blog not found
-    delete:
-      summary: Delete blog
-      description: Delete blog (author or admin only)
-      tags:
-        - Blogs
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Blog deleted successfully
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden
-        '404':
-          description: Blog not found
-  /api/blogs/me/my-blogs:
-    get:
-      summary: Get my blogs
-      description: Get all blogs created by authenticated user
-      tags:
-        - Blogs
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: query
-          name: page
-          schema:
-            type: integer
-            default: 1
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            default: 10
-      responses:
-        '200':
-          description: User's blogs retrieved successfully
-        '401':
-          description: Unauthorized
-  /api/blogs/{id}/bookmark:
-    post:
-      summary: Toggle bookmark
-      description: Add or remove a bookmark for a blog (toggle behavior)
-      tags:
-        - Bookmarks
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: Blog ID
-      responses:
-        '200':
-          description: Bookmark toggled successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Blog bookmarked successfully
-                  data:
-                    type: object
-                    properties:
-                      bookmarked:
-                        type: boolean
-                        description: True if bookmarked, false if removed
-                      action:
-                        type: string
-                        enum:
-                          - added
-                          - removed
-        '401':
-          description: Unauthorized
-        '404':
-          description: Blog not found
-  /api/blogs/{id}/status:
-    patch:
-      summary: Update blog status (Admin only)
-      description: Update blog status (draft, pending, published, rejected)
-      tags:
-        - Blogs
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - status
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - draft
-                    - pending
-                    - published
-                    - rejected
-                rejectionReason:
-                  type: string
-      responses:
-        '200':
-          description: Blog status updated successfully
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden - admin only
-        '404':
-          description: Blog not found
+          description: List of blogs
   /api/blogs/{blogId}/comments:
     post:
       summary: Create a comment on a blog
-      description: Create a new comment on a published blog (requires authentication)
       tags:
         - Comments
       security:
@@ -912,41 +276,22 @@ paths:
           required: true
           schema:
             type: string
-          description: Blog ID
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CommentInput'
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
       responses:
         '201':
           description: Comment created successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Comment created successfully
-                  data:
-                    type: object
-                    properties:
-                      comment:
-                        $ref: '#/components/schemas/Comment'
-        '400':
-          description: Bad request - Invalid input or blog not published
-        '401':
-          description: Unauthorized - Authentication required
-        '404':
-          description: Blog not found
     get:
       summary: Get all comments for a blog
-      description: Retrieve all comments for a specific blog (public access)
       tags:
         - Comments
       parameters:
@@ -955,57 +300,22 @@ paths:
           required: true
           schema:
             type: string
-          description: Blog ID
         - in: query
           name: page
           schema:
             type: integer
             default: 1
-          description: Page number
         - in: query
           name: limit
           schema:
             type: integer
             default: 20
-          description: Number of comments per page
       responses:
         '200':
           description: Comments retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Comments retrieved successfully
-                  data:
-                    type: object
-                    properties:
-                      comments:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Comment'
-                      pagination:
-                        type: object
-                        properties:
-                          page:
-                            type: integer
-                          limit:
-                            type: integer
-                          total:
-                            type: integer
-                          pages:
-                            type: integer
-        '404':
-          description: Blog not found
   /api/comments/{id}:
     put:
       summary: Update your own comment
-      description: Update the content of your own comment (requires authentication)
       tags:
         - Comments
       security:
@@ -1016,45 +326,20 @@ paths:
           required: true
           schema:
             type: string
-          description: Comment ID
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CommentInput'
+              type: object
+              properties:
+                content:
+                  type: string
       responses:
         '200':
           description: Comment updated successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Comment updated successfully
-                  data:
-                    type: object
-                    properties:
-                      comment:
-                        $ref: '#/components/schemas/Comment'
-        '400':
-          description: Bad request - Invalid input
-        '401':
-          description: Unauthorized - Authentication required
-        '403':
-          description: Forbidden - Not the comment owner
-        '404':
-          description: Comment not found
     delete:
       summary: Delete your own comment
-      description: >-
-        Delete your own comment (requires authentication, admins can delete any
-        comment)
       tags:
         - Comments
       security:
@@ -1065,31 +350,12 @@ paths:
           required: true
           schema:
             type: string
-          description: Comment ID
       responses:
         '200':
           description: Comment deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Comment deleted successfully
-        '401':
-          description: Unauthorized - Authentication required
-        '403':
-          description: Forbidden - Not the comment owner
-        '404':
-          description: Comment not found
   /api/users/me/bookmarks:
     get:
       summary: Get my bookmarks
-      description: Get all bookmarked blogs for authenticated user with pagination
       tags:
         - Bookmarks
       security:
@@ -1100,74 +366,17 @@ paths:
           schema:
             type: integer
             default: 1
-          description: Page number
         - in: query
           name: limit
           schema:
             type: integer
             default: 10
-          description: Items per page
       responses:
         '200':
           description: Bookmarks retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Bookmarks retrieved successfully
-                  data:
-                    type: object
-                    properties:
-                      bookmarks:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            _id:
-                              type: string
-                            user:
-                              type: string
-                            blog:
-                              type: object
-                              properties:
-                                _id:
-                                  type: string
-                                title:
-                                  type: string
-                                excerpt:
-                                  type: string
-                                category:
-                                  type: string
-                                views:
-                                  type: integer
-                                author:
-                                  type: object
-                            createdAt:
-                              type: string
-                              format: date-time
-                      pagination:
-                        type: object
-                        properties:
-                          page:
-                            type: integer
-                          limit:
-                            type: integer
-                          total:
-                            type: integer
-                          pages:
-                            type: integer
-        '401':
-          description: Unauthorized
   /api/bookmarks/{id}:
     delete:
       summary: Remove bookmark
-      description: Remove a specific bookmark
       tags:
         - Bookmarks
       security:
@@ -1178,11 +387,245 @@ paths:
           required: true
           schema:
             type: string
-          description: Bookmark ID
       responses:
         '200':
           description: Bookmark removed successfully
+  /api/analyze:
+    post:
+      summary: رفع عقد للتحليل
+      description: رفع ملف عقد عمل مصري للتحليل. يجب تسجيل الدخول أولاً.
+      tags:
+        - Contract Analysis
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: ملف العقد (PDF, DOCX, صورة، أو نص)
+      responses:
+        '201':
+          description: تم رفع العقد بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: تم رفع العقد بنجاح! يمكنك الآن بدء التحليل عند الجاهزية.
+                  data:
+                    type: object
+                    properties:
+                      jobId:
+                        type: string
+                      status:
+                        type: string
+                        example: queued
+                      fileName:
+                        type: string
+                      fileSize:
+                        type: integer
+                      fileType:
+                        type: string
+                      createdAt:
+                        type: string
+                        format: date-time
+        '400':
+          description: لم يتم رفع ملف
         '401':
-          description: Unauthorized
+          description: غير مصرح - يجب تسجيل الدخول
+    get:
+      summary: جلب جميع العقود
+      description: جلب جميع العقود المرتبطة بالمستخدم الحالي.
+      tags:
+        - Contract Analysis
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: تم جلب العقود بنجاح
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/analyze/{jobId}/start:
+    post:
+      summary: بدء تحليل العقد
+      description: بدء تحليل عقد تم رفعه مسبقاً. يجب أن تكون حالة العقد queued.
+      tags:
+        - Contract Analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف العقد
+      responses:
+        '202':
+          description: تم بدء التحليل بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: تم بدء تحليل العقد بنجاح! يمكنك متابعة التقدم عبر معرّف العقد.
+                  data:
+                    type: object
+                    properties:
+                      jobId:
+                        type: string
+                      status:
+                        type: string
+                        example: processing
         '404':
-          description: Bookmark not found
+          description: لم يتم العثور على العقد
+        '409':
+          description: العقد قيد تحليل بالفعل أو تم تحليله مسبقاً
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/analyze/{jobId}:
+    get:
+      summary: جلب حالة العقد ونتائجه
+      description: جلب الحالة الحالية للعقد ونتائجه إن وُجدت.
+      tags:
+        - Contract Analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف العقد
+      responses:
+        '200':
+          description: تم جلب البيانات بنجاح
+        '404':
+          description: لم يتم العثور على العقد
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+    delete:
+      summary: حذف العقد وبياناته
+      description: حذف العقد وكل البيانات المرتبطة به.
+      tags:
+        - Contract Analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف العقد
+      responses:
+        '200':
+          description: تم حذف العقد بنجاح
+        '404':
+          description: لم يتم العثور على العقد
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/analyze/{jobId}/progress:
+    get:
+      summary: جلب سجل تقدم التحليل
+      description: جلب جميع سجلات التقدم للعقد.
+      tags:
+        - Contract Analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف العقد
+      responses:
+        '200':
+          description: تم جلب سجل التقدم بنجاح
+        '404':
+          description: لم يتم العثور على العقد
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/analyze/{jobId}/stream:
+    get:
+      summary: متابعة التقدم عبر SSE
+      description: فتح اتصال Server-Sent Events لمتابعة تقدم التحليل لحظياً.
+      tags:
+        - Contract Analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف العقد
+      responses:
+        '200':
+          description: اتصال SSE مفتوح
+        '404':
+          description: لم يتم العثور على العقد
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/analyze/{jobId}/report/download:
+    get:
+      summary: تحميل التقرير
+      description: تحميل تقرير التحليل كملف Markdown.
+      tags:
+        - Contract Analysis
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف العقد
+      responses:
+        '200':
+          description: تم تحميل التقرير بنجاح
+          content:
+            text/markdown:
+              schema:
+                type: string
+        '400':
+          description: العقد لم يتم تحليله بعد
+        '404':
+          description: لم يتم العثور على العقد أو نتائج التحليل
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/jobs:
+    get:
+      summary: جلب جميع العقود (مسار بديل)
+      description: مسار بديل لجلب جميع العقود.
+      tags:
+        - Contract Analysis
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: تم جلب العقود بنجاح
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول

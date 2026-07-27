@@ -8,7 +8,8 @@ import { jobRepository } from '../contract-analysis/repositories/job.repository'
 import { resultsAnalysisRepository } from '../contract-analysis/repositories/results-analysis.repository';
 import { r2Storage } from '../../config/r2.config';
 import { STAGE_NAMES } from '../contract-analysis/contract-analysis.types';
-import { IJob } from '../contract-analysis/models/job.model';
+
+const getJobId = (req: Request): string => req.params.jobId as string;
 
 export const healthCheck = (_req: Request, res: Response): void => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -17,20 +18,23 @@ export const healthCheck = (_req: Request, res: Response): void => {
 export const uploadContract = async (req: Request & { file?: Express.Multer.File }, res: Response): Promise<void> => {
   try {
     if (!req.file) {
-      res.status(400).json({ error: "No file uploaded. Send a file with key 'file'." });
+      res.status(400).json({
+        success: false,
+        message: 'لم يتم رفع أي ملف. يُرجى إرسال ملف بمفتاح "file".',
+      });
       return;
     }
 
+    const userId = (req as any).user._id.toString();
     const jobId = uuidv4();
 
-    // Upload contract file to R2
     const contractKey = r2Storage.generateKey(jobId, req.file.originalname, 'contracts');
     const contractUrl = await r2Storage.uploadFile(req.file.path, contractKey, req.file.mimetype);
 
-    // Create job in MongoDB
     const job = await jobRepository.create({
       id: jobId,
       status: 'queued',
+      userId,
       originalFileName: req.file.originalname,
       fileSize: req.file.size,
       fileType: req.file.mimetype,
@@ -39,59 +43,109 @@ export const uploadContract = async (req: Request & { file?: Express.Multer.File
       progressLogs: [],
     });
 
-    // Delete temp file after uploading to R2
     if (fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
 
-    // Start processing asynchronously
+    res.status(201).json({
+      success: true,
+      message: 'تم رفع العقد بنجاح! يمكنك الآن بدء التحليل عند الجاهزية.',
+      data: {
+        jobId: job.id,
+        status: job.status,
+        fileName: job.originalFileName,
+        fileSize: job.fileSize,
+        fileType: job.fileType,
+        createdAt: job.createdAt,
+      },
+    });
+  } catch (error: any) {
+    console.error('خطأ في رفع العقد:', error);
+    res.status(500).json({
+      success: false,
+      message: 'فشل في رفع العقد. يُرجى المحاولة مرة أخرى.',
+      error: error.message,
+    });
+  }
+};
+
+export const startAnalysis = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const jobId = getJobId(req);
+    const userId = (req as any).user._id.toString();
+
+    const job = await jobRepository.findByIdAndUserId(jobId, userId);
+
+    if (!job) {
+      res.status(404).json({
+        success: false,
+        message: 'لم يتم العثور على العقد. يُرجى التأكد من معرّف العقد.',
+      });
+      return;
+    }
+
+    if (job.status !== 'queued') {
+      const statusMessages: Record<string, string> = {
+        processing: 'العقد قيد التحليل حالياً. يُرجى الانتظار حتى اكتمال التحليل.',
+        completed: 'تم تحليل هذا العقد بالفعل. يمكنك الاطلاع على النتائج.',
+        failed: 'فشل التحليل سابقاً. يُرجى رفع العقد مجدداً.',
+      };
+      res.status(409).json({
+        success: false,
+        message: statusMessages[job.status] || 'حالة العقد غير صالحة للبدء في التحليل.',
+      });
+      return;
+    }
+
     processJob(job).catch((err: unknown) => {
-      console.error(`Job ${job.id} failed:`, err);
+      console.error(`فشل تحليل العقد ${job.id}:`, err);
     });
 
     res.status(202).json({
-      jobId: job.id,
-      status: job.status,
-      message: 'Analysis started. Poll GET /api/contract-analysis/:jobId for results.',
+      success: true,
+      message: 'تم بدء تحليل العقد بنجاح! يمكنك متابعة التقدم عبر معرّف العقد.',
+      data: {
+        jobId: job.id,
+        status: 'processing',
+      },
     });
   } catch (error: any) {
-    console.error('Upload contract error:', error);
-    res.status(500).json({ error: 'Failed to upload contract', details: error.message });
+    console.error('خطأ في بدء التحليل:', error);
+    res.status(500).json({
+      success: false,
+      message: 'فشل في بدء التحليل. يُرجى المحاولة مرة أخرى.',
+      error: error.message,
+    });
   }
 };
 
 export const getJobStatus = async (req: Request, res: Response): Promise<void> => {
   try {
-    const jobId = req.params.jobId as string | undefined;
+    const jobId = getJobId(req);
+    const userId = (req as any).user._id.toString();
 
-    if (!jobId) {
-      res.status(400).json({
-        success: false,
-        message: 'Please provide a jobId. Example: /api/analyze/:jobId',
-      });
-      return;
-    }
-
-    const job = await jobRepository.findById(jobId);
+    const job = await jobRepository.findByIdAndUserId(jobId, userId);
 
     if (!job) {
-      res.status(404).json({ error: 'Job not found' });
+      res.status(404).json({
+        success: false,
+        message: 'لم يتم العثور على العقد. يُرجى التأكد من معرّف العقد.',
+      });
       return;
     }
 
     const response: Record<string, any> = {
       jobId: job.id,
       status: job.status,
-      originalFileName: job.originalFileName,
+      fileName: job.originalFileName,
       fileSize: job.fileSize,
       fileType: job.fileType,
       createdAt: job.createdAt,
     };
 
     if (job.status === 'completed' && job.analysisId) {
-      // Fetch analysis results
       const analysis = await resultsAnalysisRepository.findById(job.analysisId.toString());
-      
+
       if (analysis) {
         response.result = {
           overall: analysis.overall,
@@ -112,9 +166,9 @@ export const getJobStatus = async (req: Request, res: Response): Promise<void> =
       const lastEvent = job.progressLogs
         .filter((e) => e.step !== 'done' && e.step !== 'error')
         .pop();
-      
+
       if (lastEvent) {
-        response.currentStage = STAGE_NAMES[lastEvent.step] || 'جاري المعالجة';
+        response.currentStage = STAGE_NAMES[lastEvent.step] || 'جاري المعالجة...';
         response.currentStep = lastEvent.step;
         response.totalSteps = '7/7';
         const stepNum = parseInt(lastEvent.step.split('/')[0], 10);
@@ -127,21 +181,30 @@ export const getJobStatus = async (req: Request, res: Response): Promise<void> =
       response.completedAt = job.completedAt;
     }
 
-    res.json(response);
+    res.json({
+      success: true,
+      message: 'تم جلب بيانات العقد بنجاح.',
+      data: response,
+    });
   } catch (error: any) {
-    console.error('Get job status error:', error);
-    res.status(500).json({ error: 'Failed to get job status', details: error.message });
+    console.error('خطأ في جلب حالة العقد:', error);
+    res.status(500).json({
+      success: false,
+      message: 'فشل في جلب بيانات العقد. يُرجى المحاولة مرة أخرى.',
+      error: error.message,
+    });
   }
 };
 
-export const getAllJobs = async (_req: Request, res: Response): Promise<void> => {
+export const getAllJobs = async (req: Request, res: Response): Promise<void> => {
   try {
-    const jobs = await jobRepository.findAll({ limit: 100, sortBy: 'createdAt', sortOrder: 'desc' });
+    const userId = (req as any).user._id.toString();
+    const jobs = await jobRepository.findAll({ userId, limit: 100, sortBy: 'createdAt', sortOrder: 'desc' });
 
     const allJobs = jobs.map((job) => ({
       jobId: job.id,
       status: job.status,
-      originalFileName: job.originalFileName,
+      fileName: job.originalFileName,
       fileSize: job.fileSize,
       fileType: job.fileType,
       createdAt: job.createdAt,
@@ -150,29 +213,33 @@ export const getAllJobs = async (_req: Request, res: Response): Promise<void> =>
       reportUrl: job.reportFileUrl,
     }));
 
-    res.json(allJobs);
+    res.json({
+      success: true,
+      message: `تم جلب ${allJobs.length} عقد بنجاح.`,
+      data: allJobs,
+    });
   } catch (error: any) {
-    console.error('Get all jobs error:', error);
-    res.status(500).json({ error: 'Failed to get jobs', details: error.message });
+    console.error('خطأ في جلب العقود:', error);
+    res.status(500).json({
+      success: false,
+      message: 'فشل في جلب قائمة العقود. يُرجى المحاولة مرة أخرى.',
+      error: error.message,
+    });
   }
 };
 
 export const streamJobProgress = async (req: Request, res: Response): Promise<void> => {
   try {
-    const jobId = req.params.jobId as string | undefined;
+    const jobId = getJobId(req);
+    const userId = (req as any).user._id.toString();
 
-    if (!jobId) {
-      res.status(400).json({
-        success: false,
-        message: 'Please provide a jobId. Example: /api/analyze/:jobId/stream',
-      });
-      return;
-    }
-
-    const job = await jobRepository.findById(jobId);
+    const job = await jobRepository.findByIdAndUserId(jobId, userId);
 
     if (!job) {
-      res.status(404).json({ error: 'Job not found' });
+      res.status(404).json({
+        success: false,
+        message: 'لم يتم العثور على العقد. يُرجى التأكد من معرّف العقد.',
+      });
       return;
     }
 
@@ -183,138 +250,199 @@ export const streamJobProgress = async (req: Request, res: Response): Promise<vo
       'Access-Control-Allow-Origin': '*',
     });
 
-    // Send existing progress logs
     for (const event of job.progressLogs) {
       res.write(`data: ${JSON.stringify(event)}\n\n`);
     }
 
-    // If job is complete or failed, end the stream
     if (job.status === 'completed' || job.status === 'failed') {
       res.end();
       return;
     }
 
-    // For real-time updates, we need to poll the database
-    // Set up polling interval (every 2 seconds)
     const pollInterval = setInterval(async () => {
       try {
-        const updatedJob = await jobRepository.findById(jobId);
-        
+        const updatedJob = await jobRepository.findByIdAndUserId(jobId, userId);
+
         if (!updatedJob) {
           clearInterval(pollInterval);
           res.end();
           return;
         }
 
-        // Send only new logs (logs added since last poll)
         const newLogs = updatedJob.progressLogs.slice(job.progressLogs.length);
         for (const event of newLogs) {
           res.write(`data: ${JSON.stringify(event)}\n\n`);
         }
 
-        // Update the local job reference
         job.progressLogs = updatedJob.progressLogs;
 
-        // End stream if job is complete or failed
         if (updatedJob.status === 'completed' || updatedJob.status === 'failed') {
           clearInterval(pollInterval);
           res.end();
         }
       } catch (error) {
-        console.error('Polling error:', error);
+        console.error('خطأ في متابعة التقدم:', error);
         clearInterval(pollInterval);
         res.end();
       }
     }, 2000);
 
-    // Clean up on client disconnect
     req.on('close', () => {
       clearInterval(pollInterval);
       res.end();
     });
   } catch (error: any) {
-    console.error('Stream job progress error:', error);
-    res.status(500).json({ error: 'Failed to stream progress', details: error.message });
+    console.error('خطأ في متابعة تقدم العقد:', error);
+    res.status(500).json({
+      success: false,
+      message: 'فشل في متابعة تقدم العقد. يُرجى المحاولة مرة أخرى.',
+      error: error.message,
+    });
   }
 };
 
 export const getJobProgress = async (req: Request, res: Response): Promise<void> => {
   try {
-    const jobId = req.params.jobId as string | undefined;
+    const jobId = getJobId(req);
+    const userId = (req as any).user._id.toString();
 
-    if (!jobId) {
-      res.status(400).json({
+    const job = await jobRepository.findByIdAndUserId(jobId, userId);
+
+    if (!job) {
+      res.status(404).json({
         success: false,
-        message: 'Please provide a jobId. Example: /api/analyze/:jobId/progress',
+        message: 'لم يتم العثور على العقد. يُرجى التأكد من معرّف العقد.',
       });
       return;
     }
 
     const progressLogs = await jobRepository.getProgressLogs(jobId);
 
-    if (!progressLogs) {
-      res.status(404).json({ error: 'Job not found' });
-      return;
-    }
-
     res.json({
-      jobId: jobId,
-      logs: progressLogs,
-      totalLogs: progressLogs.length,
+      success: true,
+      message: `تم جلب سجل التقدم بنجاح (${progressLogs.length} سجل).`,
+      data: {
+        jobId,
+        logs: progressLogs,
+        totalLogs: progressLogs.length,
+      },
     });
   } catch (error: any) {
-    console.error('Get job progress error:', error);
-    res.status(500).json({ error: 'Failed to get progress', details: error.message });
+    console.error('خطأ في جلب سجل التقدم:', error);
+    res.status(500).json({
+      success: false,
+      message: 'فشل في جلب سجل التقدم. يُرجى المحاولة مرة أخرى.',
+      error: error.message,
+    });
   }
 };
 
 export const deleteJob = async (req: Request, res: Response): Promise<void> => {
   try {
-    const jobId = req.params.jobId as string | undefined;
+    const jobId = getJobId(req);
+    const userId = (req as any).user._id.toString();
 
-    if (!jobId) {
-      res.status(400).json({ error: 'Job ID is required' });
-      return;
-    }
-
-    const job = await jobRepository.findById(jobId);
+    const job = await jobRepository.findByIdAndUserId(jobId, userId);
 
     if (!job) {
-      res.status(404).json({ error: 'Job not found' });
+      res.status(404).json({
+        success: false,
+        message: 'لم يتم العثور على العقد. يُرجى التأكد من معرّف العقد.',
+      });
       return;
     }
 
-    // Delete contract file from R2
     if (job.contractFileUrl) {
       try {
         const contractKey = job.contractFileUrl.split('/').slice(-3).join('/');
         await r2Storage.deleteFile(contractKey);
       } catch (error) {
-        console.error('Failed to delete contract from R2:', error);
+        console.error('فشل في حذف العقد من التخزين السحابي:', error);
       }
     }
 
-    // Delete report file from R2
     if (job.reportFileUrl) {
       try {
         const reportKey = job.reportFileUrl.split('/').slice(-3).join('/');
         await r2Storage.deleteFile(reportKey);
       } catch (error) {
-        console.error('Failed to delete report from R2:', error);
+        console.error('فشل في حذف التقرير من التخزين السحابي:', error);
       }
     }
 
-    // Delete analysis from MongoDB
     if (job.analysisId) {
       await resultsAnalysisRepository.deleteById(job.analysisId.toString());
     }
 
-    // Delete job from MongoDB
     await jobRepository.delete(jobId);
 
-    res.json({ message: 'Job deleted successfully', jobId });
+    res.json({
+      success: true,
+      message: 'تم حذف العقد وجميع البيانات المرتبطة بنجاح.',
+      data: { jobId },
+    });
   } catch (error: any) {
-    console.error('Delete job error:', error);
-    res.status(500).json({ error: 'Failed to delete job', details: error.message });
+    console.error('خطأ في حذف العقد:', error);
+    res.status(500).json({
+      success: false,
+      message: 'فشل في حذف العقد. يُرجى المحاولة مرة أخرى.',
+      error: error.message,
+    });
+  }
+};
+
+export const downloadReport = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const jobId = getJobId(req);
+    const userId = (req as any).user._id.toString();
+
+    const job = await jobRepository.findByIdAndUserId(jobId, userId);
+
+    if (!job) {
+      res.status(404).json({
+        success: false,
+        message: 'لم يتم العثور على العقد. يُرجى التأكد من معرّف العقد.',
+      });
+      return;
+    }
+
+    if (job.status !== 'completed') {
+      res.status(400).json({
+        success: false,
+        message: 'العقد لم يتم تحليله بعد. يُرجى بدء التحليل أولاً.',
+      });
+      return;
+    }
+
+    if (!job.analysisId) {
+      res.status(404).json({
+        success: false,
+        message: 'لم يتم العثور على نتائج التحليل لهذا العقد.',
+      });
+      return;
+    }
+
+    const analysis = await resultsAnalysisRepository.findById(job.analysisId.toString());
+
+    if (!analysis) {
+      res.status(404).json({
+        success: false,
+        message: 'لم يتم العثور على بيانات التحليل. يُرجى إعادة التحليل.',
+      });
+      return;
+    }
+
+    const reportName = `report_${job.originalFileName.replace(/\.[^/.]+$/, '')}.md`;
+
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${reportName}"`);
+    res.status(200).send(analysis.reportMarkdown);
+  } catch (error: any) {
+    console.error('خطأ في تحميل التقرير:', error);
+    res.status(500).json({
+      success: false,
+      message: 'فشل في تحميل التقرير. يُرجى المحاولة مرة أخرى.',
+      error: error.message,
+    });
   }
 };
