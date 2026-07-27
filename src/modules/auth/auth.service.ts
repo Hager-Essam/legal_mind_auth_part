@@ -35,24 +35,28 @@ class AuthService {
     // Create user
     const user = await userRepository.create(userData);
 
-    // Generate tokens
-    const accessToken = this.generateAccessToken(user);
-    const refreshToken = this.generateRefreshToken();
+    // Generate email verification token and send verification email.
+    // The user is NOT logged in automatically — they must verify their
+    // email first (see login()).
+    const verificationToken = user.createEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
 
-    // Save refresh token
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
-
-    await refreshTokenRepository.create({
-      token: refreshToken,
-      user: user._id as any,
-      expiresAt,
-    });
+    try {
+      await emailService.sendVerificationEmail(
+        user.email,
+        verificationToken,
+        user.getFullName()
+      );
+    } catch (error) {
+      user.emailVerificationToken = undefined;
+      user.emailVerificationExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      throw new AppError('حدث خطأ أثناء إرسال بريد التفعيل. حاول مرة أخرى لاحقًا.', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    }
 
     return {
       user,
-      accessToken,
-      refreshToken,
+      message: 'تم التسجيل بنجاح. يرجى التحقق من بريدك الإلكتروني لتفعيل حسابك.',
     };
   }
 
@@ -65,13 +69,18 @@ class AuthService {
 
     // Check if user is active
     if (!user.isActive) {
-      throw new AppError('Account is deactivated', HTTP_STATUS.FORBIDDEN);
+      throw new AppError('تم إيقاف الحساب', HTTP_STATUS.FORBIDDEN);
     }
 
     // Verify password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       throw new AppError(ERROR_MESSAGES.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
+    }
+
+    // Block login until the user has verified their email
+    if (!user.isEmailVerified) {
+      throw new AppError(ERROR_MESSAGES.EMAIL_NOT_VERIFIED, HTTP_STATUS.FORBIDDEN);
     }
 
     // Update last login
@@ -165,8 +174,14 @@ class AuthService {
 
   async forgotPassword(email: string) {
     const user = await userRepository.findByEmailWithoutPassword(email);
+
+    // Always return the same generic message whether or not the email is
+    // registered, so this endpoint can't be used to find out which emails
+    // exist in the system.
+    const genericMessage = 'إذا كان البريد الإلكتروني مسجلاً لدينا، فسيتم إرسال رابط إعادة تعيين كلمة المرور إليه.';
+
     if (!user) {
-      throw new AppError('User not found', HTTP_STATUS.NOT_FOUND);
+      return { message: genericMessage };
     }
 
     const resetToken = user.createPasswordResetToken();
@@ -182,11 +197,11 @@ class AuthService {
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
-      throw new AppError('Error sending email. Please try again later.', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      throw new AppError('حدث خطأ أثناء إرسال البريد الإلكتروني. حاول مرة أخرى لاحقًا.', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
 
     return {
-      message: 'Password reset link has been sent to your email.',
+      message: genericMessage,
     };
   }
 
@@ -200,13 +215,13 @@ class AuthService {
     // Find user by token
     const user = await userRepository.findByResetToken(hashedToken);
     if (!user) {
-      throw new AppError('Password reset token is invalid or has expired', HTTP_STATUS.BAD_REQUEST);
+      throw new AppError('رمز إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية', HTTP_STATUS.BAD_REQUEST);
     }
 
     // Update password
     const updatedUser = await userRepository.updatePassword(user._id.toString(), newPassword);
     if (!updatedUser) {
-      throw new AppError('Failed to update password', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      throw new AppError('فشل تحديث كلمة المرور', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
 
     // Send confirmation email
@@ -235,11 +250,66 @@ class AuthService {
     });
 
     return {
-      message: 'Password has been reset successfully',
+      message: 'تمت إعادة تعيين كلمة المرور بنجاح',
       user: updatedUser,
       accessToken,
       refreshToken,
     };
+  }
+
+  async verifyEmail(token: string) {
+    // Hash the token to compare with the stored hashed token
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await userRepository.findByVerificationToken(hashedToken);
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.VERIFICATION_TOKEN_INVALID, HTTP_STATUS.BAD_REQUEST);
+    }
+
+    if (user.isEmailVerified) {
+      // Token was valid but the account was already verified (e.g. double click) —
+      // invalidate the leftover token and return success idempotently.
+      user.emailVerificationToken = undefined;
+      user.emailVerificationExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      return { message: 'تم تفعيل البريد الإلكتروني بالفعل' };
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return { message: 'تم تفعيل البريد الإلكتروني بنجاح. يمكنك الآن تسجيل الدخول.' };
+  }
+
+  async resendVerification(email: string) {
+    const user = await userRepository.findByEmailWithoutPassword(email);
+    if (!user) {
+      throw new AppError(ERROR_MESSAGES.USER_NOT_FOUND, HTTP_STATUS.NOT_FOUND);
+    }
+
+    if (user.isEmailVerified) {
+      throw new AppError(ERROR_MESSAGES.EMAIL_ALREADY_VERIFIED, HTTP_STATUS.BAD_REQUEST);
+    }
+
+    const verificationToken = user.createEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
+
+    try {
+      await emailService.sendVerificationEmail(
+        user.email,
+        verificationToken,
+        user.getFullName()
+      );
+    } catch (error) {
+      user.emailVerificationToken = undefined;
+      user.emailVerificationExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      throw new AppError('حدث خطأ أثناء إرسال بريد التفعيل. حاول مرة أخرى لاحقًا.', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    }
+
+    return { message: 'تم إعادة إرسال بريد التفعيل. يرجى التحقق من بريدك الوارد.' };
   }
 }
 

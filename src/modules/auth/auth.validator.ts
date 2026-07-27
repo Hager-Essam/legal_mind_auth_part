@@ -3,50 +3,50 @@ import Joi from 'joi';
 const registerSchema = Joi.object({
   // Step 1: Basic Information
   fullName: Joi.string().min(2).max(100).required().messages({
-    'string.empty': 'Full name is required',
-    'string.min': 'Full name must be at least 2 characters',
-    'string.max': 'Full name cannot exceed 100 characters',
-    'any.required': 'Full name is required',
+    'string.empty': 'الاسم الكامل مطلوب',
+    'string.min': 'يجب ألا يقل الاسم الكامل عن حرفين',
+    'string.max': 'يجب ألا يتجاوز الاسم الكامل 100 حرف',
+    'any.required': 'الاسم الكامل مطلوب',
   }),
   email: Joi.string().email().required().messages({
-    'string.empty': 'Email is required',
-    'string.email': 'Please provide a valid email',
-    'any.required': 'Email is required',
+    'string.empty': 'البريد الإلكتروني مطلوب',
+    'string.email': 'يرجى إدخال بريد إلكتروني صالح',
+    'any.required': 'البريد الإلكتروني مطلوب',
   }),
   password: Joi.string()
     .min(8)
     .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])'))
     .required()
     .messages({
-      'string.empty': 'Password is required',
-      'string.min': 'Password must be at least 8 characters',
+      'string.empty': 'كلمة المرور مطلوبة',
+      'string.min': 'يجب ألا تقل كلمة المرور عن 8 أحرف',
       'string.pattern.base':
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number',
-      'any.required': 'Password is required',
+        'يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم واحد على الأقل',
+      'any.required': 'كلمة المرور مطلوبة',
     }),
-  
+
   // Step 2: Professional Information
   officeName: Joi.string().max(200).required().messages({
-    'string.empty': 'Office or law firm name is required',
-    'string.max': 'Office name cannot exceed 200 characters',
-    'any.required': 'Office or law firm name is required',
+    'string.empty': 'اسم المكتب أو الشركة القانونية مطلوب',
+    'string.max': 'يجب ألا يتجاوز اسم المكتب 200 حرف',
+    'any.required': 'اسم المكتب أو الشركة القانونية مطلوب',
   }),
   barAssociationNumber: Joi.string().allow('', null).optional().messages({
-    'string.base': 'Bar association number must be a valid string',
+    'string.base': 'رقم نقابة المحامين يجب أن يكون نصًا صالحًا',
   }),
   teamSize: Joi.string()
     .valid('solo', 'small', 'medium', 'large')
     .required()
     .messages({
-      'string.empty': 'Team size is required',
-      'any.only': 'Team size must be one of: solo, small, medium, large',
-      'any.required': 'Team size is required',
+      'string.empty': 'حجم الفريق مطلوب',
+      'any.only': 'يجب أن يكون حجم الفريق أحد الخيارات التالية: فردي، صغير، متوسط، كبير',
+      'any.required': 'حجم الفريق مطلوب',
     }),
-  
+
   // Optional fields
   phone: Joi.string().optional(),
   role: Joi.string().valid('user', 'lawyer').optional(),
-  
+
   // Legacy support (will be ignored if fullName is provided)
   firstName: Joi.string().optional(),
   lastName: Joi.string().optional(),
@@ -54,41 +54,56 @@ const registerSchema = Joi.object({
 
 const loginSchema = Joi.object({
   email: Joi.string().email().required().messages({
-    'string.empty': 'Email is required',
-    'string.email': 'Please provide a valid email',
+    'string.empty': 'البريد الإلكتروني مطلوب',
+    'string.email': 'يرجى إدخال بريد إلكتروني صالح',
   }),
   password: Joi.string().required().messages({
-    'string.empty': 'Password is required',
+    'string.empty': 'كلمة المرور مطلوبة',
   }),
 });
 
 const refreshTokenSchema = Joi.object({
   refreshToken: Joi.string().required().messages({
-    'string.empty': 'Refresh token is required',
+    'string.empty': 'رمز التحديث مطلوب',
   }),
 });
 
 const forgotPasswordSchema = Joi.object({
   email: Joi.string().email().required().messages({
-    'string.empty': 'Email is required',
-    'string.email': 'Please provide a valid email',
+    'string.empty': 'البريد الإلكتروني مطلوب',
+    'string.email': 'يرجى إدخال بريد إلكتروني صالح',
   }),
 });
 
 const resetPasswordSchema = Joi.object({
   token: Joi.string().required().messages({
-    'string.empty': 'Reset token is required',
+    'string.empty': 'رمز إعادة التعيين مطلوب',
   }),
   password: Joi.string()
     .min(8)
     .pattern(new RegExp('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])'))
     .required()
     .messages({
-      'string.empty': 'Password is required',
-      'string.min': 'Password must be at least 8 characters',
+      'string.empty': 'كلمة المرور مطلوبة',
+      'string.min': 'يجب ألا تقل كلمة المرور عن 8 أحرف',
       'string.pattern.base':
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+        'يجب أن تحتوي كلمة المرور على حرف كبير وحرف صغير ورقم واحد على الأقل',
     }),
+});
+
+const verifyEmailSchema = Joi.object({
+  token: Joi.string().required().messages({
+    'string.empty': 'رمز التفعيل مطلوب',
+    'any.required': 'رمز التفعيل مطلوب',
+  }),
+});
+
+const resendVerificationSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.empty': 'البريد الإلكتروني مطلوب',
+    'string.email': 'يرجى إدخال بريد إلكتروني صالح',
+    'any.required': 'البريد الإلكتروني مطلوب',
+  }),
 });
 
 export {
@@ -97,4 +112,6 @@ export {
   refreshTokenSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
 };

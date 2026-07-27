@@ -40,18 +40,25 @@ class EmailService {
     }
   }
 
-  async sendPasswordResetEmail(to: string, resetToken: string, userName: string) {
-    const resetUrl = `${config.app.clientUrl}/reset-password?token=${resetToken}`;
-    
+  async sendVerificationEmail(to: string, verificationToken: string, userName: string) {
+    const verificationUrl = `${config.app.clientUrl}/verify-email?token=${verificationToken}`;
+
+    if (config.nodeEnv !== 'production') {
+      console.log(`🔗 [DEV] Email verification URL for ${to}: ${verificationUrl}`);
+    }
+
     const html = `
       <!DOCTYPE html>
-      <html>
+      <html dir="rtl" lang="ar">
         <head>
+          <meta charset="UTF-8" />
           <style>
             body {
-              font-family: Arial, sans-serif;
+              font-family: Tahoma, Arial, sans-serif;
               line-height: 1.6;
               color: #333;
+              direction: rtl;
+              text-align: right;
             }
             .container {
               max-width: 600px;
@@ -98,45 +105,142 @@ class EmailService {
               <h1>LegalMind</h1>
             </div>
             <div class="content">
-              <h2>Password Reset Request</h2>
-              <p>Hi ${userName},</p>
-              <p>We received a request to reset your password. Click the button below to create a new password:</p>
+              <h2>تفعيل عنوان بريدك الإلكتروني</h2>
+              <p>مرحبًا ${userName}،</p>
+              <p>شكرًا لتسجيلك في LegalMind! يرجى تأكيد عنوان بريدك الإلكتروني بالضغط على الزر أدناه:</p>
               <div style="text-align: center;">
-                <a href="${resetUrl}" class="button">Reset Password</a>
+                <a href="${verificationUrl}" class="button">تفعيل البريد الإلكتروني</a>
               </div>
-              <p>Or copy and paste this link into your browser:</p>
-              <p style="word-break: break-all; color: #3498db;">${resetUrl}</p>
+              <p>أو انسخ هذا الرابط والصقه في متصفحك:</p>
+              <p style="word-break: break-all; color: #3498db;">${verificationUrl}</p>
               <div class="warning">
-                <strong>⚠️ Security Notice:</strong>
+                <strong>⚠️ ملاحظة:</strong>
                 <ul>
-                  <li>This link will expire in 1 hour</li>
-                  <li>If you didn't request a password reset, please ignore this email</li>
-                  <li>Your password won't change unless you click the link above and create a new one</li>
+                  <li>ستنتهي صلاحية هذا الرابط خلال 24 ساعة</li>
+                  <li>لن تتمكن من تسجيل الدخول حتى يتم تفعيل بريدك الإلكتروني</li>
+                  <li>إذا لم تقم بإنشاء هذا الحساب، يمكنك تجاهل هذه الرسالة بأمان</li>
                 </ul>
               </div>
             </div>
             <div class="footer">
-              <p>&copy; 2026 LegalMind. All rights reserved.</p>
-              <p>This is an automated message, please do not reply to this email.</p>
+              <p>&copy; 2026 LegalMind. جميع الحقوق محفوظة.</p>
+              <p>هذه رسالة تلقائية، يرجى عدم الرد على هذا البريد الإلكتروني.</p>
             </div>
           </div>
         </body>
       </html>
     `;
 
-    return this.sendEmail(to, 'Password Reset Request - LegalMind', html);
+    return this.sendEmail(to, 'تفعيل بريدك الإلكتروني - LegalMind', html);
+  }
+
+  async sendPasswordResetEmail(to: string, resetToken: string, userName: string) {
+    if (config.nodeEnv !== 'production') {
+      console.log(`🔗 [DEV] Password reset URL for ${to}: ${config.app.clientUrl}/reset-password?token=${resetToken}`);
+    }
+
+    const resetUrl = `${config.app.clientUrl}/reset-password?token=${resetToken}`;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html dir="rtl" lang="ar">
+        <head>
+          <meta charset="UTF-8" />
+          <style>
+            body {
+              font-family: Tahoma, Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              direction: rtl;
+              text-align: right;
+            }
+            .container {
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background-color: #2c3e50;
+              color: white;
+              padding: 20px;
+              text-align: center;
+            }
+            .content {
+              padding: 20px;
+              background-color: #f9f9f9;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 24px;
+              background-color: #3498db;
+              color: white;
+              text-decoration: none;
+              border-radius: 5px;
+              margin: 20px 0;
+            }
+            .footer {
+              text-align: center;
+              padding: 20px;
+              font-size: 12px;
+              color: #777;
+            }
+            .warning {
+              background-color: #fff3cd;
+              border: 1px solid #ffc107;
+              padding: 10px;
+              border-radius: 5px;
+              margin: 15px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>LegalMind</h1>
+            </div>
+            <div class="content">
+              <h2>طلب إعادة تعيين كلمة المرور</h2>
+              <p>مرحبًا ${userName}،</p>
+              <p>تلقينا طلبًا لإعادة تعيين كلمة المرور الخاصة بك. اضغط على الزر أدناه لإنشاء كلمة مرور جديدة:</p>
+              <div style="text-align: center;">
+                <a href="${resetUrl}" class="button">إعادة تعيين كلمة المرور</a>
+              </div>
+              <p>أو انسخ هذا الرابط والصقه في متصفحك:</p>
+              <p style="word-break: break-all; color: #3498db;">${resetUrl}</p>
+              <div class="warning">
+                <strong>⚠️ تنبيه أمني:</strong>
+                <ul>
+                  <li>ستنتهي صلاحية هذا الرابط خلال ساعة واحدة</li>
+                  <li>إذا لم تطلب إعادة تعيين كلمة المرور، يرجى تجاهل هذا البريد الإلكتروني</li>
+                  <li>لن تتغير كلمة المرور الخاصة بك ما لم تضغط على الرابط أعلاه وتنشئ كلمة مرور جديدة</li>
+                </ul>
+              </div>
+            </div>
+            <div class="footer">
+              <p>&copy; 2026 LegalMind. جميع الحقوق محفوظة.</p>
+              <p>هذه رسالة تلقائية، يرجى عدم الرد على هذا البريد الإلكتروني.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    return this.sendEmail(to, 'طلب إعادة تعيين كلمة المرور - LegalMind', html);
   }
 
   async sendPasswordResetConfirmation(to: string, userName: string) {
     const html = `
       <!DOCTYPE html>
-      <html>
+      <html dir="rtl" lang="ar">
         <head>
+          <meta charset="UTF-8" />
           <style>
             body {
-              font-family: Arial, sans-serif;
+              font-family: Tahoma, Arial, sans-serif;
               line-height: 1.6;
               color: #333;
+              direction: rtl;
+              text-align: right;
             }
             .container {
               max-width: 600px;
@@ -175,36 +279,39 @@ class EmailService {
               <h1>LegalMind</h1>
             </div>
             <div class="content">
-              <h2>Password Successfully Reset</h2>
-              <p>Hi ${userName},</p>
+              <h2>تمت إعادة تعيين كلمة المرور بنجاح</h2>
+              <p>مرحبًا ${userName}،</p>
               <div class="success">
-                <h3>✓ Your password has been changed successfully!</h3>
+                <h3>✓ تم تغيير كلمة المرور بنجاح!</h3>
               </div>
-              <p>You can now log in to your account using your new password.</p>
-              <p>If you didn't make this change, please contact our support team immediately.</p>
+              <p>يمكنك الآن تسجيل الدخول إلى حسابك باستخدام كلمة المرور الجديدة.</p>
+              <p>إذا لم تقم بهذا التغيير، يرجى التواصل مع فريق الدعم فورًا.</p>
             </div>
             <div class="footer">
-              <p>&copy; 2026 LegalMind. All rights reserved.</p>
-              <p>This is an automated message, please do not reply to this email.</p>
+              <p>&copy; 2026 LegalMind. جميع الحقوق محفوظة.</p>
+              <p>هذه رسالة تلقائية، يرجى عدم الرد على هذا البريد الإلكتروني.</p>
             </div>
           </div>
         </body>
       </html>
     `;
 
-    return this.sendEmail(to, 'Password Changed - LegalMind', html);
+    return this.sendEmail(to, 'تم تغيير كلمة المرور - LegalMind', html);
   }
 
   async sendWelcomeEmail(to: string, userName: string) {
     const html = `
       <!DOCTYPE html>
-      <html>
+      <html dir="rtl" lang="ar">
         <head>
+          <meta charset="UTF-8" />
           <style>
             body {
-              font-family: Arial, sans-serif;
+              font-family: Tahoma, Arial, sans-serif;
               line-height: 1.6;
               color: #333;
+              direction: rtl;
+              text-align: right;
             }
             .container {
               max-width: 600px;
@@ -241,25 +348,25 @@ class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <h1>Welcome to LegalMind!</h1>
+              <h1>مرحبًا بك في LegalMind!</h1>
             </div>
             <div class="content">
-              <h2>Hi ${userName},</h2>
-              <p>Thank you for joining LegalMind! We're excited to have you on board.</p>
-              <p>Your account has been created successfully. You can now access all our features.</p>
+              <h2>مرحبًا ${userName}،</h2>
+              <p>شكرًا لانضمامك إلى LegalMind! يسعدنا انضمامك إلينا.</p>
+              <p>تم إنشاء حسابك بنجاح. يمكنك الآن الوصول إلى جميع ميزاتنا.</p>
               <div style="text-align: center;">
-                <a href="${config.app.clientUrl}/login" class="button">Get Started</a>
+                <a href="${config.app.clientUrl}/login" class="button">ابدأ الآن</a>
               </div>
             </div>
             <div class="footer">
-              <p>&copy; 2026 LegalMind. All rights reserved.</p>
+              <p>&copy; 2026 LegalMind. جميع الحقوق محفوظة.</p>
             </div>
           </div>
         </body>
       </html>
     `;
 
-    return this.sendEmail(to, 'Welcome to LegalMind!', html);
+    return this.sendEmail(to, 'مرحبًا بك في LegalMind!', html);
   }
 }
 

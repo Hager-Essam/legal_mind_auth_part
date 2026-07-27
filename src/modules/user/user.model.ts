@@ -18,11 +18,14 @@ export interface IUser extends Document {
   lastLogin?: Date;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
   firstName?: string;
   lastName?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
   getFullName(): string;
   createPasswordResetToken(): string;
+  createEmailVerificationToken(): string;
   displayName: string;
 }
 
@@ -106,6 +109,14 @@ const userSchema = new Schema<IUser>(
       type: Date,
       select: false,
     },
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      select: false,
+    },
     
     // Legacy fields (kept for backward compatibility)
     firstName: {
@@ -124,6 +135,8 @@ const userSchema = new Schema<IUser>(
         delete (ret as any).password;
         delete (ret as any).passwordResetToken;
         delete (ret as any).passwordResetExpires;
+        delete (ret as any).emailVerificationToken;
+        delete (ret as any).emailVerificationExpires;
         delete (ret as any).__v;
         return ret;
       },
@@ -192,6 +205,20 @@ userSchema.methods.createPasswordResetToken = function (): string {
   this.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
   
   return resetToken;
+};
+
+// Method to create email verification token
+userSchema.methods.createEmailVerificationToken = function (): string {
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+  return verificationToken;
 };
 
 const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);

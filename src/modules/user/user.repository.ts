@@ -80,6 +80,13 @@ class UserRepository {
     user.passwordResetExpires = undefined;
     return await user.save();
   }
+
+  async findByVerificationToken(hashedToken: string): Promise<IUser | null> {
+    return await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: new Date() },
+    }).select('+emailVerificationToken +emailVerificationExpires');
+  }
 }
 
 export default new UserRepository();

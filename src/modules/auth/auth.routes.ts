@@ -7,6 +7,9 @@ import {
   registerSchema,
   loginSchema,
   resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
+  forgotPasswordSchema,
 } from './auth.validator';
 
 const router = express.Router();
@@ -51,6 +54,58 @@ const router = express.Router();
  *         description: User registered successfully
  */
 router.post('/register', upload.single('lawyerIdDocument'), validate(registerSchema), authController.register);
+
+/**
+ * @swagger
+ * /api/auth/verify-email:
+ *   post:
+ *     summary: Verify a user's email using the token sent by email
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Verification token is invalid or has expired
+ */
+router.post('/verify-email', validate(verifyEmailSchema), authController.verifyEmail);
+
+/**
+ * @swagger
+ * /api/auth/resend-verification:
+ *   post:
+ *     summary: Resend the email verification link
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Verification email resent
+ *       400:
+ *         description: Email is already verified
+ *       404:
+ *         description: User not found
+ */
+router.post('/resend-verification', validate(resendVerificationSchema), authController.resendVerification);
 
 /**
  * @swagger
@@ -108,13 +163,22 @@ router.post('/logout', authController.logout);
  *   post:
  *     summary: Request password reset
  *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
  *     responses:
  *       200:
- *         description: Password reset email sent
+ *         description: If the email is registered, a password reset link has been sent to it
  */
-router.post('/forgot-password', authenticate, authController.forgotPassword); 
+router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword);
 
 /**
  * @swagger
