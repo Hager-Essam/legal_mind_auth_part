@@ -3,6 +3,8 @@ import type { Request } from 'express-serve-static-core';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
+import MarkdownIt from 'markdown-it';
+import { generatePdf } from 'html-pdf-node';
 import { processJob } from '../contract-analysis/helpers/job-processor';
 import { jobRepository } from '../contract-analysis/repositories/job.repository';
 import { resultsAnalysisRepository } from '../contract-analysis/repositories/results-analysis.repository';
@@ -432,11 +434,81 @@ export const downloadReport = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const reportName = `report_${job.originalFileName.replace(/\.[^/.]+$/, '')}.md`;
+    const reportName = `report_${job.originalFileName.replace(/\.[^/.]+$/, '')}.pdf`;
 
-    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    // Convert markdown to HTML
+    const md = new MarkdownIt();
+    const htmlContent = md.render(analysis.reportMarkdown);
+
+    // Wrap HTML with proper styling
+    const htmlPage = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 20px;
+          }
+          h1, h2, h3, h4, h5, h6 {
+            color: #2c3e50;
+            margin-top: 20px;
+            margin-bottom: 10px;
+          }
+          h1 { font-size: 28px; }
+          h2 { font-size: 22px; }
+          h3 { font-size: 18px; }
+          pre {
+            background-color: #f4f4f4;
+            padding: 12px;
+            border-radius: 4px;
+            overflow-x: auto;
+          }
+          code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+          }
+          blockquote {
+            border-left: 4px solid #ddd;
+            padding-left: 16px;
+            margin-left: 0;
+            color: #666;
+          }
+          table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+          }
+          table, th, td {
+            border: 1px solid #ddd;
+          }
+          th, td {
+            padding: 12px;
+            text-align: left;
+          }
+          th {
+            background-color: #f4f4f4;
+          }
+        </style>
+      </head>
+      <body>
+        ${htmlContent}
+      </body>
+      </html>
+    `;
+
+    const options = { format: 'A4' };
+    const file = { content: htmlPage };
+    const pdfBuffer = await generatePdf(file, options);
+
+    res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${reportName}"`);
-    res.status(200).send(analysis.reportMarkdown);
+    res.status(200).send(pdfBuffer);
   } catch (error: any) {
     console.error('خطأ في تحميل التقرير:', error);
     res.status(500).json({
