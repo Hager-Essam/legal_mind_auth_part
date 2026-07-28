@@ -334,7 +334,7 @@ export class EgyptianEmploymentContractAnalyzer {
       openaiApiKey: '',
       qdrantUrl: '',
       embeddingModel: 'text-embedding-v4',
-      llmModel: 'qwen-mt-turbo',
+      llmModel: 'qwen3.7-plus-2026-05-26',//qwen3.7-max-2026-06-08, qwen3.6-plus-2026-04-02, qwen3.7-flash-2026-07-15, kimi-k2.7-code,deepseek-v4-pro
       temperature: 0.1,
       ...config,
     };
