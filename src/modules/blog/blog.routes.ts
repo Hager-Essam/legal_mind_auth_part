@@ -23,6 +23,7 @@ const router = express.Router();
  *         description: List of blogs
  */
 router.get('/', blogController.getAllBlogs);
+router.get('/categories', blogController.getCategories);
 router.get('/popular', blogController.getPopularBlogs);
 router.get('/trending', blogController.getTrendingBlogs);
 router.get('/:id', optionalAuth, blogController.getBlogById);

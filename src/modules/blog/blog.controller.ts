@@ -2,6 +2,16 @@ import { Request, Response, NextFunction } from 'express';
 import blogService from './blog.service';
 import ResponseHelper from '../../shared/helpers/response.helper';
 
+const BLOG_CATEGORIES = [
+  { value: 'Criminal Law', label: 'القانون الجنائي' },
+  { value: 'Civil Law', label: 'القانون المدني' },
+  { value: 'Corporate Law', label: 'القانون التجاري' },
+  { value: 'Family Law', label: 'قانون الأسرة' },
+  { value: 'Labor Law', label: 'قانون العمل' },
+  { value: 'Tax Law', label: 'القانون الضريبي' },
+  { value: 'Other', label: 'أخرى' },
+];
+
 class BlogController {
   async createBlog(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
@@ -133,6 +143,14 @@ class BlogController {
       ResponseHelper.ok(res, 'Trending blogs retrieved successfully', {
         blogs,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getCategories(_req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      ResponseHelper.ok(res, 'تم جلب التصنيفات بنجاح', { categories: BLOG_CATEGORIES });
     } catch (error) {
       next(error);
     }
