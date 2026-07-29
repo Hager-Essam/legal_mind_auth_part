@@ -127,6 +127,10 @@ tags:
     description: >-
       Contract analysis endpoints - upload, analyze, and download reports for
       Egyptian employment contracts
+  - name: Contract Generation
+    description: >-
+      Contract generation endpoints - generate, preview, edit, validate, and
+      download Egyptian employment contracts from natural language prompts
 paths:
   /api/auth/register:
     post:
@@ -627,5 +631,176 @@ paths:
       responses:
         '200':
           description: تم جلب العقود بنجاح
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/generate:
+    post:
+      summary: إنشاء طلب توليد عقد جديد
+      description: إرسال وصف للعقد المطلوب وبدء عملية التوليد.
+      tags:
+        - Contract Generation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  example: أريد عقد عمل لمهندس برمجيات براتب 15000 جنيه ومدة سنة وفترة اختبار 3 شهور
+                language:
+                  type: string
+                  enum: [ar, ar_en]
+                  default: ar
+                contractType:
+                  type: string
+                  enum: [employment, freelance, partnership]
+                  default: employment
+      responses:
+        '202':
+          description: تم استلام الطلب وجاري المعالجة
+        '400':
+          description: وصف العقد مطلوب
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+    get:
+      summary: جلب جميع طلبات التوليد
+      description: جلب قائمة بجميع طلبات توليد العقود للمستخدم الحالي.
+      tags:
+        - Contract Generation
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: تم جلب الطلبات بنجاح
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/generate/{jobId}:
+    get:
+      summary: جلب حالة طلب التوليد
+      description: جلب حالة طلب التوليد والمحتوى إذا كان مكتملاً.
+      tags:
+        - Contract Generation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف طلب التوليد
+      responses:
+        '200':
+          description: تم جلب البيانات بنجاح
+        '404':
+          description: لم يتم العثور على العقد
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+    put:
+      summary: حفظ تعديلات العقد
+      description: حفظ التعديلات التي أجراها المستخدم على العقد المولد.
+      tags:
+        - Contract Generation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف طلب التوليد
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - editedMarkdown
+              properties:
+                editedMarkdown:
+                  type: string
+                  description: نص العقد المعدل
+      responses:
+        '200':
+          description: تم حفظ التعديلات بنجاح
+        '404':
+          description: العقد غير جاهز أو غير موجود
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+    delete:
+      summary: حذف طلب التوليد
+      description: حذف طلب التوليد وجميع البيانات المرتبطة به.
+      tags:
+        - Contract Generation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف طلب التوليد
+      responses:
+        '200':
+          description: تم الحذف بنجاح
+        '404':
+          description: لم يتم العثور على العقد
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/generate/{jobId}/download:
+    get:
+      summary: تحميل العقد كملف Markdown
+      description: تحميل العقد المولد أو المعدل كملف Markdown.
+      tags:
+        - Contract Generation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف طلب التوليد
+      responses:
+        '200':
+          description: تم تحميل العقد بنجاح
+          content:
+            text/markdown:
+              schema:
+                type: string
+        '404':
+          description: العقد غير جاهز أو غير موجود
+        '401':
+          description: غير مصرح - يجب تسجيل الدخول
+  /api/generate/{jobId}/validate:
+    post:
+      summary: التحقق من امتثال العقد المعدل
+      description: فحص العقد المعدل ضد القانون المصري وتحديد أي مخالفات.
+      tags:
+        - Contract Generation
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+          description: معرّف طلب التوليد
+      responses:
+        '200':
+          description: نتائج التحقق
+        '404':
+          description: العقد غير جاهز أو غير موجود
         '401':
           description: غير مصرح - يجب تسجيل الدخول

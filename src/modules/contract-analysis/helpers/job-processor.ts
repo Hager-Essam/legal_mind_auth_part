@@ -14,6 +14,12 @@ export async function processJob(job: IJob): Promise<void> {
     // Update job status to processing
     await jobRepository.updateStatus(job.id, 'processing');
 
+    // Cancellation check — reads fresh status from DB
+    const isCancelled = async (): Promise<boolean> => {
+      const fresh = await jobRepository.findById(job.id);
+      return fresh?.status === 'cancelled';
+    };
+
     // Progress event handler - saves to database
     const onProgress = async (event: ProgressEvent) => {
       const progressLog = {
@@ -50,7 +56,7 @@ export async function processJob(job: IJob): Promise<void> {
     await onProgress({ step: '0/7', phase: 'start', message: '📥 Downloaded contract from R2 storage' });
 
     // Run analysis
-    const result = await analyzer.analyze(tempFilePath, onProgress);
+    const result = await analyzer.analyze(tempFilePath, onProgress, isCancelled);
 
     // Sanitize clauses: ensure required_action.suggested_fix is never empty
     if (result.clauses) {
@@ -103,6 +109,17 @@ export async function processJob(job: IJob): Promise<void> {
 
   } catch (error: any) {
     console.error(`Job ${job.id} failed:`, error);
+
+    // Don't mark as failed if already cancelled
+    const fresh = await jobRepository.findById(job.id);
+    if (fresh?.status === 'cancelled') {
+      // Clean up temp file
+      const tempFilePath = path.join(__dirname, '../../../temp', `${job.id}_${job.originalFileName}`);
+      if (fs.existsSync(tempFilePath)) {
+        fs.unlinkSync(tempFilePath);
+      }
+      return;
+    }
 
     const errorMessage = error?.message || 'Unknown error occurred during analysis';
 

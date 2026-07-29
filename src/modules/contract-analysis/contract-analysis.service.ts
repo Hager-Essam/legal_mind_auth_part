@@ -929,8 +929,6 @@ export class EgyptianEmploymentContractAnalyzer {
 ---
 
 **تاريخ التحليل:** ${date}
-**النتيجة الإجمالية:** ${overall.overall_score}/100 ${colorEmoji[overall.color] || ""}
-**التصنيف:** ${overall.classification}
 
 ---
 
@@ -1007,13 +1005,22 @@ ${overall.summary}
   async analyze(
     filePath: string,
     onProgress?: (event: ProgressEvent) => void,
+    isCancelled?: () => boolean | Promise<boolean>,
   ): Promise<AnalysisReport> {
     const emit = (event: ProgressEvent) => {
       console.log(`[${event.step}] ${event.message}`);
       onProgress?.(event);
     };
 
+    const checkCancelled = async () => {
+      if (await isCancelled?.()) {
+        throw new Error('تم إلغاء التحليل من قبل المستخدم.');
+      }
+    };
+
     const startTime = Date.now();
+
+    await await checkCancelled();
 
     // ── STEP 1: Text Extraction ──
     emit({ step: "1/7", phase: "start", message: "🔍 Step 1/7: Extracting text from document..." });
@@ -1027,6 +1034,7 @@ ${overall.summary}
     });
 
     // ── STEP 2: Text Cleaning (mandatory for all inputs) ──
+    await checkCancelled();
     emit({ step: "2/7", phase: "start", message: "🧹 Step 2/7: Cleaning and validating text..." });
     const cleanText = await this.cleanText(rawText);
 
@@ -1057,6 +1065,7 @@ ${overall.summary}
       });
 
     // ── STEP 3: Segmentation ──
+    await checkCancelled();
     emit({ step: "3/7", phase: "start", message: "✂️ Step 3/7: Segmenting contract into clauses..." });
     const clauses = await this.segmentClauses(cleanText);
 
@@ -1078,6 +1087,7 @@ ${overall.summary}
     });
 
     // ── STEP 4: Batch Embed + Retrieval + Analysis (per clause) ──
+    await checkCancelled();
     emit({ step: "4/7", phase: "start", message: "📚 Step 4/7: Embedding all clauses in batch..." });
 
     // Batch embed all clauses at once (1 API call instead of N)
@@ -1135,6 +1145,7 @@ ${overall.summary}
     }));
 
     // ── STEP 5: Scoring (LLM) ──
+    await checkCancelled();
     emit({ step: "5/7", phase: "start", message: "📊 Step 5/7: Calculating overall score..." });
     const overall = await this.calculateOverallScore(clauseResults);
     emit({
@@ -1147,6 +1158,7 @@ ${overall.summary}
     });
 
     // ── STEP 6: Report Generation (LLM) ──
+    await checkCancelled();
     emit({ step: "6/7", phase: "start", message: "📄 Step 6/7: Generating Markdown report..." });
     const reportMarkdown = await this.generateReport(overall, clauseResults);
     emit({
@@ -1158,7 +1170,143 @@ ${overall.summary}
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
     emit({
       step: "7/7", phase: "done",
-      message: `🎉 Analysis complete! Total time: ${totalTime}s | ${clauses.length} clauses analyzed | Score: ${overall.overall_score}/100`,
+      message: `🎉 Analysis complete! Total time: ${totalTime}s | ${clauses.length} clauses analyzed`,
+    });
+
+    return {
+      overall,
+      clauses: clauseAnalyses,
+      report_markdown: reportMarkdown,
+      processed_at: new Date().toISOString(),
+    };
+  }
+
+  // ========================================================================
+  // ANALYZE FROM TEXT (for generated contract validation)
+  // ========================================================================
+
+  async analyzeText(
+    rawText: string,
+    onProgress?: (event: ProgressEvent) => void,
+    isCancelled?: () => boolean | Promise<boolean>,
+  ): Promise<AnalysisReport> {
+    const emit = (event: ProgressEvent) => {
+      console.log(`[${event.step}] ${event.message}`);
+      onProgress?.(event);
+    };
+
+    const checkCancelled = async () => {
+      if (await isCancelled?.()) {
+        throw new Error('تم إلغاء التحقق من قبل المستخدم.');
+      }
+    };
+
+    const startTime = Date.now();
+
+    await checkCancelled();
+
+    // ── STEP 1: Skip (text already provided) ──
+    emit({ step: "1/7", phase: "start", message: "🔍 Step 1/7: Using provided text..." });
+    emit({ step: "1/7", phase: "result", message: `✅ Using ${rawText.length} characters` });
+
+    // // ── STEP 2: Text Cleaning ──
+    // emit({ step: "2/7", phase: "start", message: "🧹 Step 2/7: Cleaning and validating text..." });
+    // const cleanText = await this.cleanText(rawText);
+
+    // if (cleanText.includes("لا يوجد محتوى قانوني") || cleanText.includes("لا يوجد نص قانوني")) {
+    //   throw new Error("النص المُدخل لا يحتوي على عقد عمل صحيح.");
+    // }
+
+    // const cleanLen = cleanText.replace(/[\s\u0000-\u001F\u200B-\u200D\uFEFF]/g, "").trim().length;
+    // if (cleanLen < 50) {
+    //   throw new Error(`النص غير كافٍ بعد التنظيف (${cleanLen} حرف). يُرجى التأكد من صحة العقد.`);
+    // }
+
+    // emit({
+    //   step: "2/7", phase: "result",
+    //   message: `✅ تم التنظيف: ${cleanText.length} حرف`,
+    // });
+
+    // ── STEP 3: Segmentation ──
+    await checkCancelled();
+    emit({ step: "3/7", phase: "start", message: "✂️ Step 3/7: Segmenting contract into clauses..." });
+    const clauses = await this.segmentClauses(rawText);
+
+    if (clauses.length === 0) {
+      throw new Error("لم يتم العثور على مواد في العقد.");
+    }
+
+    emit({
+      step: "3/7", phase: "result",
+      message: `✅ Found ${clauses.length} clauses`,
+    });
+
+    // ── STEP 4: Batch Embed + Retrieval + Analysis ──
+    await checkCancelled();
+    emit({ step: "4/7", phase: "start", message: "📚 Step 4/7: Embedding all clauses in batch..." });
+    const clauseTexts = clauses.map((c) => c.text);
+    const embeddings = await this.embedBatch(clauseTexts);
+    emit({ step: "4/7", phase: "progress", message: `  📦 Embedded ${embeddings.length} clauses in 1 API call` });
+
+    const clauseAnalyses: ClauseAnalysis[] = [];
+
+    for (let i = 0; i < clauses.length; i++) {
+      const clause = clauses[i];
+      const clauseStart = Date.now();
+
+      emit({
+        step: "4/7", phase: "progress",
+        message: `  ┌─ Clause ${i + 1}/${clauses.length}: [${clause.clause_type}] ${clause.clause_title || "untitled"}`,
+      });
+
+      const retrieved = await this.retrieveWithVector(embeddings[i], clause.clause_type, 5);
+      emit({
+        step: "4/7", phase: "progress",
+        message: `  │  📖 Retrieved ${retrieved.length} documents`,
+      });
+
+      emit({ step: "4/7", phase: "progress", message: `  │  ⚖️ Analyzing clause with LLM...` });
+      const analysis = await this.analyzeClause(clause, retrieved);
+      const clauseTime = ((Date.now() - clauseStart) / 1000).toFixed(1);
+
+      emit({
+        step: "4/7", phase: "progress",
+        message:
+          `  │  ✅ Analysis result (${clauseTime}s):\n` +
+          `  │     Compliance: ${analysis.compliance.status}\n` +
+          `  │     Risk: ${analysis.risk_assessment.category}\n` +
+          `  └──────────────────────────────`,
+      });
+
+      clauseAnalyses.push(analysis);
+    }
+
+    const clauseResults = clauses.map((c, i) => ({
+      clause_type: c.clause_type,
+      clause_title: c.clause_title,
+      ...clauseAnalyses[i],
+    }));
+
+    // ── STEP 5: Scoring ──
+    await checkCancelled();
+    emit({ step: "5/7", phase: "start", message: "📊 Step 5/7: Calculating overall score..." });
+    const overall = await this.calculateOverallScore(clauseResults);
+    emit({
+      step: "5/7", phase: "result",
+      message: `✅ Overall Score: ${overall.overall_score}/100 [${overall.classification}]`,
+    });
+
+    // ── STEP 6: Report Generation ──
+    await checkCancelled();
+    emit({ step: "6/7", phase: "start", message: "📄 Step 6/7: Generating Markdown report..." });
+    const reportMarkdown = await this.generateReport(overall, clauseResults);
+    emit({ step: "6/7", phase: "result", message: `✅ Report generated: ${reportMarkdown.length} characters` });
+
+    // ── STEP 7: Complete ──
+    const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+    emit({
+      step: "7/7", phase: "done",
+      message: `🎉 التحقق اكتمل! الوقت: ${totalTime}s | ${clauses.length} مواد`,
     });
 
     return {

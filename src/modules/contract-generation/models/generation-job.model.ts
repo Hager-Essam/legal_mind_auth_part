@@ -7,16 +7,15 @@ export interface IProgressLog {
   timestamp: Date;
 }
 
-export interface IJob extends Document {
+export interface IGenerationJob extends Document {
   id: string;
   status: 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
-  userId: string; // Link to user who uploaded
-  originalFileName: string;
-  fileSize: number;
-  fileType: string;
-  contractFileUrl?: string; // R2 URL for the uploaded contract
-  reportFileUrl?: string; // R2 URL for the generated report
-  analysisId?: mongoose.Types.ObjectId; // Reference to ResultsAnalysis
+  userId: string;
+  prompt: string;
+  language: 'ar' | 'ar_en';
+  contractType: 'employment' | 'freelance' | 'partnership';
+  generatedContractId?: mongoose.Types.ObjectId;
+  contractFileUrl?: string;
   error?: string;
   createdAt: Date;
   completedAt?: Date;
@@ -47,7 +46,7 @@ const ProgressLogSchema = new Schema<IProgressLog>(
   { _id: false }
 );
 
-const JobSchema = new Schema<IJob>(
+const GenerationJobSchema = new Schema<IGenerationJob>(
   {
     id: {
       type: String,
@@ -67,27 +66,26 @@ const JobSchema = new Schema<IJob>(
       required: true,
       index: true,
     },
-    originalFileName: {
+    prompt: {
       type: String,
       required: true,
     },
-    fileSize: {
-      type: Number,
-      required: true,
-    },
-    fileType: {
+    language: {
       type: String,
-      required: true,
+      enum: ['ar', 'ar_en'],
+      default: 'ar',
+    },
+    contractType: {
+      type: String,
+      enum: ['employment', 'freelance', 'partnership'],
+      default: 'employment',
+    },
+    generatedContractId: {
+      type: Schema.Types.ObjectId,
+      ref: 'GeneratedContract',
     },
     contractFileUrl: {
       type: String,
-    },
-    reportFileUrl: {
-      type: String,
-    },
-    analysisId: {
-      type: Schema.Types.ObjectId,
-      ref: 'ResultsAnalysis',
     },
     error: {
       type: String,
@@ -106,8 +104,8 @@ const JobSchema = new Schema<IJob>(
 );
 
 // Indexes for efficient queries
-JobSchema.index({ createdAt: -1 });
-JobSchema.index({ status: 1, createdAt: -1 });
-JobSchema.index({ userId: 1, createdAt: -1 });
+GenerationJobSchema.index({ createdAt: -1 });
+GenerationJobSchema.index({ status: 1, createdAt: -1 });
+GenerationJobSchema.index({ userId: 1, createdAt: -1 });
 
-export const Job = mongoose.model<IJob>('Job', JobSchema);
+export const GenerationJob = mongoose.model<IGenerationJob>('GenerationJob', GenerationJobSchema);
