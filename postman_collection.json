@@ -6,6 +6,70 @@
   },
   "item": [
     {
+      "name": "Users",
+      "item": [
+        {
+          "name": "1. Update Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"هاجر عصام حسن بكر\",\n  \"officeName\": \"مكتب العدالة للمحاماة\",\n  \"phone\": \"+201234567890\",\n  \"teamSize\": \"small\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "تحديث الملف الشخصي للمستخدم الحالي. يتطلب تسجيل الدخول."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Upload Profile Image",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": "",
+                  "description": "صورة الملف الشخصي (JPEG, PNG, WEBP - حد أقصى 2MB)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile/avatar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile", "avatar"]
+            },
+            "description": "رفع صورة الملف الشخصي. الصورة ستظهر في المقالات التي ينشئها المستخدم."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Auth",
       "item": [
         {
@@ -456,7 +520,21 @@
           "response": []
         },
         {
-          "name": "2. Get Popular Blogs",
+          "name": "2. Get Blog Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/blogs/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "blogs", "categories"]
+            },
+            "description": "جلب قائمة التصنيفات المتاحة للمقالات بالعربية"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Popular Blogs",
           "request": {
             "method": "GET",
             "header": [],
@@ -482,7 +560,7 @@
           "response": []
         },
         {
-          "name": "3. Get Trending Blogs",
+          "name": "4. Get Trending Blogs",
           "request": {
             "method": "GET",
             "header": [],
@@ -508,7 +586,7 @@
           "response": []
         },
         {
-          "name": "4. Get Blog by ID",
+          "name": "5. Get Blog by ID",
           "request": {
             "method": "GET",
             "header": [
@@ -535,7 +613,7 @@
           "response": []
         },
         {
-          "name": "5. Create Blog",
+          "name": "6. Create Blog",
           "event": [
             {
               "listen": "test",
@@ -566,7 +644,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"فهم القانون الجنائي المصري\",\n  \"content\": \"القانون الجنائي في مصر يحكمه في المقام الأول قانون العقوبات لعام 1937. يحدد هذا القانون الجرائم المختلفة والعقوبات المرتبطة بها. من المهم للمحامين والمواطنين فهم الأساسيات...\",\n  \"excerpt\": \"دليل شامل للقانون الجنائي في مصر\",\n  \"category\": \"Criminal Law\",\n  \"tags\": [\"criminal\", \"egypt\", \"law\"],\n  \"coverImage\": \"https://images.unsplash.com/photo-1589829545856-d10d557cf95f\",\n  \"status\": \"published\"\n}"
+              "raw": "{\n  \"title\": \"فهم القانون الجنائي المصري\",\n  \"content\": \"القانون الجنائي في مصر يحكمه في المقام الأول قانون العقوبات لعام 1937. يحدد هذا القانون الجرائم المختلفة والعقوبات المرتبطة بها. من المهم للمحامين والمواطنين فهم الأساسيات...\",\n  \"category\": \"Criminal Law\",\n  \"coverImage\": \"https://images.unsplash.com/photo-1589829545856-d10d557cf95f\",\n  \"status\": \"published\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/blogs",
@@ -583,7 +661,7 @@
           "response": []
         },
         {
-          "name": "6. Get My Blogs",
+          "name": "7. Get My Blogs",
           "request": {
             "method": "GET",
             "header": [
@@ -620,7 +698,7 @@
           "response": []
         },
         {
-          "name": "7. Update Blog",
+          "name": "8. Update Blog",
           "request": {
             "method": "PUT",
             "header": [
@@ -654,7 +732,7 @@
           "response": []
         },
         {
-          "name": "8. Delete Blog",
+          "name": "9. Delete Blog",
           "request": {
             "method": "DELETE",
             "header": [
@@ -680,7 +758,7 @@
           "response": []
         },
         {
-          "name": "9. Toggle Bookmark",
+          "name": "10. Toggle Bookmark",
           "request": {
             "method": "POST",
             "header": [
@@ -707,7 +785,7 @@
           "response": []
         },
         {
-          "name": "10. Update Blog Status (Admin)",
+          "name": "11. Update Blog Status (Admin)",
           "request": {
             "method": "PATCH",
             "header": [
