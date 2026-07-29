@@ -139,8 +139,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "register"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
             },
             "description": "تسجيل مستخدم جديد. يتطلب ملف مستند هوية المحامي."
           },
@@ -177,8 +183,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
             },
             "description": "تسجيل الدخول بالبريد الإلكتروني وكلمة المرور"
           },
@@ -197,8 +209,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             },
             "description": "جلب بيانات المستخدم الحالي"
           },
@@ -220,8 +238,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/verify-email",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "verify-email"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-email"
+              ]
             },
             "description": "تفعيل البريد الإلكتروني باستخدام الرمز المرسل"
           },
@@ -243,8 +267,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/resend-verification",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "resend-verification"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "resend-verification"
+              ]
             },
             "description": "إعادة إرسال رمز تفعيل البريد الإلكتروني"
           },
@@ -276,8 +306,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/forgot-password",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "forgot-password"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "forgot-password"
+              ]
             },
             "description": "طلب إعادة تعيين كلمة المرور. يُرسل رمز إعادة التعيين إلى البريد الإلكتروني."
           },
@@ -313,8 +349,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/reset-password",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "reset-password"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "reset-password"
+              ]
             },
             "description": "إعادة تعيين كلمة المرور باستخدام الرمز المرسل. حدّث متغير {{resetToken}} بالرمز من البريد الإلكتروني."
           },
@@ -350,8 +392,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/refresh-token",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "refresh-token"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh-token"
+              ]
             },
             "description": "الحصول على توكن جديد باستخدام رمز التحديث"
           },
@@ -373,8 +421,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
             },
             "description": "تسجيل الخروج من الجهاز الحالي"
           },
@@ -393,8 +447,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/auth/logout-all",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "logout-all"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout-all"
+              ]
             },
             "description": "تسجيل الخروج من جميع الأجهزة"
           },
@@ -412,15 +472,47 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/blogs?page=1&limit=10&sort=newest",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs"
+              ],
               "query": [
-                { "key": "page", "value": "1", "description": "رقم الصفحة" },
-                { "key": "limit", "value": "10", "description": "عدد العناصر في الصفحة" },
-                { "key": "sort", "value": "newest", "description": "newest أو popular" },
-                { "key": "search", "value": "", "description": "بحث في العنوان والمحتوى", "disabled": true },
-                { "key": "category", "value": "", "description": "فلتر حسب التصنيف", "disabled": true },
-                { "key": "tags", "value": "", "description": "فلتر حسب الوسوم (مفصولة بفاصلة)", "disabled": true }
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "عدد العناصر في الصفحة"
+                },
+                {
+                  "key": "sort",
+                  "value": "newest",
+                  "description": "newest أو popular"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "بحث في العنوان والمحتوى",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "description": "فلتر حسب التصنيف",
+                  "disabled": true
+                },
+                {
+                  "key": "tags",
+                  "value": "",
+                  "description": "فلتر حسب الوسوم (مفصولة بفاصلة)",
+                  "disabled": true
+                }
               ]
             },
             "description": "جلب جميع المقالات المنشورة مع إمكانية البحث والفلترة. لا يتطلب تسجيل الدخول."
@@ -448,10 +540,19 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/blogs/popular?limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "popular"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "popular"
+              ],
               "query": [
-                { "key": "limit", "value": "10" }
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             },
             "description": "جلب المقالات الأكثر مشاهدة"
@@ -465,10 +566,19 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/blogs/trending?limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "trending"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "trending"
+              ],
               "query": [
-                { "key": "limit", "value": "10" }
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             },
             "description": "جلب المقالات الرائجة (الأحدث مع تفاعل عالي)"
@@ -489,8 +599,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/blogs/{{blogId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "{{blogId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "{{blogId}}"
+              ]
             },
             "description": "جلب تفاصيل مقال واحد وزيادة عداد المشاهدات"
           },
@@ -532,8 +648,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/blogs",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs"
+              ]
             },
             "description": "إنشاء مقال جديد. يتطلب تسجيل الدخول."
           },
@@ -552,11 +673,24 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/blogs/me/my-blogs?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "me", "my-blogs"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "me",
+                "my-blogs"
+              ],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             },
             "description": "جلب جميع المقالات التي أنشأها المستخدم الحالي"
@@ -584,8 +718,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/blogs/{{blogId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "{{blogId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "{{blogId}}"
+              ]
             },
             "description": "تحديث مقال. الكاتب فقط يمكنه التحديث."
           },
@@ -604,8 +744,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/blogs/{{blogId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "{{blogId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "{{blogId}}"
+              ]
             },
             "description": "حذف مقال. الكاتب أو المشرف فقط يمكنه الحذف."
           },
@@ -624,8 +770,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/blogs/{{blogId}}/bookmark",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "{{blogId}}", "bookmark"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "{{blogId}}",
+                "bookmark"
+              ]
             },
             "description": "إضافة أو إزالة إشارة مرجعية. النداء الأول يضيف، والثاني يزيل."
           },
@@ -652,8 +805,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/blogs/{{blogId}}/status",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "{{blogId}}", "status"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "{{blogId}}",
+                "status"
+              ]
             },
             "description": "تحديث حالة المقال. المشرف فقط. القيم الصالحة: draft, pending, published, rejected"
           },
@@ -671,11 +831,26 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/blogs/{{blogId}}/comments?page=1&limit=20",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "{{blogId}}", "comments"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "{{blogId}}",
+                "comments"
+              ],
               "query": [
-                { "key": "page", "value": "1", "description": "رقم الصفحة" },
-                { "key": "limit", "value": "20", "description": "عدد التعليقات في الصفحة" }
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "عدد التعليقات في الصفحة"
+                }
               ]
             },
             "description": "جلب جميع التعليقات على مقال. لا يتطلب تسجيل الدخول."
@@ -718,8 +893,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/blogs/{{blogId}}/comments",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "blogs", "{{blogId}}", "comments"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "blogs",
+                "{{blogId}}",
+                "comments"
+              ]
             },
             "description": "إنشاء تعليق جديد على مقال. يتطلب تسجيل الدخول."
           },
@@ -746,8 +928,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/comments/{{commentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "comments", "{{commentId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
             },
             "description": "تحديث محتوى التعليق. صاحب التعليق فقط."
           },
@@ -766,8 +954,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/comments/{{commentId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "comments", "{{commentId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "comments",
+                "{{commentId}}"
+              ]
             },
             "description": "حذف تعليق. صاحب التعليق أو المشرف فقط."
           },
@@ -791,11 +985,24 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/users/me/bookmarks?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "me", "bookmarks"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                "bookmarks"
+              ],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
               ]
             },
             "description": "جلب جميع الإشارات المرجعية للمستخدم الحالي"
@@ -815,8 +1022,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/users/{{bookmarkId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{bookmarkId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{bookmarkId}}"
+              ]
             },
             "description": "إزالة إشارة مرجعية بالمعرّف"
           },
@@ -866,8 +1079,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/analyze",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "analyze"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analyze"
+              ]
             },
             "description": "رفع ملف عقد العمل للتحليل. يُرجع معرّف العقد (jobId) لاستخدامه في بدء التحليل."
           },
@@ -898,8 +1116,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}/start",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "analyze", "{{jobId}}", "start"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analyze",
+                "{{jobId}}",
+                "start"
+              ]
             },
             "description": "بدء تحليل العقد الذي تم رفعه مسبقاً. يجب أن تكون حالة العقد queued."
           },
@@ -918,8 +1143,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "analyze", "{{jobId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analyze",
+                "{{jobId}}"
+              ]
             },
             "description": "جلب الحالة الحالية للعقد ونتائجه إن وُجدت."
           },
@@ -938,8 +1169,13 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "analyze"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analyze"
+              ]
             },
             "description": "جلب جميع العقود المرتبطة بالمستخدم الحالي."
           },
@@ -958,8 +1194,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}/progress",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "analyze", "{{jobId}}", "progress"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analyze",
+                "{{jobId}}",
+                "progress"
+              ]
             },
             "description": "جلب سجلات التقدم للعقد."
           },
@@ -978,8 +1221,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}/stream",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "analyze", "{{jobId}}", "stream"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analyze",
+                "{{jobId}}",
+                "stream"
+              ]
             },
             "description": "فتح اتصال Server-Sent Events لمتابعة تقدم التحليل لحظياً."
           },
@@ -998,15 +1248,50 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}/report/download",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "analyze", "{{jobId}}", "report", "download"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analyze",
+                "{{jobId}}",
+                "report",
+                "download"
+              ]
             },
             "description": "تحميل تقرير التحليل كملف Markdown. يجب أن يكون التحليل مكتملاً."
           },
           "response": []
         },
         {
-          "name": "8. Delete Job",
+          "name": "8. Cancel Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analyze/{{jobId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analyze",
+                "{{jobId}}",
+                "cancel"
+              ]
+            },
+            "description": "إلغاء التحليل الجارٍ. يجب أن تكون حالة العقد queued أو processing."
+          },
+          "response": []
+        },
+        {
+          "name": "9. Delete Job",
           "request": {
             "method": "DELETE",
             "header": [
@@ -1018,8 +1303,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/analyze/{{jobId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "analyze", "{{jobId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analyze",
+                "{{jobId}}"
+              ]
             },
             "description": "حذف العقد وجميع البيانات المرتبطة به."
           },
@@ -1034,12 +1325,327 @@
         "header": [],
         "url": {
           "raw": "{{baseUrl}}/health",
-          "host": ["{{baseUrl}}"],
-          "path": ["health"]
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "health"
+          ]
         },
         "description": "التحقق من حالة الخادم"
       },
       "response": []
+    },
+    {
+      "name": "Contract Generation",
+      "item": [
+        {
+          "name": "1. Create Generation Job",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"jobId\", jsonData.data.jobId);",
+                  "    console.log(\"تم بدء التوليد بنجاح\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt\": \"أريد عقد عمل لمهندس برمجيات براتب 15000 جنيه مصري ومدة سنة وفترة اختبار 3 شهور\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/generate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate"
+              ]
+            },
+            "description": "إنشاء طلب توليد عقد عمل جديد باستخدام الذكاء الاصطناعي."
+          }
+        },
+        {
+          "name": "2. Get Job Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/generate/{{jobId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate",
+                "{{jobId}}"
+              ]
+            },
+            "description": "جلب حالة طلب التوليد (قيد المعالجة، مكتمل، الخ) مع النتيجة النهائية إذا اكتمل."
+          }
+        },
+        {
+          "name": "3. Stream Progress (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/generate/{{jobId}}/stream",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate",
+                "{{jobId}}",
+                "stream"
+              ]
+            },
+            "description": "بث تحديثات التقدم في الوقت الفعلي باستخدام Server-Sent Events."
+          }
+        },
+        {
+          "name": "4. Update Contract",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"editedMarkdown\": \"# عقد عمل محدث...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/generate/{{jobId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate",
+                "{{jobId}}"
+              ]
+            },
+            "description": "حفظ تعديلات المستخدم على العقد."
+          }
+        },
+        {
+          "name": "5. Regenerate Contract",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instructions\": \"غيّر الرواتب إلى 20000 جنيه وأضف بند الإقامة\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/generate/{{jobId}}/regenerate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate",
+                "{{jobId}}",
+                "regenerate"
+              ]
+            },
+            "description": "إعادة توليد العقد مع تعديلات المستخدم. يأخذ النص الحالي والتعليمات، ويُعيد توليد العقد."
+          }
+        },
+        {
+          "name": "6. Validate Contract",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/generate/{{jobId}}/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate",
+                "{{jobId}}",
+                "validate"
+              ]
+            },
+            "description": "إجراء فحص قانوني على العقد المُعدّل."
+          }
+        },
+        {
+          "name": "7. Cancel Generation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/generate/{{jobId}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate",
+                "{{jobId}}",
+                "cancel"
+              ]
+            },
+            "description": "إلغاء التوليد الجارٍ. يجب أن تكون حالة العقد queued أو processing."
+          }
+        },
+        {
+          "name": "8. Delete Job",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/generate/{{jobId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate",
+                "{{jobId}}"
+              ]
+            },
+            "description": "حذف طلب التوليد وجميع البيانات المرتبطة به."
+          }
+        },
+        {
+          "name": "9. Get All Generation Jobs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/generate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate"
+              ]
+            },
+            "description": "جلب جميع طلبات التوليد للمستخدم الحالي."
+          }
+        },
+        {
+          "name": "10. Download Contract",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/generate/{{jobId}}/download",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate",
+                "{{jobId}}",
+                "download"
+              ]
+            },
+            "description": "تحميل العقد المولد أو المعدل كملف Markdown."
+          }
+        },
+        {
+          "name": "11. Get Job Progress Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/generate/{{jobId}}/progress",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "generate",
+                "{{jobId}}",
+                "progress"
+              ]
+            },
+            "description": "جلب سجلات التقدم لطلب التوليد."
+          }
+        }
+      ]
     }
   ],
   "variable": [

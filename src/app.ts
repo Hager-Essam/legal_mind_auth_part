@@ -10,6 +10,7 @@ import blogRoutes from './modules/blog/blog.routes';
 import bookmarkRoutes from './modules/bookmark/bookmark.routes';
 import commentRoutes from './modules/comment/comment.routes';
 import contractAnalysisRoutes from './modules/contract-analysis/contract-analysis.routes';
+import contractGenerationRoutes from './modules/contract-generation/contract-generation.routes';
 import userRoutes from './modules/user/user.routes';
 import { specs, swaggerUi } from './config/swagger';
 
@@ -79,6 +80,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/users', bookmarkRoutes);
 app.use('/api', contractAnalysisRoutes);
+app.use('/api', contractGenerationRoutes);
 app.use('/api', commentRoutes);
 
 app.use('*', (req: Request, res: Response) => {

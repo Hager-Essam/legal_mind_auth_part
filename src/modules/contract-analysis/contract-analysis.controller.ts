@@ -379,6 +379,55 @@ export const getJobProgress = async (
   }
 };
 
+export const cancelJob = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const jobId = getJobId(req);
+    const userId = (req as any).user._id.toString();
+
+    const job = await jobRepository.findByIdAndUserId(jobId, userId);
+
+    if (!job) {
+      res.status(404).json({
+        success: false,
+        message: "لم يتم العثور على العقد.",
+      });
+      return;
+    }
+
+    if (job.status !== 'queued' && job.status !== 'processing') {
+      res.status(400).json({
+        success: false,
+        message: `لا يمكن إلغاء العقد في الحالة الحالية (${job.status}).`,
+      });
+      return;
+    }
+
+    await jobRepository.updateStatus(job.id, 'cancelled', {
+      completedAt: new Date(),
+    });
+
+    await jobRepository.addProgressLog(job.id, {
+      step: 'cancelled',
+      phase: 'done',
+      message: '⛔ تم إلغاء التحليل من قبل المستخدم.',
+      timestamp: new Date(),
+    });
+
+    res.json({
+      success: true,
+      message: "تم إلغاء التحليل بنجاح.",
+      data: { jobId, status: 'cancelled' },
+    });
+  } catch (error: any) {
+    console.error("خطأ في إلغاء العقد:", error);
+    res.status(500).json({
+      success: false,
+      message: "فشل في إلغاء العقد.",
+      error: error.message,
+    });
+  }
+};
+
 export const deleteJob = async (req: Request, res: Response): Promise<void> => {
   try {
     const jobId = getJobId(req);

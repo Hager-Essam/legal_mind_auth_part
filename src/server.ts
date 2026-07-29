@@ -13,18 +13,6 @@ const startServer = async (): Promise<void> => {
       console.log(`📚 Swagger docs: http://localhost:${PORT}/api-docs`);
       console.log(`🌐 API endpoints: http://localhost:${PORT}/api`);
       console.log('');
-      console.log('Available routes:');
-      console.log('  POST /api/auth/register');
-      console.log('  POST /api/auth/login');
-      console.log('  POST /api/auth/forgot-password');
-      console.log('  POST /api/auth/reset-password');
-      console.log('  GET  /api/auth/me');
-      console.log('  POST /api/analyze');
-      console.log('  GET  /api/analyze/:jobId');
-      console.log('  GET  /api/analyze/:jobId/progress');
-      console.log('  GET  /api/analyze/:jobId/stream');
-      console.log('  GET  /api/jobs');
-      console.log('  DELETE /api/analyze/:jobId');
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
