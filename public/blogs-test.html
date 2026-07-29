@@ -369,7 +369,7 @@
 
     <script>
         const API_URL = 'http://localhost:5001/api';
-        let authToken = localStorage.getItem('authToken');
+        let authToken = localStorage.getItem('accessToken');
 
         // Initialize
         window.onload = function() {
@@ -416,7 +416,7 @@
 
                 if (data.success) {
                     authToken = data.data.accessToken;
-                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('accessToken', authToken);
                     messageEl.innerHTML = '<div class="success">Login successful!</div>';
                     document.getElementById('loginSection').style.display = 'none';
                     checkAuthStatus();
@@ -430,7 +430,7 @@
 
         function logout() {
             authToken = null;
-            localStorage.removeItem('authToken');
+            localStorage.removeItem('accessToken');
             checkAuthStatus();
             loadBlogs();
         }
