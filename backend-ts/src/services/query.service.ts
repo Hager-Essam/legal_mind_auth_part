@@ -4,14 +4,36 @@ import type { QueryRequest, QueryResponse } from "../schemas/query.schema";
 import { buildArabicLegalContext } from "../utils/context-builder";
 import { toLegalChunk } from "../utils/chunk-mapper";
 import { evaluateGrounding } from "../utils/grounding-policy";
+import {
+  parseLegalReference,
+  type ParsedLegalReference,
+} from "../utils/legal-ref-parser";
+import { validateSourceCitations } from "../utils/citation-validator";
 import { ClassifierService } from "./classifier.service";
-import { parseLegalReference, type ParsedLegalReference } from "../utils/legal-ref-parser";
 import { GenerationService } from "./generation.service";
 import { LegalRefService } from "./legal-ref.service";
 import { ProviderConfigService } from "./provider-config.service";
 import { QueryRewriteService } from "./query-rewrite.service";
 import { RerankerService } from "./reranker.service";
 import { RetrievalService } from "./retrieval.service";
+
+const mergeReferences = (
+  original: ParsedLegalReference,
+  retrieval: ParsedLegalReference,
+): ParsedLegalReference => ({
+  ...retrieval,
+  articleNumber: original.articleNumber ?? retrieval.articleNumber,
+  articleNumbers: [
+    ...new Set([...original.articleNumbers, ...retrieval.articleNumbers]),
+  ],
+  paragraphs: [...new Set([...original.paragraphs, ...retrieval.paragraphs])],
+  clauses: [...new Set([...original.clauses, ...retrieval.clauses])],
+  lawName: original.lawName ?? retrieval.lawName,
+  lawNumber: original.lawNumber ?? retrieval.lawNumber,
+  lawYear: original.lawYear ?? retrieval.lawYear,
+  appealNumber: original.appealNumber ?? retrieval.appealNumber,
+  judicialYear: original.judicialYear ?? retrieval.judicialYear,
+});
 
 export class QueryService {
   constructor(
@@ -27,140 +49,174 @@ export class QueryService {
   async runQuery(request: QueryRequest): Promise<QueryResponse> {
     const startedAt = performance.now();
     const provider = this.providerConfigService.getSummary();
-    const llmProviderUsed = provider.llmProvider ?? env.llmProvider;
-    const { category, parsedReference } = this.classifierService.classify(request);
+    const { category, parsedReference } =
+      this.classifierService.classify(request);
 
-    if (category === "chat") return this.runChatQuery(request, startedAt, llmProviderUsed);
-    if (category === "law_ref") return this.runLawRefQuery(request, startedAt, llmProviderUsed, parsedReference);
-    return this.runArabicRagQuery(request, startedAt, llmProviderUsed, undefined, parsedReference);
-  }
-
-  private async runChatQuery(request: QueryRequest, startedAt: number, llmProviderUsed: string): Promise<QueryResponse> {
-    try {
-      const answer = await this.generationService.generateChatAnswer(request.query);
+    if (category === "chat") {
+      const answer = await this.generationService.generateChatAnswer(
+        request.query,
+      );
       return {
         answer,
         source_chunks: [],
-        llm_provider_used: llmProviderUsed,
-        category: "chat",
-        latency_ms: Math.round(performance.now() - startedAt),
-      };
-    } catch (error) {
-      console.error("[QueryService] Chat generation failed:", error);
-      return {
-        answer: "مرحباً! كيف يمكنني مساعدتك في استفساراتك القانونية؟",
-        source_chunks: [],
-        llm_provider_used: llmProviderUsed,
+        llm_provider_used: provider.llmProvider,
         category: "chat",
         latency_ms: Math.round(performance.now() - startedAt),
       };
     }
+    if (category === "law_ref") {
+      return this.runLawReference(
+        request,
+        startedAt,
+        provider.llmProvider,
+        parsedReference,
+      );
+    }
+    return this.runRag(
+      request,
+      startedAt,
+      provider.llmProvider,
+      undefined,
+      parsedReference,
+    );
   }
 
-  private async runLawRefQuery(
+  private async runLawReference(
     request: QueryRequest,
     startedAt: number,
-    llmProviderUsed: string,
+    provider: string,
     parsedReference?: ParsedLegalReference,
   ): Promise<QueryResponse> {
     const reference = parsedReference ?? parseLegalReference(request.query);
-
-    // Path 1: explicit article number → exact law article lookup
-    if (reference.articleNumber && reference.lawName) {
-      const document = await this.retrievalService.findByArticle(reference);
-      if (document) {
+    if (reference.articleNumbers.length > 0 && reference.lawName) {
+      const found = [];
+      const missing = [];
+      for (const articleNumber of reference.articleNumbers) {
+        const document = await this.retrievalService.findByArticle({
+          ...reference,
+          articleNumber,
+          articleNumbers: [articleNumber],
+        });
+        if (document) found.push(document);
+        else missing.push(articleNumber);
+      }
+      if (found.length > 0) {
+        const answers = found.map((document) =>
+          this.legalRefService.buildExactMatchAnswer(document),
+        );
+        if (missing.length > 0) {
+          answers.push(
+            `لم يتم العثور على نتيجة منشورة مؤهلة للمواد: ${missing.join("، ")}.`,
+          );
+        }
         return {
-          answer: this.legalRefService.buildExactMatchAnswer(document),
-          source_chunks: [toLegalChunk(document), ...document._children.map((c) => toLegalChunk(c))],
+          answer: answers.join("\n\n"),
+          source_chunks: found.flatMap((document) => [
+            toLegalChunk(document),
+            ...document._children.map((child) => toLegalChunk(child)),
+          ]),
           llm_provider_used: null,
           category: "law_ref",
           latency_ms: Math.round(performance.now() - startedAt),
         };
       }
-      return this.runArabicRagQuery(request, startedAt, llmProviderUsed, this.legalRefService.buildNoExactMatchAnswer(reference), reference);
     }
 
-    // Path 2: appeal number → exact court ruling lookup
     if (reference.appealNumber) {
-      const document = await this.retrievalService.findByAppeal(reference.appealNumber, reference.judicialYear);
+      const document = await this.retrievalService.findByAppeal(
+        reference.appealNumber,
+        reference.judicialYear,
+      );
       if (document) {
         return {
           answer: this.legalRefService.buildRulingAnswer(document),
-          source_chunks: [toLegalChunk(document), ...document._children.map((c) => toLegalChunk(c))],
+          source_chunks: [
+            toLegalChunk(document),
+            ...document._children.map((child) => toLegalChunk(child)),
+          ],
           llm_provider_used: null,
           category: "law_ref",
           latency_ms: Math.round(performance.now() - startedAt),
         };
       }
-      return this.runArabicRagQuery(request, startedAt, llmProviderUsed, this.legalRefService.buildNoRulingMatchAnswer(reference), reference);
     }
 
-    // Path 3: law name / number / year only → RAG with filters
-    if (reference.lawNumber || reference.lawYear || reference.lawName) {
-      return this.runArabicRagQuery(request, startedAt, llmProviderUsed, undefined, reference);
-    }
-
-    return {
-      answer: this.legalRefService.buildMissingArticleNumberAnswer(),
-      source_chunks: [],
-      llm_provider_used: null,
-      category: "law_ref",
-      latency_ms: Math.round(performance.now() - startedAt),
-    };
+    return this.runRag(
+      request,
+      startedAt,
+      provider,
+      "لم يتم العثور على تطابق مباشر منشور؛ تم استخدام البحث الدلالي.",
+      reference,
+    );
   }
 
-  private async runArabicRagQuery(
+  private async runRag(
     request: QueryRequest,
     startedAt: number,
-    llmProviderUsed: string,
+    provider: string,
     answerPrefix?: string,
-    parsedReference?: ParsedLegalReference,
+    originalReference?: ParsedLegalReference,
   ): Promise<QueryResponse> {
-    const reference = parsedReference ?? parseLegalReference(request.query);
-
-    // Build prompt hints for specific paragraph / clause references
-    let promptInstruction = "";
-    if (reference.paragraphs.length > 0) {
-      promptInstruction += `\n- ركز على استخراج الإجابة من الفقرة رقم ${reference.paragraphs.join(" و ")} إن وجدت.`;
+    const original =
+      originalReference ?? parseLegalReference(request.query);
+    const rewrite = await this.queryRewriteService.rewrite(
+      request.query,
+      request.user_role,
+    );
+    const retrievalReference = parseLegalReference(rewrite.rewrittenQuery);
+    const mergedReference = mergeReferences(original, retrievalReference);
+    const rewrittenRequest: QueryRequest = {
+      ...request,
+      query: rewrite.rewrittenQuery,
+    };
+    const candidates = await this.retrievalService.retrieveCandidateChunks(
+      rewrittenRequest,
+      mergedReference,
+    );
+    const reranked = await this.rerankerService.rerank(
+      request.query,
+      candidates,
+      Math.min(request.top_k, env.rerankTopK),
+    );
+    const grounding = evaluateGrounding(reranked);
+    if (!grounding.shouldGenerate) {
+      return {
+        answer: [answerPrefix, grounding.refusalAnswer]
+          .filter(Boolean)
+          .join(" "),
+        source_chunks: [],
+        llm_provider_used: provider,
+        category: "arabic_rag",
+        latency_ms: Math.round(performance.now() - startedAt),
+      };
     }
-    if (reference.clauses.length > 0) {
-      promptInstruction += `\n- ركز على استخراج الإجابة من البند رقم ${reference.clauses.join(" و ")} إن وجدت.`;
-    }
 
-    const rewrite = await this.queryRewriteService.rewrite(request.query, request.user_role);
-    const rewriteRequest: QueryRequest = { ...request, query: rewrite.rewrittenQuery };
-    const candidateChunks = await this.retrievalService.retrieveCandidateChunks(rewriteRequest, reference);
-    const rerankTopK = Math.min(request.top_k, env.rerankTopK);
-    const sourceChunks = await this.rerankerService.rerank(request.query, candidateChunks, rerankTopK);
-
-    if (sourceChunks.length === 0) {
-      const answerParts = [answerPrefix, "لم يتم العثور على مواد قانونية ذات صلة كافية للإجابة عن السؤال في الوقت الحالي."].filter(Boolean);
-      return { answer: answerParts.join(" "), source_chunks: [], llm_provider_used: llmProviderUsed, category: "arabic_rag", latency_ms: Math.round(performance.now() - startedAt) };
-    }
-
-    const groundingDecision = evaluateGrounding(sourceChunks);
-    if (!groundingDecision.shouldGenerate) {
-      const answerParts = [answerPrefix, groundingDecision.refusalAnswer].filter(Boolean);
-      return { answer: answerParts.join(" "), source_chunks: sourceChunks, llm_provider_used: llmProviderUsed, category: "arabic_rag", latency_ms: Math.round(performance.now() - startedAt) };
-    }
-
-    // Expand child chunks to full parent text for LLM context
-    const expandedChunks = await this.retrievalService.expandWithParentContext(sourceChunks);
-    const context = buildArabicLegalContext(expandedChunks);
-
-    const finalQuestion = promptInstruction
-      ? `${request.query}\n\nتعليمات إضافية للاستخراج:${promptInstruction}`
-      : request.query;
-
-    const answer = await this.generationService.generateGroundedArabicAnswer({ question: finalQuestion, context, evidenceCount: sourceChunks.length });
-
+    // Generation and the API response use the same qualified excerpts.
+    const evidence = grounding.qualifiedChunks;
+    const context = buildArabicLegalContext(evidence);
+    const generated = await this.generationService.generateGroundedArabicAnswer(
+      {
+        question: request.query,
+        context,
+        evidenceCount: evidence.length,
+      },
+    );
+    const answer = validateSourceCitations(generated, evidence.length);
     return {
       answer: answerPrefix ? `${answerPrefix}\n\n${answer}` : answer,
-      source_chunks: sourceChunks,
-      llm_provider_used: llmProviderUsed,
+      source_chunks: evidence,
+      llm_provider_used: provider,
       category: "arabic_rag",
       latency_ms: Math.round(performance.now() - startedAt),
-      confidence_score: sourceChunks[0]?.rerank_score,
+      evidence_relevance_score: Math.max(
+        ...evidence.map(
+          (chunk) =>
+            chunk.rerank_score ??
+            chunk.similarity_score ??
+            chunk.rrf_score ??
+            0,
+        ),
+      ),
     };
   }
 }

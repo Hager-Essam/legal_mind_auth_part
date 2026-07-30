@@ -9,15 +9,16 @@
  *   npx tsx src/scripts/create-indexes.ts
  */
 
-import mongoose from "mongoose";
 import { env } from "../config/env";
+import { MongoService, ragConnection } from "../services/mongo.service";
 
 async function createIndexes() {
+  const mongoService = new MongoService();
   console.log("Connecting to MongoDB...");
-  await mongoose.connect(env.mongodbUri, { dbName: env.mongodbDb });
-  console.log(`Connected. DB: ${env.mongodbDb}\n`);
+  await mongoService.connect();
+  console.log(`Connected. RAG DB: ${env.ragMongoDb}\n`);
 
-  const col = mongoose.connection.db!.collection("legal_chunks");
+  const col = ragConnection.db!.collection("legal_chunks");
 
   // ── 1. Article exact-lookup index ─────────────────────────────────────────
   // Used by: findByArticle()
@@ -88,7 +89,7 @@ async function createIndexes() {
   }
 
   console.log("\n✅  Index creation complete.");
-  process.exit(0);
+  await mongoService.close();
 }
 
 createIndexes().catch((err) => {

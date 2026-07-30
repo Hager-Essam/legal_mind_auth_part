@@ -43,8 +43,14 @@ const getCitationBoost = (chunk: LegalChunks): number => {
 
 const getArticleMatchBoost = (question: string, chunk: LegalChunks): number => {
   if (!chunk.article_number) return 0;
-  const normalizedQuestion = normalizeArabicQuery(question);
-  return normalizedQuestion.includes(chunk.article_number.trim()) ? 0.2 : 0;
+  const parsed = parseLegalReference(question);
+  const chunkArticle = Number.parseInt(chunk.article_number.trim(), 10);
+  if (!Number.isFinite(chunkArticle)) return 0;
+  return parsed.articleNumbers.some(
+    (article) => Number.parseInt(article, 10) === chunkArticle,
+  )
+    ? 0.2
+    : 0;
 };
 
 const getDeepStructureBoost = (question: string, chunk: LegalChunks): number => {

@@ -8,6 +8,14 @@ import { MongoService } from "./mongo.service";
 import { ProviderConfigService } from "./provider-config.service";
 import { RerankerService } from "./reranker.service";
 import { RetrievalService } from "./retrieval.service";
+import { UserRepository } from "../modules/users/user.repository";
+import { RefreshTokenRepository } from "../modules/refresh-tokens/refresh-token.repository";
+import { EmailService } from "./email.service";
+import { AuthService } from "../modules/auth/auth.service";
+import { ConversationService } from "../modules/conversations/conversation.service";
+import { ConversationMemoryService } from "./conversation-memory.service";
+import { SourceSnapshotService } from "./source-snapshot.service";
+import { ChatOrchestratorService } from "./chat-orchestrator.service";
 
 export type AppServices = {
   mongoService: MongoService;
@@ -20,6 +28,14 @@ export type AppServices = {
   legalRefService: LegalRefService;
   queryRewriteService: QueryRewriteService;
   queryService: QueryService;
+  userRepository: UserRepository;
+  refreshTokenRepository: RefreshTokenRepository;
+  emailService: EmailService;
+  authService: AuthService;
+  conversationService: ConversationService;
+  conversationMemoryService: ConversationMemoryService;
+  sourceSnapshotService: SourceSnapshotService;
+  chatOrchestratorService: ChatOrchestratorService;
 };
 
 export const createServices = (): AppServices => {
@@ -41,6 +57,23 @@ export const createServices = (): AppServices => {
     generationService,
     queryRewriteService,
   );
+  const userRepository = new UserRepository();
+  const refreshTokenRepository = new RefreshTokenRepository();
+  const emailService = new EmailService();
+  const authService = new AuthService(
+    userRepository,
+    refreshTokenRepository,
+    emailService,
+  );
+  const conversationService = new ConversationService();
+  const conversationMemoryService = new ConversationMemoryService();
+  const sourceSnapshotService = new SourceSnapshotService();
+  const chatOrchestratorService = new ChatOrchestratorService(
+    conversationService,
+    conversationMemoryService,
+    sourceSnapshotService,
+    queryService,
+  );
 
   return {
     mongoService,
@@ -53,5 +86,13 @@ export const createServices = (): AppServices => {
     legalRefService,
     queryRewriteService,
     queryService,
+    userRepository,
+    refreshTokenRepository,
+    emailService,
+    authService,
+    conversationService,
+    conversationMemoryService,
+    sourceSnapshotService,
+    chatOrchestratorService,
   };
 };

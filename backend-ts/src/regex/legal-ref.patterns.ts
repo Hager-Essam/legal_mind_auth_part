@@ -1,23 +1,28 @@
-/** Matches article references: "المادة 5", "مادة 3", "article 10" */
-export const ARTICLES_RE = /(?:المادة|مادة|المواد|مواد|article|articles)\s*([0-9٠-٩\sو،,إلىالىحتى\-]+)/i;
+const NUMBER_LIST = "([0-9٠-٩\\sو،,إاىحت\\-]+)";
 
-/** Matches paragraph references: "الفقرة 3", "فقرة 1" */
-export const PARAGRAPHS_RE = /(?:الفقرة|فقرة|الفقرات|فقرات|paragraph|paragraphs)\s*([0-9٠-٩\sو،,إلىالىحتى\-]+)/i;
+export const ARTICLES_RE = new RegExp(
+  `(?:المادة|مادة|المواد|مواد|article|articles)\\s*${NUMBER_LIST}`,
+  "i",
+);
+export const PARAGRAPHS_RE = new RegExp(
+  `(?:الفقرة|فقرة|الفقرات|فقرات|paragraph|paragraphs)\\s*${NUMBER_LIST}`,
+  "i",
+);
+export const CLAUSES_RE = new RegExp(
+  `(?:البند|بند|البنود|بنود|clause|clauses)\\s*${NUMBER_LIST}`,
+  "i",
+);
+export const CHAPTERS_RE = new RegExp(
+  `(?:الفصل|فصل|الفصول|فصول|chapter|chapters)\\s*${NUMBER_LIST}`,
+  "i",
+);
+export const PARTS_RE = new RegExp(
+  `(?:الباب|باب|الأبواب|ابواب|أبواب|part|parts)\\s*${NUMBER_LIST}`,
+  "i",
+);
 
-/** Matches clause references: "البند 2", "بند 5" */
-export const CLAUSES_RE = /(?:البند|بند|البلنود|بنود|clause|clauses)\s*([0-9٠-٩\sو،,إلىالىحتى\-]+)/i;
-
-/** Matches chapter references: "الفصل 4", "فصل 1" */
-export const CHAPTERS_RE = /(?:الفصل|فصل|الفصول|فصول|chapter|chapters)\s*([0-9٠-٩\sو،,إلىالىحتى\-]+)/i;
-
-/** Matches part references: "الباب 2", "باب 1" */
-export const PARTS_RE = /(?:الباب|باب|الأبواب|ابواب|أبواب|part|parts)\s*([0-9٠-٩\sو،,إلىالىحتى\-]+)/i;
-
-/** Matches law name references: "قانون العمل", "لائحة التأمين" */
-export const LAW_NAME_RE = /(?:(?:من|في)\s+)?((?:قانون|لائحة|اللائحة|قرار|نظام|مرسوم|تعميم|تشريع|أمر)[^؟\n\r،.]*)/i;
-
-/** Matches appeal number: "الطعن رقم 513" */
+export const LAW_NAME_RE =
+  /(?:(?:من|في)\s+)?((?:قانون|لائحة|اللائحة|قرار|نظام|مرسوم|تعميم|تشريع|أمر)[^؟\n\r،.]*)/i;
 export const APPEAL_RE = /الطعن\s+رقم\s+([\d٠-٩]+)/i;
-
-/** Matches judicial year: "الطعن رقم 513 لسنة 16" */
-export const JUDICIAL_YEAR_RE = /الطعن\s+رقم\s+[\d٠-٩]+\s+لسنة\s+([\d٠-٩]{1,4})/i;
+export const JUDICIAL_YEAR_RE =
+  /الطعن\s+رقم\s+[\d٠-٩]+\s+لسنة\s+([\d٠-٩]{1,4})/i;

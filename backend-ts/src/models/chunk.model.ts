@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ragConnection } from "../services/mongo.service";
 
 const COLLECTION_NAME = "legal_chunks";
 
@@ -27,6 +28,40 @@ const chunkSchema = new mongoose.Schema(
     source_file: { type: String },
     text_len: { type: Number },
     is_retrievable: { type: Boolean },
+    authorityId: { type: String },
+    authorityTitleOfficial: { type: String },
+    authorityTitleNormalized: { type: String },
+    jurisdiction: { type: String },
+    authorityType: {
+      type: String,
+      enum: [
+        "constitution",
+        "statute",
+        "regulation",
+        "court_ruling",
+        "official_guidance",
+        "secondary_source",
+        "generated_summary",
+      ],
+    },
+    authorityStatus: {
+      type: String,
+      enum: ["effective", "amended", "repealed", "historical", "unknown"],
+    },
+    effectiveFrom: { type: String },
+    effectiveTo: { type: String },
+    textStatus: {
+      type: String,
+      enum: ["verbatim", "extracted", "summary", "unknown"],
+    },
+    officialSourceUrl: { type: String },
+    reviewStatus: {
+      type: String,
+      enum: ["draft", "reviewed", "published", "quarantined"],
+    },
+    reviewedBy: { type: String },
+    reviewedAt: { type: Date },
+    corpusReleaseId: { type: String },
     embedding: { type: [Number] },
   },
   { collection: COLLECTION_NAME, strict: false },
@@ -37,4 +72,7 @@ export type ChunkDocument = mongoose.InferSchemaType<typeof chunkSchema> & {
   score?: number;
 };
 
-export const ChunkModel = mongoose.model<ChunkDocument>("LegalChunk", chunkSchema);
+export const ChunkModel = ragConnection.model<ChunkDocument>(
+  "LegalChunk",
+  chunkSchema,
+);

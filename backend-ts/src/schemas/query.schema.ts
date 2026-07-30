@@ -20,6 +20,6 @@ export const queryResponseSchema = z.object({
   llm_provider_used: z.string().nullable(),
   category: questionCategorySchema.default("arabic_rag" as const),
   latency_ms: z.number().int().nonnegative().default(0),
-  confidence_score: z.number().min(0).max(1).optional(),
+  evidence_relevance_score: z.number().min(0).max(1).optional(),
 });
 export type QueryResponse = z.infer<typeof queryResponseSchema>;

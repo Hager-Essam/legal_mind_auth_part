@@ -1,117 +1,125 @@
 import { env } from "../config/env";
+import type { RewriteResult } from "../types/query.types";
 import { normalizeArabicQuery } from "../utils/arabic-normalize";
 import { rewriteWithMapping } from "../utils/law-mapping";
 import { ProviderConfigService } from "./provider-config.service";
-import type { RewriteResult } from "../types/query.types";
+import { requestProviderText } from "./provider-http.service";
 
 const LLM_REWRITE_TIMEOUT_MS = 8_000;
 
-const REWRITE_SYSTEM_PROMPT = `انت مساعد لتحسين الاستعلامات القانونية في مصر.
-مهمتك اعادة صياغة السؤال ليكون اكثر دقه ووضوحا للبحث في القوانين المصريه.
-
-قواعد:
-1. حول اللغه العاميه او غير الدقيقه الى مصطلحات قانونيه دقيقه
-2. استخدم اسماء القوانين والمواد الصحيحه
-3. لا تغير معنى السؤال الاصلي
-4. اعد كتابه السؤال بالعربيه فقط
-5. لا تضف ارقام مواد قانونيه الا اذا كنت متاكدا منها
-6. اجعل السؤال مناسبا للبحث في قاعدة بيانات قانونيه`;
-
-const isArabicClean = (text: string): boolean => {
-  if (!text || !text.trim()) return false;
-  return !/[a-zA-Z]/.test(text.replace(/[\s\d]/g, ""));
-};
+const REWRITE_SYSTEM_PROMPT = `Rewrite the user's Egyptian legal question for retrieval.
+Preserve every explicit law, article, case number, date, fact, and qualification.
+Do not invent or infer a law number, article number, authority, penalty, or case number.
+Use legal concepts as search hints, not as authority decisions.
+Return only the rewritten question.`;
 
 export class QueryRewriteService {
   constructor(private readonly providerConfigService: ProviderConfigService) {}
 
-  private mappingOnly(query: string): RewriteResult 
-  {
+  private deterministicFallback(query: string): RewriteResult {
     const normalized = normalizeArabicQuery(query);
-    const mappingResult = rewriteWithMapping(normalized);
-
-    if (mappingResult.matched) {
-      return { originalQuery: query, rewrittenQuery: mappingResult.rewritten, usedMapping: true, usedLlm: false, mappingMatch: mappingResult.matchedTerm };
-    }
-
-    return { originalQuery: query, rewrittenQuery: normalized, usedMapping: false, usedLlm: false, mappingMatch: null };
+    const mapping = env.enableLegacyLawMapping
+      ? rewriteWithMapping(normalized)
+      : {
+          matched: false,
+          rewritten: normalized,
+          matchedTerm: null,
+          appendedLaw: null,
+        };
+    return {
+      originalQuery: query,
+      rewrittenQuery: mapping.rewritten,
+      usedMapping: mapping.matched,
+      usedLlm: false,
+      mappingMatch: mapping.matchedTerm,
+    };
   }
 
-  async rewrite(query: string, userRole?: "lawyer" | "citizen"): Promise<RewriteResult> 
-  {
+  async rewrite(
+    query: string,
+    userRole?: "lawyer" | "citizen",
+  ): Promise<RewriteResult> {
     const role = userRole ?? env.defaultUserRole;
-
-    // Lawyers: mapping only (no LLM) — they already use legal terminology
-    if (role === "lawyer") 
-    {
-      return this.mappingOnly(query);
+    if (role === "lawyer" && !env.enableLegacyLawMapping) {
+      return {
+        originalQuery: query,
+        rewrittenQuery: query.trim(),
+        usedMapping: false,
+        usedLlm: false,
+        mappingMatch: null,
+      };
+    }
+    if (role === "lawyer" || !env.enableQueryRewrite || !env.enableLlmRewrite) {
+      return this.deterministicFallback(query);
     }
 
-    // If query rewrite is disabled, just normalize and try mapping
-    if (!env.enableQueryRewrite) 
-    {
-      return this.mappingOnly(query);
-    }
-
-    // Full rewrite for citizens: LLM + mapping
-    try 
-    {
-      const llmResult = await this.rewriteWithLlm(query);
-      if (!isArabicClean(llmResult)) return this.mappingOnly(query);
-
-      const normalizedLlm = normalizeArabicQuery(llmResult);
-      const mappingResult = rewriteWithMapping(normalizedLlm);
-
-      if (mappingResult.matched && mappingResult.appendedLaw) {
-        return { originalQuery: query, rewrittenQuery: `${llmResult} ${mappingResult.appendedLaw}`, usedMapping: true, usedLlm: true, mappingMatch: mappingResult.matchedTerm };
+    try {
+      const rewritten = await this.rewriteWithLlm(query);
+      if (!rewritten.trim() || rewritten.length > 2_000) {
+        return this.deterministicFallback(query);
       }
-
-      return { originalQuery: query, rewrittenQuery: llmResult, usedMapping: mappingResult.matched, usedLlm: true, mappingMatch: mappingResult.matchedTerm };
-    } 
-    catch (error) 
-    {
-      console.error("[QueryRewriteService] LLM rewrite failed, falling back to mapping-only:", error);
-      return this.mappingOnly(query);
+      if (!env.enableLegacyLawMapping) {
+        return {
+          originalQuery: query,
+          rewrittenQuery: rewritten.trim(),
+          usedMapping: false,
+          usedLlm: true,
+          mappingMatch: null,
+        };
+      }
+      const mapping = rewriteWithMapping(normalizeArabicQuery(rewritten));
+      return {
+        originalQuery: query,
+        rewrittenQuery:
+          mapping.appendedLaw && !rewritten.includes(mapping.appendedLaw)
+            ? `${rewritten.trim()} ${mapping.appendedLaw}`
+            : rewritten.trim(),
+        usedMapping: mapping.matched,
+        usedLlm: true,
+        mappingMatch: mapping.matchedTerm,
+      };
+    } catch (error) {
+      console.error(
+        `[QueryRewriteService] Rewrite failed (${error instanceof Error ? error.name : "unknown"}); using the original query.`,
+      );
+      return this.deterministicFallback(query);
     }
   }
 
   private async rewriteWithLlm(query: string): Promise<string> {
     const apiKey = this.providerConfigService.getDashScopeApiKey();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), LLM_REWRITE_TIMEOUT_MS);
-
-    try {
-      const response = await fetch(`${env.dashscopeCompatUrl}/chat/completions`, {
+    const text = await requestProviderText(
+      `${env.dashscopeCompatUrl}/chat/completions`,
+      {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
         body: JSON.stringify({
           model: env.llmRewriteModel,
           messages: [
             { role: "system", content: REWRITE_SYSTEM_PROMPT },
             { role: "user", content: query },
           ],
-          temperature: 0.1,
+          temperature: 0,
           max_tokens: 256,
         }),
-        signal: controller.signal,
-      });
-
-      const text = await response.text();
-      console.log(`[QueryRewriteService] response ${response.status}: ${text.slice(0, 200)}`);
-
-      if (!text || !text.trim()) {
-        console.warn("[QueryRewriteService] Empty response from DashScope API, using original query");
-        return query;
-      }
-
-      const payload = JSON.parse(text) as { choices?: Array<{ message?: { content?: string } }>; error?: { message?: string } };
-      if (!response.ok) throw new Error(payload.error?.message ?? `LLM rewrite failed with status ${response.status}`);
-
-      const content = payload.choices?.[0]?.message?.content;
-      if (typeof content === "string" && content.trim().length > 0) return content.trim();
-      return query;
-    } finally {
-      clearTimeout(timeoutId);
+      },
+      {
+        timeoutMs: LLM_REWRITE_TIMEOUT_MS,
+        totalRetryBudgetMs: 12_000,
+        maxAttempts: 2,
+      },
+    );
+    let payload: {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    try {
+      payload = JSON.parse(text) as typeof payload;
+    } catch {
+      throw new Error("Rewrite provider returned invalid JSON.");
     }
+    return payload.choices?.[0]?.message?.content?.trim() || query;
   }
 }

@@ -11,7 +11,7 @@ export const legalChunksSchema = z.object({
   language: z.string().default(""),
   semantic_unit: z.string().default(""),
   hierarchy_path: z.string().default(""),
-  is_retrievable: z.boolean().default(true),
+  is_retrievable: z.boolean().default(false),
   text_len: z.number().default(0),
   law_number: z.string().optional(),
   law_year: z.string().optional(),
@@ -25,5 +25,35 @@ export const legalChunksSchema = z.object({
   rerank_score: z.number().optional(),
   evidence_rank: z.number().optional(),
   rrf_score: z.number().optional(),
+  authorityId: z.string().optional(),
+  authorityTitleOfficial: z.string().optional(),
+  authorityTitleNormalized: z.string().optional(),
+  jurisdiction: z.string().default("EG"),
+  authorityType: z
+    .enum([
+      "constitution",
+      "statute",
+      "regulation",
+      "court_ruling",
+      "official_guidance",
+      "secondary_source",
+      "generated_summary",
+    ])
+    .optional(),
+  authorityStatus: z
+    .enum(["effective", "amended", "repealed", "historical", "unknown"])
+    .optional(),
+  effectiveFrom: z.string().optional(),
+  effectiveTo: z.string().optional(),
+  textStatus: z
+    .enum(["verbatim", "extracted", "summary", "unknown"])
+    .optional(),
+  officialSourceUrl: z.string().optional(),
+  reviewStatus: z
+    .enum(["draft", "reviewed", "published", "quarantined"])
+    .optional(),
+  reviewedBy: z.string().optional(),
+  reviewedAt: z.date().optional(),
+  corpusReleaseId: z.string().optional(),
 });
 export type LegalChunks = z.infer<typeof legalChunksSchema>;

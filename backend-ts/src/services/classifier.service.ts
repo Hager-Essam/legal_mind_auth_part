@@ -1,25 +1,46 @@
-import type { QuestionCategory, QueryRequest } from "../schemas";
+import type { QueryRequest } from "../schemas";
 import { parseLegalReference } from "../utils/legal-ref-parser";
-import { CHAT_RE } from "../regex/classifier.patterns";
 import type { ClassificationResult } from "../types/classifier.types";
 
+const socialOnlyPatterns = [
+  /^(?:مرحبا|مرحباً|أهلا|أهلاً|اهلا|السلام عليكم|سلام)[!,.،؟?\s]*$/i,
+  /^(?:شكرا|شكراً|شكرا لك|شكراً لك)[!,.،؟?\s]*$/i,
+  /^(?:كيف حالك|إزيك|ازيك|عامل ايه|عاملة ايه)[!,.،؟?\s]*$/i,
+  /^(?:hi|hello|hey|thanks|thank you|how are you)[!,.?\s]*$/i,
+];
+
+const greetingPrefix =
+  /^(?:(?:مرحبا|مرحباً|أهلا|أهلاً|اهلا|السلام عليكم|سلام|شكرا|شكراً|hi|hello|hey|thanks|thank you)\s*[,،:؛;.!؟?-]*\s*)+/i;
+
+export const stripGreetingPrefix = (query: string): string =>
+  query.trim().replace(greetingPrefix, "").trim();
+
 export class ClassifierService {
-  classify(request: QueryRequest): ClassificationResult
-  {
+  classify(request: QueryRequest): ClassificationResult {
     const query = request.query.trim();
+    if (socialOnlyPatterns.some((pattern) => pattern.test(query))) {
+      return { category: "chat" };
+    }
+
+    const substantiveQuery = stripGreetingPrefix(query) || query;
     const parsedReference = parseLegalReference(query);
-
-    const hasLaw =
+    const hasExplicitReference =
       parsedReference.articleNumbers.length > 0 ||
-      parsedReference.appealNumber ||
-      parsedReference.lawNumber ||
-      parsedReference.lawYear ||
-      (parsedReference.lawName && parsedReference.lawName.split(" ").length >= 2);
+      Boolean(parsedReference.appealNumber) ||
+      Boolean(parsedReference.lawNumber) ||
+      Boolean(parsedReference.lawYear) ||
+      Boolean(
+        parsedReference.lawName &&
+          parsedReference.lawName.split(/\s+/).length >= 2,
+      );
 
-    if (hasLaw) return { category: "law_ref", parsedReference };
+    if (hasExplicitReference) {
+      return { category: "law_ref", parsedReference };
+    }
 
-    if (CHAT_RE.test(query)) return { category: "chat" };
-    
-    return { category: "arabic_rag", parsedReference };
+    return {
+      category: "arabic_rag",
+      parsedReference: parseLegalReference(substantiveQuery),
+    };
   }
 }

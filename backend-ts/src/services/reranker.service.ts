@@ -3,6 +3,7 @@ import { env } from "../config/env";
 import type { LegalChunks } from "../schemas";
 import { deduplicateEvidence, scoreEvidenceChunk, selectTopEvidence } from "../utils/evidence-selection";
 import { ProviderConfigService } from "./provider-config.service";
+import { requestProviderText } from "./provider-http.service";
 
 // DashScope rerank endpoint uses "compatible-api" instead of "compatible-mode"
 const getRerankUrl = (baseUrl: string): string => `${baseUrl.replace("compatible-mode", "compatible-api")}/reranks`;
@@ -12,6 +13,39 @@ const RERANK_TIMEOUT_MS = 10_000;
 type RerankResult = {
   results: Array<{ index: number; relevance_score: number }>;
   error?: { message?: string };
+};
+
+export const validateRerankResults = (
+  payload: RerankResult,
+  chunkCount: number,
+  topK: number,
+): void => {
+  if (
+    !Array.isArray(payload.results) ||
+    payload.results.length === 0 ||
+    payload.results.length > topK
+  ) {
+    throw new Error("Reranker returned an invalid result count.");
+  }
+  const indexes = new Set<number>();
+  for (const result of payload.results) {
+    if (
+      !Number.isInteger(result.index) ||
+      result.index < 0 ||
+      result.index >= chunkCount ||
+      indexes.has(result.index)
+    ) {
+      throw new Error("Reranker returned an invalid or duplicate index.");
+    }
+    if (
+      !Number.isFinite(result.relevance_score) ||
+      result.relevance_score < 0 ||
+      result.relevance_score > 1
+    ) {
+      throw new Error("Reranker returned an invalid relevance score.");
+    }
+    indexes.add(result.index);
+  }
 };
 
 // Build an enriched document string so the cross-encoder sees structural signals
@@ -58,11 +92,9 @@ export class RerankerService {
     const apiKey = this.providerConfigService.getDashScopeApiKey();
     const rerankUrl = getRerankUrl(env.dashscopeCompatUrl);
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), RERANK_TIMEOUT_MS);
-
-    try {
-      const response = await fetch(rerankUrl, {
+    const text = await requestProviderText(
+      rerankUrl,
+      {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
@@ -72,18 +104,20 @@ export class RerankerService {
           top_n: topK,
           return_documents: false,
         }),
-        signal: controller.signal,
-      });
-
-      const text = await response.text();
+      },
+      { timeoutMs: RERANK_TIMEOUT_MS, totalRetryBudgetMs: 20_000 },
+    );
       if (!text || !text.trim()) {
-        console.warn("[RerankerService] Empty response from rerank API, falling back to heuristic");
         throw new Error("Rerank API returned empty response");
       }
 
-      const payload = JSON.parse(text) as RerankResult;
-      if (!response.ok) throw new Error(payload.error?.message ?? `Rerank API failed with status ${response.status}`);
-      if (!Array.isArray(payload.results) || payload.results.length === 0) throw new Error("Rerank API returned empty results");
+      let payload: RerankResult;
+      try {
+        payload = JSON.parse(text) as RerankResult;
+      } catch {
+        throw new Error("Reranker returned invalid JSON.");
+      }
+      validateRerankResults(payload, chunks.length, topK);
 
       // Map results back to original chunks by their position index
       return payload.results.map((result, rank) => ({
@@ -91,9 +125,6 @@ export class RerankerService {
         rerank_score: Number(result.relevance_score.toFixed(6)),
         evidence_rank: rank + 1,
       }));
-    } finally {
-      clearTimeout(timeoutId);
-    }
   }
 
   private rerankHeuristic(question: string, chunks: LegalChunks[], topK: number): LegalChunks[] {

@@ -77,22 +77,59 @@ export class RetrievalService {
     if (words.length === 0) return null;
     const nameRegex = words.map((w: string) => escapeRegex(w)).join(".*");
 
-    const filter: Record<string, unknown> = {
+    const baseFilter: Record<string, unknown> = {
       article_number: articleNumber,
-      law_name_normalized: { $regex: nameRegex, $options: "i" },
       child_index: { $in: [-1, null] },
+      jurisdiction: "EG",
+      is_retrievable: true,
+      reviewStatus: "published",
+      authorityStatus: { $in: ["effective", "amended"] },
     };
-    if (parsedRef?.lawNumber) filter.law_number = parsedRef.lawNumber;
-    if (parsedRef?.lawYear) filter.law_year = parsedRef.lawYear;
+    let parent = await ChunkModel.findOne({
+      ...baseFilter,
+      authorityTitleNormalized: normName,
+    })
+      .sort({ text_len: -1 })
+      .lean();
 
-    const parent = await ChunkModel.findOne(filter).sort({ text_len: -1 }).lean();
+    if (!parent && parsedRef?.lawNumber && parsedRef?.lawYear) {
+      parent = await ChunkModel.findOne({
+        ...baseFilter,
+        law_number: parsedRef.lawNumber,
+        law_year: parsedRef.lawYear,
+      })
+        .sort({ text_len: -1 })
+        .lean();
+    }
+
+    if (!parent) {
+      const candidates = await ChunkModel.find({
+        ...baseFilter,
+        authorityTitleNormalized: { $regex: nameRegex, $options: "i" },
+      })
+        .sort({ text_len: -1 })
+        .limit(3)
+        .lean();
+      const authorities = new Set(
+        candidates.map(
+          (candidate) =>
+            candidate.authorityId ?? candidate.authorityTitleOfficial,
+        ),
+      );
+      if (authorities.size === 1) parent = candidates[0] ?? null;
+    }
     if (!parent) return null;
 
     const children = await ChunkModel.find({
       parent_chunk_id: parent.chunk_id,
       child_index: { $gte: 0 },
       is_retrievable: true,
-    }).lean();
+      jurisdiction: "EG",
+      reviewStatus: "published",
+      authorityStatus: { $in: ["effective", "amended"] },
+    })
+      .sort({ child_index: 1 })
+      .lean();
 
     return { ...parent, _children: children };
   }
@@ -101,6 +138,10 @@ export class RetrievalService {
     const filter: Record<string, unknown> = {
       appeal_number: appealNumber,
       child_index: { $in: [-1, null] },
+      jurisdiction: "EG",
+      is_retrievable: true,
+      reviewStatus: "published",
+      authorityStatus: { $in: ["effective", "amended"] },
     };
     if (judicialYear) filter.judicial_year = judicialYear;
 
@@ -111,7 +152,12 @@ export class RetrievalService {
       parent_chunk_id: parent.chunk_id,
       child_index: { $gte: 0 },
       is_retrievable: true,
-    }).lean();
+      jurisdiction: "EG",
+      reviewStatus: "published",
+      authorityStatus: { $in: ["effective", "amended"] },
+    })
+      .sort({ child_index: 1 })
+      .lean();
 
     return { ...parent, _children: children };
   }
@@ -120,7 +166,12 @@ export class RetrievalService {
     if (queryVector.length === 0) return [];
 
     const topK = options.topK ?? env.retrievalTopK;
-    const filter: Record<string, unknown> = { is_retrievable: { $eq: true } };
+    const filter: Record<string, unknown> = {
+      is_retrievable: { $eq: true },
+      jurisdiction: { $eq: "EG" },
+      reviewStatus: { $eq: "published" },
+      authorityStatus: { $in: ["effective", "amended"] },
+    };
 
     if (options.lawCategory) filter.law_category = { $eq: options.lawCategory };
     if (options.lawNumber) filter.law_number = { $eq: options.lawNumber };
@@ -147,7 +198,17 @@ export class RetrievalService {
 
   async textSearch(query: string, options: SearchOptions = {}): Promise<(ChunkDocument & { score?: number })[]> {
     const topK = options.topK ?? env.sparseTopK;
-    const mustClauses: object[] = [{ equals: { path: "is_retrievable", value: true } }];
+    const mustClauses: object[] = [
+      { equals: { path: "is_retrievable", value: true } },
+      { equals: { path: "jurisdiction", value: "EG" } },
+      { equals: { path: "reviewStatus", value: "published" } },
+      {
+        in: {
+          path: "authorityStatus",
+          value: ["effective", "amended"],
+        },
+      },
+    ];
 
     if (options.lawCategory) mustClauses.push({ phrase: { path: "law_category", query: options.lawCategory } });
     if (options.lawNumber) mustClauses.push({ phrase: { path: "law_number", query: options.lawNumber } });
@@ -164,6 +225,8 @@ export class RetrievalService {
             should: [
               { text: { query, path: "text", score: { boost: { value: 1.5 } } } },
               { text: { query, path: "law_name_normalized", score: { boost: { value: 2.0 } } } },
+              { text: { query, path: "authorityTitleOfficial", score: { boost: { value: 2.2 } } } },
+              { text: { query, path: "authorityTitleNormalized", score: { boost: { value: 2.0 } } } },
               { text: { query, path: "case_subject", score: { boost: { value: 1.8 } } } },
             ],
             minimumShouldMatch: 1,

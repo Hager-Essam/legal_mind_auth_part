@@ -1,4 +1,6 @@
 import { ProviderConfigService } from "./provider-config.service";
+import { env } from "../config/env";
+import { requestProviderText } from "./provider-http.service";
 
 type DashScopeEmbeddingInputType = "query" | "document";
 
@@ -28,38 +30,58 @@ export class EmbeddingService
     const provider = this.providerConfigService.getSummary();
     const apiKey = this.providerConfigService.getDashScopeApiKey();
 
-    const response = await fetch(`${provider.baseUrl}/embeddings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: provider.embeddingModel, input: sanitizedTexts, input_type: inputType }),
-    });
+    const text = await requestProviderText(
+      `${provider.baseUrl}/embeddings`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: provider.embeddingModel,
+          input: sanitizedTexts,
+          input_type: inputType,
+        }),
+      },
+      { timeoutMs: 20_000, totalRetryBudgetMs: 35_000 },
+    );
+    if (!text.trim()) throw new Error("Provider returned an empty embedding response.");
 
-    const text = await response.text();
-    if (!text || !text.trim()) throw new Error(`DashScope embeddings returned empty response (status ${response.status})`);
-
-    const payload = JSON.parse(text) as DashScopeEmbeddingResponse;
-    if (!response.ok) throw new Error(this.buildErrorMessage(payload, response.status));
+    let payload: DashScopeEmbeddingResponse;
+    try {
+      payload = JSON.parse(text) as DashScopeEmbeddingResponse;
+    } catch {
+      throw new Error("Provider returned invalid embedding JSON.");
+    }
 
     // MaaS native response: output.embeddings[].embedding
     // OpenAI-compatible response: data[].embedding
-    const embeddings = payload.output?.embeddings?.map((item) => item.embedding).filter(this.isVector)
-      ?? payload.data?.map((item) => item.embedding).filter(this.isVector)
-      ?? [];
+    const rawEmbeddings =
+      payload.output?.embeddings ?? payload.data ?? [];
 
-    if (embeddings.length !== sanitizedTexts.length) {
-      throw new Error(`DashScope count mismatch. Expected ${sanitizedTexts.length}, got ${embeddings.length}.`);
+    if (rawEmbeddings.length !== sanitizedTexts.length) {
+      throw new Error(`Embedding count mismatch. Expected ${sanitizedTexts.length}, got ${rawEmbeddings.length}.`);
     }
 
-    return embeddings;
+    return rawEmbeddings.map((item, index) => {
+      const embedding = item.embedding;
+      if (
+        !Array.isArray(embedding) ||
+        embedding.length !== env.embeddingDim ||
+        !embedding.every(
+          (value) => typeof value === "number" && Number.isFinite(value),
+        )
+      ) {
+        throw new Error(
+          `Embedding ${index} must contain exactly ${env.embeddingDim} finite values.`,
+        );
+      }
+      return embedding;
+    });
   }
 
-  private buildErrorMessage(payload: DashScopeEmbeddingResponse, status: number): string {
-    const msg = payload.error?.message ?? payload.message ?? "Unknown DashScope error.";
-    const code = payload.error?.code ? ` (${payload.error.code})` : "";
-    return `DashScope embeddings failed with status ${status}${code}: ${msg}`;
-  }
-
-  private isVector(embedding: number[] | undefined): embedding is number[] {
-    return Array.isArray(embedding) && embedding.every((v) => typeof v === "number");
+  async embedDocuments(texts: string[]): Promise<number[][]> {
+    return this.embed(texts, "document");
   }
 }

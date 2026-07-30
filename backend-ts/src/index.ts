@@ -12,7 +12,8 @@ const bootstrap = async () => {
   const server = app.listen(env.apiPort, env.apiHost, () => {
     console.log(`[legalmind-backend-ts] listening on http://${env.apiHost}:${env.apiPort} (${env.nodeEnv})`);
     console.log(`[legalmind-backend-ts] boot summary ${JSON.stringify({
-      app_name: env.appName, environment: env.nodeEnv, mongo_db: env.mongodbDb,
+      app_name: env.appName, environment: env.nodeEnv,
+      app_mongo_db: env.appMongoDb, rag_mongo_db: env.ragMongoDb,
       llm_model: env.llmModel, embedding_model: env.embeddingModel,
       hybrid_search: env.enableHybridSearch, query_rewrite: env.enableQueryRewrite,
       llm_rerank: env.enableLlmRerank, rerank_model: env.llmRerankModel,

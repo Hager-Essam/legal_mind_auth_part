@@ -2,6 +2,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { createQueryController } from "../../controllers/query.controller";
 import type { AppServices } from "../../services/service-container";
+import { authenticate } from "../../modules/auth/auth.middleware";
 
 const queryLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -13,6 +14,11 @@ const queryLimiter = rateLimit({
 
 export const createQueryRouter = (services: AppServices) => {
   const router = Router();
-  router.post("/query", queryLimiter, createQueryController(services));
+  router.post(
+    "/query",
+    authenticate(services.authService, services.userRepository),
+    queryLimiter,
+    createQueryController(services),
+  );
   return router;
 };
