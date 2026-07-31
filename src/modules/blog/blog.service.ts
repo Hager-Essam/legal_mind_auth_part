@@ -24,7 +24,7 @@ class BlogService {
     const blog = await blogRepository.findById(id);
 
     if (!blog) {
-      throw new AppError('Blog not found', HTTP_STATUS.NOT_FOUND);
+      throw new AppError('المقال غير موجود', HTTP_STATUS.NOT_FOUND);
     }
 
     // Only increment views for published blogs
@@ -45,13 +45,13 @@ class BlogService {
     const blog = await blogRepository.findById(id, false);
 
     if (!blog) {
-      throw new AppError('Blog not found', HTTP_STATUS.NOT_FOUND);
+      throw new AppError('المقال غير موجود', HTTP_STATUS.NOT_FOUND);
     }
 
     // Check authorization
-    if (!blog.isAuthor(userId) && userRole !== 'admin') {
+    if (!blog.isAuthor(userId) ) {
       throw new AppError(
-        'You are not authorized to update this blog',
+        'غير مصرح لك بتحديث هذا المقال',
         HTTP_STATUS.FORBIDDEN
       );
     }
@@ -69,12 +69,12 @@ class BlogService {
     const blog = await blogRepository.findById(id, false);
 
     if (!blog) {
-      throw new AppError('Blog not found', HTTP_STATUS.NOT_FOUND);
+      throw new AppError('المقال غير موجود', HTTP_STATUS.NOT_FOUND);
     }
 
     if (!blog.isAuthor(userId) && userRole !== 'admin') {
       throw new AppError(
-        'You are not authorized to delete this blog',
+        'غير مصرح لك بحذف هذا المقال',
         HTTP_STATUS.FORBIDDEN
       );
     }
@@ -95,7 +95,7 @@ class BlogService {
     const blog = await blogRepository.findById(id, false);
 
     if (!blog) {
-      throw new AppError('Blog not found', HTTP_STATUS.NOT_FOUND);
+      throw new AppError('المقال غير موجود', HTTP_STATUS.NOT_FOUND);
     }
 
     const updateData: any = { status };

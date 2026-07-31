@@ -5,16 +5,11 @@ import ResponseHelper from '../../shared/helpers/response.helper';
 class AuthController {
   async register(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      if (!req.file) {
-        ResponseHelper.badRequest(res, 'مستند هوية المحامي مطلوب');
-        return;
-      }
+      const userData: any = { ...req.body };
 
-      const lawyerIdDocument = `/uploads/lawyer-ids/${req.file.filename}`;
-      const userData = {
-        ...req.body,
-        lawyerIdDocument,
-      };
+      if (req.file) {
+        userData.lawyerIdDocument = `/uploads/lawyer-ids/${req.file.filename}`;
+      }
 
       const result = await authService.register(userData);
 

@@ -31,7 +31,6 @@ export interface IUser extends Document {
 
 const userSchema = new Schema<IUser>(
   {
-    // Step 1: Basic Information
     fullName: {
       type: String,
       required: [true, 'Full name is required'],
@@ -54,22 +53,10 @@ const userSchema = new Schema<IUser>(
       select: false, // Don't return password by default
     },
     
-    // Step 2: Professional Information
     officeName: {
       type: String,
-      required: [true, 'Office or law firm name is required'],
       trim: true,
       maxlength: [200, 'Office name cannot exceed 200 characters'],
-    },
-    barAssociationNumber: {
-      type: String,
-      trim: true,
-      sparse: true,
-    },
-    lawyerIdDocument: {
-      type: String,
-      required: [true, 'Lawyer ID document is required'],
-      trim: true,
     },
     teamSize: {
       type: String,
@@ -77,10 +64,9 @@ const userSchema = new Schema<IUser>(
       enum: ['solo', 'small', 'medium', 'large'],
     },
     
-    // System fields
     role: {
       type: String,
-      enum: ['user', 'lawyer', 'admin'],
+      enum: ['lawyer'],
       default: 'lawyer',
     },
     isActive: {
@@ -117,8 +103,7 @@ const userSchema = new Schema<IUser>(
       type: Date,
       select: false,
     },
-    
-    // Legacy fields (kept for backward compatibility)
+ 
     firstName: {
       type: String,
       trim: true,

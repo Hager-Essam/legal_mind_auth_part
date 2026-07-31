@@ -17,7 +17,7 @@ class BlogController {
     try {
       const blog = await blogService.createBlog(req.body, (req as any).user.id);
 
-      ResponseHelper.created(res, 'Blog created successfully', {
+      ResponseHelper.created(res, 'تم إنشاء المقال بنجاح', {
         blog,
       });
     } catch (error) {
@@ -48,7 +48,7 @@ class BlogController {
 
       const result = await blogService.getAllBlogs(options);
 
-      ResponseHelper.ok(res, 'Blogs retrieved successfully', result);
+      ResponseHelper.ok(res, 'تم جلب المقالات بنجاح', result);
     } catch (error) {
       next(error);
     }
@@ -59,7 +59,7 @@ class BlogController {
       const userId = (req as any).user?.id || null;
       const blog = await blogService.getBlogById(req.params.id as string, userId);
 
-      ResponseHelper.ok(res, 'Blog retrieved successfully', { blog });
+      ResponseHelper.ok(res, 'تم جلب المقال بنجاح', { blog });
     } catch (error) {
       next(error);
     }
@@ -74,7 +74,7 @@ class BlogController {
         (req as any).user.role
       );
 
-      ResponseHelper.ok(res, 'Blog updated successfully', { blog });
+      ResponseHelper.ok(res, 'تم تحديث المقال بنجاح', { blog });
     } catch (error) {
       next(error);
     }
@@ -84,7 +84,7 @@ class BlogController {
     try {
       await blogService.deleteBlog(req.params.id as string, (req as any).user.id, (req as any).user.role);
 
-      ResponseHelper.ok(res, 'Blog deleted successfully');
+      ResponseHelper.ok(res, 'تم حذف المقال بنجاح');
     } catch (error) {
       next(error);
     }
@@ -100,7 +100,7 @@ class BlogController {
         parseInt(limit as string)
       );
 
-      ResponseHelper.ok(res, 'Your blogs retrieved successfully', result);
+      ResponseHelper.ok(res, 'تم جلب مقالاتك بنجاح', result);
     } catch (error) {
       next(error);
     }
@@ -116,7 +116,7 @@ class BlogController {
         rejectionReason
       );
 
-      ResponseHelper.ok(res, 'Blog status updated successfully', { blog });
+      ResponseHelper.ok(res, 'تم تحديث حالة المقال بنجاح', { blog });
     } catch (error) {
       next(error);
     }
@@ -127,7 +127,7 @@ class BlogController {
       const { limit = 5 } = req.query;
       const blogs = await blogService.getPopularBlogs(parseInt(limit as string));
 
-      ResponseHelper.ok(res, 'Popular blogs retrieved successfully', {
+      ResponseHelper.ok(res, 'تم جلب المقالات الأكثر شهرة بنجاح', {
         blogs,
       });
     } catch (error) {
@@ -140,7 +140,7 @@ class BlogController {
       const { limit = 5 } = req.query;
       const blogs = await blogService.getTrendingBlogs(parseInt(limit as string));
 
-      ResponseHelper.ok(res, 'Trending blogs retrieved successfully', {
+      ResponseHelper.ok(res, 'تم جلب المقالات الرائجة بنجاح', {
         blogs,
       });
     } catch (error) {

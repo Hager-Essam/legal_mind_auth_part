@@ -26,13 +26,11 @@ class AuthService {
   }
 
   async register(userData: any) {
-    // Check if user already exists
     const existingUser = await userRepository.findByEmailWithoutPassword(userData.email);
     if (existingUser) {
       throw new AppError(ERROR_MESSAGES.EMAIL_ALREADY_EXISTS, HTTP_STATUS.CONFLICT);
     }
 
-    // Create user
     const user = await userRepository.create(userData);
 
     // Generate email verification token and send verification email.
@@ -61,18 +59,17 @@ class AuthService {
   }
 
   async login(email: string, password: string, ipAddress?: string) {
-    // Find user with password
+   
     const user = await userRepository.findByEmail(email);
     if (!user) {
       throw new AppError(ERROR_MESSAGES.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);
     }
 
-    // Check if user is active
+ 
     if (!user.isActive) {
       throw new AppError('تم إيقاف الحساب', HTTP_STATUS.FORBIDDEN);
     }
 
-    // Verify password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
       throw new AppError(ERROR_MESSAGES.INVALID_CREDENTIALS, HTTP_STATUS.UNAUTHORIZED);

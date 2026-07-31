@@ -26,7 +26,7 @@ const registerSchema = Joi.object({
     }),
 
   // Step 2: Professional Information
-  officeName: Joi.string().max(200).required().messages({
+  officeName: Joi.string().max(200).optional().messages({
     'string.empty': 'اسم المكتب أو الشركة القانونية مطلوب',
     'string.max': 'يجب ألا يتجاوز اسم المكتب 200 حرف',
     'any.required': 'اسم المكتب أو الشركة القانونية مطلوب',

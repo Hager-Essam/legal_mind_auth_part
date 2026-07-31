@@ -37,7 +37,10 @@ const commentSchema = new Schema<IComment>(
 commentSchema.index({ blog: 1, createdAt: -1 });
 
 commentSchema.methods.isAuthor = function (this: IComment, userId: any) {
-  return this.author.toString() === userId.toString();
+  // `author` may be a raw ObjectId or, when the document was fetched with
+  // .populate('author', ...), a full User document. Handle both cases.
+  const authorId = (this.author as any)?._id ?? this.author;
+  return authorId.toString() === userId.toString();
 };
 
 const Comment: Model<IComment> = mongoose.model<IComment>('Comment', commentSchema);
