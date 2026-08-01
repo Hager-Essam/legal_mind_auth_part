@@ -55,7 +55,7 @@ before(async () => {
   await RefreshTokenModel.syncIndexes();
   const users = new UserRepository();
   const refreshTokens = new RefreshTokenRepository();
-  email = new EmailService();
+  email = new EmailService("console");
   auth = new AuthService(users, refreshTokens, email);
 });
 

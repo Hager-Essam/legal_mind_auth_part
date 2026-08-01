@@ -1,5 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import type { ZodType } from "zod";
+import { failure, success, type Result } from "../core/result";
+import { RequestValidationError } from "../errors/request-validation.error";
 import { removeUploadedFile } from "./upload.middleware";
 
 export const validateBody = (schema: ZodType) => {
@@ -8,13 +10,16 @@ export const validateBody = (schema: ZodType) => {
     _res: Response,
     next: NextFunction,
   ): Promise<void> => {
-    const result = schema.safeParse(req.body);
-    if (!result.success) {
+    const parsed = schema.safeParse(req.body);
+    const result: Result<unknown, RequestValidationError> = parsed.success
+      ? success(parsed.data)
+      : failure(new RequestValidationError(parsed.error));
+    if (!result.ok) {
       await removeUploadedFile(req.file);
       next(result.error);
       return;
     }
-    req.body = result.data;
+    req.body = result.value;
     next();
   };
 };

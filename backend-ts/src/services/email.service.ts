@@ -23,6 +23,14 @@ const escapeHtml = (value: string): string =>
 export class EmailService {
   private transporter: Transporter | null = null;
   private lastDevelopmentEmail: DevelopmentEmail | null = null;
+  private readonly mode: "console" | "smtp";
+
+  constructor(mode?: "console" | "smtp") {
+    this.mode =
+      env.nodeEnv === "production"
+        ? env.emailMode
+        : mode ?? env.emailMode;
+  }
 
   getLastDevelopmentEmail(): DevelopmentEmail | null {
     if (env.nodeEnv === "production") return null;
@@ -46,7 +54,7 @@ export class EmailService {
     html: string,
     actionUrl?: string,
   ): Promise<void> {
-    if (env.emailMode === "console") {
+    if (this.mode === "console") {
       if (env.nodeEnv !== "production") {
         this.lastDevelopmentEmail = { to, subject, actionUrl };
         console.info(

@@ -9,6 +9,8 @@ import { createHealthRouter } from "../routes/health";
 import type { AppServices } from "../services/service-container";
 import { createAuthRouter } from "../modules/auth/auth.routes";
 import { createConversationRouter } from "../modules/conversations/conversation.routes";
+import { requestIdMiddleware } from "../middlewares/request-id.middleware";
+import { HttpError } from "../errors/http-error";
 
 export const createApp = (services: AppServices) => {
   const app = express();
@@ -21,11 +23,19 @@ export const createApp = (services: AppServices) => {
         callback(null, true);
         return;
       }
-      callback(new Error("Origin is not allowed by CORS."));
+      callback(
+        new HttpError(
+          403,
+          "The request origin is not allowed.",
+          undefined,
+          "CORS_ORIGIN_DENIED",
+        ),
+      );
     },
     credentials: true,
   };
 
+  app.use(requestIdMiddleware);
   app.use(cors(corsOptions));
   app.use(express.json({ limit: "2mb" }));
   app.use(cookieParser());

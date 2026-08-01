@@ -10,7 +10,7 @@ export type RegisterInput = {
   fullName: string;
   email: string;
   password: string;
-  officeName: string;
+  officeName?: string;
   teamSize: "solo" | "small" | "medium" | "large";
   phone?: string;
   barAssociationNumber?: string;

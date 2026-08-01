@@ -10,6 +10,7 @@ import {
 import { AUTH_ERROR_CODES, AuthError } from "./auth.errors";
 import { removeUploadedFile } from "../../middlewares/upload.middleware";
 import type { UserRepository } from "../users/user.repository";
+import { tryAsyncResult } from "../../core/result";
 
 const tokenFromRequest = (request: Request): string | undefined =>
   request.cookies?.[REFRESH_COOKIE_NAME] ?? request.body?.refreshToken;
@@ -19,7 +20,7 @@ export const createAuthController = (
   users: UserRepository,
 ) => ({
   register: async (request: Request, response: Response, next: NextFunction) => {
-    try {
+    const result = await tryAsyncResult(async () => {
       if (!request.file) {
         throw new AuthError(
           400,
@@ -31,19 +32,22 @@ export const createAuthController = (
         process.cwd(),
         request.file.path,
       );
-      const user = await authService.register({
+      return authService.register({
         ...request.body,
         lawyerIdDocument,
       });
-      response.status(201).json({
-        message:
-          "Registration succeeded. Verify your email before signing in.",
-        user: toPublicUser(user),
-      });
-    } catch (error) {
+    });
+    if (!result.ok) {
       await removeUploadedFile(request.file);
-      next(error);
+      next(result.error);
+      return;
     }
+    const user = result.value;
+    response.status(201).json({
+      message:
+        "Registration succeeded. Verify your email before signing in.",
+      user: toPublicUser(user),
+    });
   },
 
   login: async (request: Request, response: Response, next: NextFunction) => {
