@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { LegalChunks, QueryRequest } from "../schemas";
-import { ClassifierService } from "../services/classifier.service";
-import { validateRerankResults } from "../services/reranker.service";
-import { buildArabicLegalContext } from "../utils/context-builder";
-import { evaluateGrounding } from "../utils/grounding-policy";
-import { scoreEvidenceChunk } from "../utils/evidence-selection";
-import { validateSourceCitations } from "../utils/citation-validator";
+import { ClassifierService } from "../modules/legal-query/classifier.service";
+import { validateRerankResults } from "../modules/legal-query/reranker.service";
+import { buildArabicLegalContext } from "../modules/legal-query/context-builder";
+import { evaluateGrounding } from "../modules/legal-query/grounding-policy";
+import { scoreEvidenceChunk } from "../modules/legal-query/evidence-selection";
+import { validateSourceCitations } from "../modules/legal-query/citation-validator";
 
 const classifier = new ClassifierService();
 const request = (query: string): QueryRequest => ({ query, top_k: 5 });

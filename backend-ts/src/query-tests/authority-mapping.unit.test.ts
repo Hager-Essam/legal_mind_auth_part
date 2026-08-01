@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { LegalChunks } from "../schemas/chunk.schema";
 import type { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
-import { QueryRewriteService } from "../services/query-rewrite.service";
+import { QueryRewriteService } from "../modules/legal-query/query-rewrite.service";
 import {
   MAX_AUTHORITY_BOOST,
   applyAuthorityBoosts,

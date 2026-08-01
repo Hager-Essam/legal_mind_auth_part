@@ -1,4 +1,4 @@
-import type { LegalChunks } from "../schemas";
+import type { LegalChunks } from "../../schemas";
 
 const escapeXml = (value: string): string =>
   value.replace(

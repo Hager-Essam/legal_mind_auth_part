@@ -1,11 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
-import { queryRequestSchema } from "../schemas";
-import { HttpError } from "../shared/http/http-error";
-import type { AppServices } from "../services/service-container";
+import { queryRequestSchema } from "./query.schema";
+import { HttpError } from "../../shared/http/http-error";
+import type { QueryService } from "./query.service";
 
-export const createQueryController = (services: AppServices) => 
+export const createQueryController = (queryService: QueryService) =>
 {
-  return async (req: Request, res: Response, next: NextFunction) => 
+  return async (req: Request, res: Response, next: NextFunction) =>
   {
     console.log("[QueryController] Received request:", JSON.stringify(req.body));
   
@@ -17,7 +17,7 @@ export const createQueryController = (services: AppServices) =>
         console.log("[QueryController] Validation failed:", parsed.error);
         throw new HttpError(400, "Invalid query request payload.", parsed.error.flatten());
       }
-      const result = await services.queryService.runQuery(parsed.data);
+      const result = await queryService.runQuery(parsed.data);
       res.status(200).json(result);
     } 
     

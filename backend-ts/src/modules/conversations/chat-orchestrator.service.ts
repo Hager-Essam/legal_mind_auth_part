@@ -11,7 +11,7 @@ import type {
   ConversationOwner,
   ConversationService,
 } from "./conversation.service";
-import type { QueryService } from "../../services/query.service";
+import type { QueryService } from "../legal-query/query.service";
 import type { ConversationMemoryService } from "./conversation-memory.service";
 import type { SourceSnapshotService } from "./source-snapshot.service";
 

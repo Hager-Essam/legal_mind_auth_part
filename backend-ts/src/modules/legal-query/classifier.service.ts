@@ -1,6 +1,6 @@
-import type { QueryRequest } from "../schemas";
-import { parseLegalReference } from "../utils/legal-ref-parser";
-import type { ClassificationResult } from "../types/classifier.types";
+import type { QueryRequest } from "./query.schema";
+import { parseLegalReference } from "./legal-ref-parser";
+import type { ClassificationResult } from "./classifier.types";
 
 const socialOnlyPatterns = [
   /^(?:مرحبا|مرحباً|أهلا|أهلاً|اهلا|السلام عليكم|سلام)[!,.،؟?\s]*$/i,

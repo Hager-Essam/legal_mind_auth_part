@@ -1,22 +1,22 @@
 import { performance } from "node:perf_hooks";
-import { env } from "../config/env";
-import type { QueryRequest, QueryResponse } from "../schemas/query.schema";
-import { buildArabicLegalContext } from "../utils/context-builder";
-import { toLegalChunk } from "../utils/chunk-mapper";
-import { evaluateGrounding } from "../utils/grounding-policy";
-import { applyAuthorityBoosts } from "../utils/law-mapping";
+import { env } from "../../config/env";
+import type { QueryRequest, QueryResponse } from "./query.schema";
+import { buildArabicLegalContext } from "./context-builder";
+import { toLegalChunk } from "../../utils/chunk-mapper";
+import { evaluateGrounding } from "./grounding-policy";
+import { applyAuthorityBoosts } from "../../utils/law-mapping";
 import {
   parseLegalReference,
   type ParsedLegalReference,
-} from "../utils/legal-ref-parser";
-import { validateSourceCitations } from "../utils/citation-validator";
+} from "./legal-ref-parser";
+import { validateSourceCitations } from "./citation-validator";
 import { ClassifierService } from "./classifier.service";
 import { GenerationService } from "./generation.service";
 import { LegalRefService } from "./legal-ref.service";
-import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
+import { ProviderConfigService } from "../../infrastructure/provider/provider-config.service";
 import { QueryRewriteService } from "./query-rewrite.service";
 import { RerankerService } from "./reranker.service";
-import { RetrievalService } from "./retrieval.service";
+import { RetrievalService } from "../../services/retrieval.service";
 
 const mergeReferences = (
   original: ParsedLegalReference,

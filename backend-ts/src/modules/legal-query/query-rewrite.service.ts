@@ -1,13 +1,13 @@
-import { env } from "../config/env";
-import { ChunkModel } from "../models/chunk.model";
-import type { RewriteResult } from "../types/query.types";
+import { env } from "../../config/env";
+import { ChunkModel } from "../../models/chunk.model";
+import type { RewriteResult } from "./query.types";
 import {
   detectAuthorityHints,
   expandRetrievalQuery,
   type ResolvedAuthorityHint,
-} from "../utils/law-mapping";
-import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
-import { requestProviderText } from "../infrastructure/provider/provider-http.service";
+} from "../../utils/law-mapping";
+import { ProviderConfigService } from "../../infrastructure/provider/provider-config.service";
+import { requestProviderText } from "../../infrastructure/provider/provider-http.service";
 
 const LLM_REWRITE_TIMEOUT_MS = 8_000;
 const AUTHORITY_TITLE_CACHE_MS = 5 * 60_000;

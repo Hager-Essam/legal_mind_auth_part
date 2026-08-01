@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { env } from "../config/env";
 import type { LegalChunks, QueryRequest } from "../schemas";
-import { parseLegalReference, type ParsedLegalReference } from "../utils/legal-ref-parser";
+import { parseLegalReference, type ParsedLegalReference } from "../modules/legal-query/legal-ref-parser";
 import { normalizeLawName } from "../utils/arabic-normalize";
 import { reciprocalRankFusion } from "../utils/rrf";
 import { escapeRegex } from "../utils/regex";

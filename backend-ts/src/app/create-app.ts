@@ -4,7 +4,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { env } from "../config/env";
 import { errorHandler, notFoundHandler } from "../shared/http/error-handler";
-import { createQueryRouter } from "../routes/api/query";
+import { createQueryRouter } from "../modules/legal-query/query.routes";
 import { createHealthRouter } from "../modules/health/health.routes";
 import type { AppServices } from "../services/service-container";
 import { createAuthRouter } from "../modules/auth/auth.routes";

@@ -1,5 +1,5 @@
-import type { LegalChunks } from "../schemas";
-import type { GroundingDecision } from "../types/grounding.types";
+import type { LegalChunks } from "../../schemas";
+import type { GroundingDecision } from "./grounding.types";
 
 const MIN_RELEVANCE = 0.35;
 

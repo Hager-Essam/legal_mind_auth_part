@@ -1,6 +1,6 @@
-import type { LegalChunks } from "../schemas";
+import type { LegalChunks } from "../../schemas";
 import { parseLegalReference } from "./legal-ref-parser";
-import { normalizeArabicQuery } from "./arabic-normalize";
+import { normalizeArabicQuery } from "../../utils/arabic-normalize";
 
 const QUERY_STOP_WORDS = new Set([
   "ما", "ماذا", "ماهي", "ما هي", "هل", "عن", "على", "في", "من", "الى", "إلى",

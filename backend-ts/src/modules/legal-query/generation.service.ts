@@ -1,8 +1,8 @@
-import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
+import { ProviderConfigService } from "../../infrastructure/provider/provider-config.service";
 import {
   ProviderHttpError,
   requestProviderText,
-} from "../infrastructure/provider/provider-http.service";
+} from "../../infrastructure/provider/provider-http.service";
 
 type DashScopeChatCompletionResponse = {
   choices?: Array<{

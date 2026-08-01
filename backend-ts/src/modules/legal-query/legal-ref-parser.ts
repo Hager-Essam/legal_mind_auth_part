@@ -5,8 +5,8 @@ import {
   JUDICIAL_YEAR_RE,
   LAW_NAME_RE,
   PARAGRAPHS_RE,
-} from "../regex/legal-ref.patterns";
-import { ARABIC_TO_WESTERN_DIGITS } from "../regex/arabic.patterns";
+} from "./legal-ref.patterns";
+import { ARABIC_TO_WESTERN_DIGITS } from "../../regex/arabic.patterns";
 
 export type ParsedLegalReference = {
   normalizedQuery: string;
