@@ -36,7 +36,7 @@ const envSchema = z.object({
   LEGALMIND_FRONTEND_URL: z
     .string()
     .url()
-    .default("http://localhost:3000"),
+    .default("http://localhost:5173"),
   LEGALMIND_REFRESH_COOKIE_SAME_SITE: z
     .enum(["lax", "strict", "none"])
     .default("lax"),
