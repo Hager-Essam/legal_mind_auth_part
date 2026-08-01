@@ -21,7 +21,14 @@
     "migrate:chat": "tsx src/scripts/migrate-chat-storage.ts",
     "migrate:legal-source-metadata": "tsx src/scripts/migrate-legal-source-metadata.ts",
     "indexes:app": "tsx src/scripts/setup-app-indexes.ts",
-    "atlas:indexes": "tsx src/scripts/setup-atlas-search-indexes.ts"
+    "atlas:indexes": "tsx src/scripts/setup-atlas-search-indexes.ts",
+    "audit:legal-corpus": "tsx src/scripts/audit-legal-corpus.ts",
+    "migrate:verified-authority-statuses": "tsx src/scripts/apply-verified-authority-statuses.ts",
+    "reembed:legal-chunks": "tsx src/scripts/reembed-legal-chunks.ts",
+    "import:official-labor-law-2025": "tsx src/scripts/import-official-labor-law-2025.ts",
+    "import:updated-social-procurement-laws": "tsx src/scripts/import-updated-social-procurement-laws.ts",
+    "publish:legacy-legal-chunks": "tsx src/scripts/publish-legacy-legal-chunks.ts",
+    "classify:legacy-authorities": "tsx src/scripts/classify-completed-legacy-authorities.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

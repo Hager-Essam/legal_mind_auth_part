@@ -13,6 +13,32 @@ import type { SearchOptions } from "../types/search.types";
 const VECTOR_INDEX_NAME = "legal_chunks_vector";
 const ATLAS_SEARCH_INDEX_NAME = "legal_chunks_text";
 const MAX_PARENT_CHARS = 4000;
+type CurrentAuthorityStatus = "effective" | "amended" | "unknown";
+const CURRENT_AUTHORITY_STATUSES: CurrentAuthorityStatus[] = ["effective", "amended", "unknown"];
+const mongoAuthorityEligibility: Record<string, unknown> = {
+  $or: [
+    { authorityStatus: { $in: CURRENT_AUTHORITY_STATUSES } },
+    { authorityType: "court_ruling", authorityStatus: "historical" },
+  ],
+};
+const vectorAuthorityEligibility = {
+  $or: [
+    { authorityStatus: { $in: CURRENT_AUTHORITY_STATUSES } },
+    { authorityType: { $eq: "court_ruling" }, authorityStatus: { $eq: "historical" } },
+  ],
+};
+const atlasSearchAuthorityEligibility = {
+  compound: {
+    should: [
+      { in: { path: "authorityStatus", value: CURRENT_AUTHORITY_STATUSES } },
+      { compound: { must: [
+        { equals: { path: "authorityType", value: "court_ruling" } },
+        { equals: { path: "authorityStatus", value: "historical" } },
+      ] } },
+    ],
+    minimumShouldMatch: 1,
+  },
+} as const;
 
 // Extracts up to `maxChars` from `parentText` centred on where `childText` appears
 function extractContextWindow(parentText: string, childText: string, maxChars: number): string {
@@ -83,7 +109,7 @@ export class RetrievalService {
       jurisdiction: "EG",
       is_retrievable: true,
       reviewStatus: "published",
-      authorityStatus: { $in: ["effective", "amended"] },
+      ...mongoAuthorityEligibility,
     };
     let parent = await ChunkModel.findOne({
       ...baseFilter,
@@ -126,7 +152,7 @@ export class RetrievalService {
       is_retrievable: true,
       jurisdiction: "EG",
       reviewStatus: "published",
-      authorityStatus: { $in: ["effective", "amended"] },
+      ...mongoAuthorityEligibility,
     })
       .sort({ child_index: 1 })
       .lean();
@@ -141,7 +167,7 @@ export class RetrievalService {
       jurisdiction: "EG",
       is_retrievable: true,
       reviewStatus: "published",
-      authorityStatus: { $in: ["effective", "amended"] },
+      ...mongoAuthorityEligibility,
     };
     if (judicialYear) filter.judicial_year = judicialYear;
 
@@ -154,7 +180,7 @@ export class RetrievalService {
       is_retrievable: true,
       jurisdiction: "EG",
       reviewStatus: "published",
-      authorityStatus: { $in: ["effective", "amended"] },
+      ...mongoAuthorityEligibility,
     })
       .sort({ child_index: 1 })
       .lean();
@@ -170,7 +196,7 @@ export class RetrievalService {
       is_retrievable: { $eq: true },
       jurisdiction: { $eq: "EG" },
       reviewStatus: { $eq: "published" },
-      authorityStatus: { $in: ["effective", "amended"] },
+      ...vectorAuthorityEligibility,
     };
 
     if (options.lawCategory) filter.law_category = { $eq: options.lawCategory };
@@ -202,12 +228,7 @@ export class RetrievalService {
       { equals: { path: "is_retrievable", value: true } },
       { equals: { path: "jurisdiction", value: "EG" } },
       { equals: { path: "reviewStatus", value: "published" } },
-      {
-        in: {
-          path: "authorityStatus",
-          value: ["effective", "amended"],
-        },
-      },
+      atlasSearchAuthorityEligibility,
     ];
 
     if (options.lawCategory) mustClauses.push({ phrase: { path: "law_category", query: options.lawCategory } });

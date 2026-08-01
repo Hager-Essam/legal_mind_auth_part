@@ -50,6 +50,17 @@ test("greeting-prefixed legal questions use retrieval while social messages rema
   }
 });
 
+test("a broad law-title question uses semantic retrieval, not exact-reference lookup", () => {
+  assert.equal(
+    classifier.classify(request("اشرح لي قانون العمل المصري")).category,
+    "arabic_rag",
+  );
+  assert.equal(
+    classifier.classify(request("اشرح المادة 90 من قانون العمل")).category,
+    "law_ref",
+  );
+});
+
 test("article 10 receives no exact-reference boost for article 1", () => {
   const articleOne = qualifiedChunk({
     article_number: "1",
@@ -88,6 +99,18 @@ test("grounding qualifies each source independently and fails closed", () => {
   const decision = evaluateGrounding([qualifiedChunk()]);
   assert.equal(decision.shouldGenerate, true);
   assert.equal(decision.qualifiedChunks.length, 1);
+  const publishedLegacyDecision = evaluateGrounding([
+    qualifiedChunk({ authorityStatus: "unknown" }),
+  ]);
+  assert.equal(publishedLegacyDecision.shouldGenerate, true);
+  const historicalCourtDecision = evaluateGrounding([
+    qualifiedChunk({ authorityType: "court_ruling", authorityStatus: "historical" }),
+  ]);
+  assert.equal(historicalCourtDecision.shouldGenerate, true);
+  const historicalStatute = evaluateGrounding([
+    qualifiedChunk({ authorityType: "statute", authorityStatus: "historical" }),
+  ]);
+  assert.equal(historicalStatute.shouldGenerate, false);
 });
 
 test("evidence XML escapes untrusted instructions and uses source IDs", () => {

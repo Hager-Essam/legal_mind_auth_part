@@ -22,7 +22,10 @@ export const isQualifiedGroundingChunk = (chunk: LegalChunks): boolean =>
   chunk.is_retrievable === true &&
   chunk.reviewStatus === "published" &&
   (chunk.authorityStatus === "effective" ||
-    chunk.authorityStatus === "amended") &&
+    chunk.authorityStatus === "amended" ||
+    chunk.authorityStatus === "unknown" ||
+    (chunk.authorityType === "court_ruling" &&
+      chunk.authorityStatus === "historical")) &&
   chunk.authorityType !== "generated_summary";
 
 export const evaluateGrounding = (

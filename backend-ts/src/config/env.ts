@@ -151,10 +151,10 @@ const envSchema = z.object({
     .default(true),
   LEGALMIND_LLM_REWRITE_MODEL: z.string().default("qwen-turbo"),
   LEGALMIND_DEFAULT_USER_ROLE: z.enum(["lawyer", "citizen"]).default("citizen"),
-  LEGALMIND_ENABLE_LEGACY_LAW_MAPPING: z
+  LEGALMIND_ENABLE_AUTHORITY_HINTS: z
     .union([z.string(), z.boolean()])
     .transform((value) => value === true || value === "true")
-    .default(false),
+    .default(true),
 }).superRefine((value, context) => {
   if (splitCsv(value.LEGALMIND_CORS_ORIGINS).includes("*")) {
     context.addIssue({
@@ -267,7 +267,7 @@ export const env = {
   enableLlmRewrite: parsed.LEGALMIND_ENABLE_LLM_REWRITE,
   llmRewriteModel: parsed.LEGALMIND_LLM_REWRITE_MODEL,
   defaultUserRole: parsed.LEGALMIND_DEFAULT_USER_ROLE,
-  enableLegacyLawMapping: parsed.LEGALMIND_ENABLE_LEGACY_LAW_MAPPING,
+  enableAuthorityHints: parsed.LEGALMIND_ENABLE_AUTHORITY_HINTS,
 } as const;
 
 export type Env = typeof env;

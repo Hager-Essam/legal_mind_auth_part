@@ -28,11 +28,7 @@ export class ClassifierService {
       parsedReference.articleNumbers.length > 0 ||
       Boolean(parsedReference.appealNumber) ||
       Boolean(parsedReference.lawNumber) ||
-      Boolean(parsedReference.lawYear) ||
-      Boolean(
-        parsedReference.lawName &&
-          parsedReference.lawName.split(/\s+/).length >= 2,
-      );
+      Boolean(parsedReference.lawYear);
 
     if (hasExplicitReference) {
       return { category: "law_ref", parsedReference };

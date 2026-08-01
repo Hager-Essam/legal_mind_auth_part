@@ -4,6 +4,7 @@ import type { QueryRequest, QueryResponse } from "../schemas/query.schema";
 import { buildArabicLegalContext } from "../utils/context-builder";
 import { toLegalChunk } from "../utils/chunk-mapper";
 import { evaluateGrounding } from "../utils/grounding-policy";
+import { applyAuthorityBoosts } from "../utils/law-mapping";
 import {
   parseLegalReference,
   type ParsedLegalReference,
@@ -167,16 +168,19 @@ export class QueryService {
     const mergedReference = mergeReferences(original, retrievalReference);
     const rewrittenRequest: QueryRequest = {
       ...request,
-      query: rewrite.rewrittenQuery,
+      query: rewrite.retrievalQuery,
     };
     const candidates = await this.retrievalService.retrieveCandidateChunks(
       rewrittenRequest,
       mergedReference,
     );
-    const reranked = await this.rerankerService.rerank(
-      request.query,
-      candidates,
-      Math.min(request.top_k, env.rerankTopK),
+    const reranked = applyAuthorityBoosts(
+      await this.rerankerService.rerank(
+        request.query,
+        candidates,
+        Math.min(request.top_k, env.rerankTopK),
+      ),
+      rewrite.authorityBoosts,
     );
     const grounding = evaluateGrounding(reranked);
     if (!grounding.shouldGenerate) {
