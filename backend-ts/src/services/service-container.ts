@@ -13,9 +13,9 @@ import { RefreshTokenRepository } from "../modules/auth/refresh-token.repository
 import { EmailService } from "../infrastructure/email/email.service";
 import { AuthService } from "../modules/auth/auth.service";
 import { ConversationService } from "../modules/conversations/conversation.service";
-import { ConversationMemoryService } from "./conversation-memory.service";
-import { SourceSnapshotService } from "./source-snapshot.service";
-import { ChatOrchestratorService } from "./chat-orchestrator.service";
+import { ConversationMemoryService } from "../modules/conversations/conversation-memory.service";
+import { SourceSnapshotService } from "../modules/conversations/source-snapshot.service";
+import { ChatOrchestratorService } from "../modules/conversations/chat-orchestrator.service";
 
 export type AppServices = {
   mongoService: MongoService;

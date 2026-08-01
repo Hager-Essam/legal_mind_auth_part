@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { ConversationModel } from "../modules/conversations/conversation.model";
-import { MessageModel } from "../modules/conversations/message.model";
+import { ConversationModel } from "./conversation.model";
+import { MessageModel } from "./message.model";
 import type {
   ActiveLegalContext,
   Message,
-} from "../modules/conversations/conversation.types";
+} from "./conversation.types";
 
 export const conversationRewriteResultSchema = z.object({
   isFollowUp: z.boolean(),

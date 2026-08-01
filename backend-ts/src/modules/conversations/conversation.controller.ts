@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { HttpError } from "../../shared/http/http-error";
-import type { AppServices } from "../../services/service-container";
+import type { ChatOrchestratorService } from "./chat-orchestrator.service";
+import type { ConversationService } from "./conversation.service";
 import type {
   Conversation,
   Message,
@@ -61,7 +62,14 @@ const messageResponse = (message: Message) => ({
   updated_at: message.updatedAt,
 });
 
-export const createConversationController = (services: AppServices) => ({
+export type ConversationControllerDependencies = {
+  conversationService: ConversationService;
+  chatOrchestratorService: ChatOrchestratorService;
+};
+
+export const createConversationController = (
+  services: ConversationControllerDependencies,
+) => ({
   create: async (request: Request, response: Response, next: NextFunction) => {
     try {
       const input = createConversationSchema.parse(request.body);

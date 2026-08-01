@@ -1,8 +1,12 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import type { AppServices } from "../../services/service-container";
+import type { AuthService } from "../auth/auth.service";
+import type { UserRepository } from "../auth/user.repository";
 import { authenticate } from "../auth/auth.middleware";
-import { createConversationController } from "./conversation.controller";
+import {
+  createConversationController,
+  type ConversationControllerDependencies,
+} from "./conversation.controller";
 
 const messageLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -15,7 +19,12 @@ const messageLimiter = rateLimit({
   },
 });
 
-export const createConversationRouter = (services: AppServices) => {
+export type ConversationDependencies = ConversationControllerDependencies & {
+  authService: AuthService;
+  userRepository: UserRepository;
+};
+
+export const createConversationRouter = (services: ConversationDependencies) => {
   const router = Router();
   const requireAuth = authenticate(
     services.authService,

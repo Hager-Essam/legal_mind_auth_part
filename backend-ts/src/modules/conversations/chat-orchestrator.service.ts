@@ -1,17 +1,17 @@
 import crypto from "node:crypto";
-import { env } from "../config/env";
-import { HttpError } from "../shared/http/http-error";
-import { ConversationModel } from "../modules/conversations/conversation.model";
-import { MessageModel } from "../modules/conversations/message.model";
+import { env } from "../../config/env";
+import { HttpError } from "../../shared/http/http-error";
+import { ConversationModel } from "./conversation.model";
+import { MessageModel } from "./message.model";
 import type {
   Message,
   SourceSnapshot,
-} from "../modules/conversations/conversation.types";
+} from "./conversation.types";
 import type {
   ConversationOwner,
   ConversationService,
-} from "../modules/conversations/conversation.service";
-import type { QueryService } from "./query.service";
+} from "./conversation.service";
+import type { QueryService } from "../../services/query.service";
 import type { ConversationMemoryService } from "./conversation-memory.service";
 import type { SourceSnapshotService } from "./source-snapshot.service";
 

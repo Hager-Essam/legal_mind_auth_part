@@ -1,5 +1,5 @@
-import type { LegalChunks } from "../schemas";
-import type { SourceSnapshot } from "../modules/conversations/conversation.types";
+import type { LegalChunks } from "../../schemas";
+import type { SourceSnapshot } from "./conversation.types";
 
 const optionalNumber = (
   record: Record<string, unknown>,

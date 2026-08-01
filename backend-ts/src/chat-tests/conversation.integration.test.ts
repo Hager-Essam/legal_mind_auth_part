@@ -7,9 +7,9 @@ import { MessageModel } from "../modules/conversations/message.model";
 import { ConversationService } from "../modules/conversations/conversation.service";
 import type { QueryService } from "../services/query.service";
 import { appConnection } from "../services/mongo.service";
-import { ChatOrchestratorService } from "../services/chat-orchestrator.service";
-import { ConversationMemoryService } from "../services/conversation-memory.service";
-import { SourceSnapshotService } from "../services/source-snapshot.service";
+import { ChatOrchestratorService } from "../modules/conversations/chat-orchestrator.service";
+import { ConversationMemoryService } from "../modules/conversations/conversation-memory.service";
+import { SourceSnapshotService } from "../modules/conversations/source-snapshot.service";
 
 let mongo: MongoMemoryServer;
 const conversations = new ConversationService();
