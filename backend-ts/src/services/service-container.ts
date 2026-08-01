@@ -1,4 +1,4 @@
-import { EmbeddingService } from "./embedding.service";
+import { EmbeddingService } from "../infrastructure/embeddings/embedding.service";
 import { GenerationService } from "./generation.service";
 import { ClassifierService } from "./classifier.service";
 import { LegalRefService } from "./legal-ref.service";

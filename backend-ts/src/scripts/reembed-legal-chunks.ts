@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { env } from "../config/env";
-import { EmbeddingService } from "../services/embedding.service";
+import { EmbeddingService } from "../infrastructure/embeddings/embedding.service";
 import { MongoService, ragConnection } from "../services/mongo.service";
 import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { isDryRun } from "./script-utils";

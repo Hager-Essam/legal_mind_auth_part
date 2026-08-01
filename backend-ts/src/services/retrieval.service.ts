@@ -5,7 +5,7 @@ import { parseLegalReference, type ParsedLegalReference } from "../utils/legal-r
 import { normalizeLawName } from "../utils/arabic-normalize";
 import { reciprocalRankFusion } from "../utils/rrf";
 import { escapeRegex } from "../utils/regex";
-import { EmbeddingService } from "./embedding.service";
+import { EmbeddingService } from "../infrastructure/embeddings/embedding.service";
 import { ChunkModel, type ChunkDocument } from "../models/chunk.model";
 import { toLegalChunk } from "../utils/chunk-mapper";
 import type { SearchOptions } from "../types/search.types";

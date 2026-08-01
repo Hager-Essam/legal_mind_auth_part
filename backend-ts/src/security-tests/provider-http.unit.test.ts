@@ -4,7 +4,7 @@ import {
   ProviderHttpError,
   requestProviderText,
 } from "../infrastructure/provider/provider-http.service";
-import { EmbeddingService } from "../services/embedding.service";
+import { EmbeddingService } from "../infrastructure/embeddings/embedding.service";
 import type { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { env } from "../config/env";
 

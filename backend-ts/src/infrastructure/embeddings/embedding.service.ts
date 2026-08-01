@@ -1,6 +1,6 @@
-import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
-import { env } from "../config/env";
-import { requestProviderText } from "../infrastructure/provider/provider-http.service";
+import { ProviderConfigService } from "../provider/provider-config.service";
+import { env } from "../../config/env";
+import { requestProviderText } from "../provider/provider-http.service";
 
 type DashScopeEmbeddingInputType = "query" | "document";
 
