@@ -1,5 +1,5 @@
 import { normalizeLawName } from "../modules/legal-corpus/arabic-normalize";
-import { MongoService, ragConnection } from "../services/mongo.service";
+import { MongoService, ragConnection } from "../infrastructure/mongo/mongo.service";
 import { isDryRun } from "./script-utils";
 
 type Classification = { filter: Record<string, unknown>; fields: Record<string, unknown>; basis: string };

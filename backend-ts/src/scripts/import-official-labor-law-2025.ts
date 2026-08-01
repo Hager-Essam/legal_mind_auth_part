@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { MongoService, ragConnection } from "../services/mongo.service";
+import { MongoService, ragConnection } from "../infrastructure/mongo/mongo.service";
 import { isDryRun } from "./script-utils";
 
 const AUTHORITY_ID = "eg-law-14-2025-labor";

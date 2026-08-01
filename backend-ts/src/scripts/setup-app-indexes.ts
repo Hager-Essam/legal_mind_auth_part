@@ -2,7 +2,7 @@ import { ConversationModel } from "../modules/conversations/conversation.model";
 import { MessageModel } from "../modules/conversations/message.model";
 import { RefreshTokenModel } from "../modules/auth/refresh-token.model";
 import { UserModel } from "../modules/auth/user.model";
-import { MongoService } from "../services/mongo.service";
+import { MongoService } from "../infrastructure/mongo/mongo.service";
 import { isDryRun, printSummary } from "./script-utils";
 
 const models = [UserModel, RefreshTokenModel, ConversationModel, MessageModel];

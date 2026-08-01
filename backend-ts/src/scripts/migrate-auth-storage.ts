@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { MongoService, appConnection } from "../services/mongo.service";
+import { MongoService, appConnection } from "../infrastructure/mongo/mongo.service";
 import { isDryRun, printSummary } from "./script-utils";
 
 const hash = (value: string): string =>

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { ragConnection } from "../../services/mongo.service";
+import { ragConnection } from "../../infrastructure/mongo/mongo.service";
 
 const COLLECTION_NAME = "legal_chunks";
 

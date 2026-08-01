@@ -6,7 +6,7 @@ import { ConversationModel } from "../modules/conversations/conversation.model";
 import { MessageModel } from "../modules/conversations/message.model";
 import { ConversationService } from "../modules/conversations/conversation.service";
 import type { QueryService } from "../modules/legal-query/query.service";
-import { appConnection } from "../services/mongo.service";
+import { appConnection } from "../infrastructure/mongo/mongo.service";
 import { ChatOrchestratorService } from "../modules/conversations/chat-orchestrator.service";
 import { ConversationMemoryService } from "../modules/conversations/conversation-memory.service";
 import { SourceSnapshotService } from "../modules/conversations/source-snapshot.service";

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { appConnection } from "../services/mongo.service";
+import { appConnection } from "../infrastructure/mongo/mongo.service";
 import { ConversationMemoryService } from "../modules/conversations/conversation-memory.service";
 import { SourceSnapshotService } from "../modules/conversations/source-snapshot.service";
 import { ConversationModel } from "../modules/conversations/conversation.model";

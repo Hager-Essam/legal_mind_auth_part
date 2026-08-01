@@ -3,7 +3,7 @@ import {
   matchesAuthorityEntry,
   type AuthorityStatusRegistryEntry,
 } from "../modules/legal-corpus/authority-status-registry";
-import { MongoService, ragConnection } from "../services/mongo.service";
+import { MongoService, ragConnection } from "../infrastructure/mongo/mongo.service";
 import { isDryRun } from "./script-utils";
 
 const MIGRATION_ID = "authority-status-2026-07-30-v1";

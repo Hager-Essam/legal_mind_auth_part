@@ -12,7 +12,7 @@ import { RefreshTokenRepository } from "../modules/auth/refresh-token.repository
 import { UserModel } from "../modules/auth/user.model";
 import { UserRepository } from "../modules/auth/user.repository";
 import { EmailService } from "../infrastructure/email/email.service";
-import { appConnection } from "../services/mongo.service";
+import { appConnection } from "../infrastructure/mongo/mongo.service";
 
 let mongo: MongoMemoryServer;
 let auth: AuthService;

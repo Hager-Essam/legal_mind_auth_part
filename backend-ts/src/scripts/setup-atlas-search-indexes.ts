@@ -1,5 +1,5 @@
 import { env } from "../config/env";
-import { MongoService, ragConnection } from "../services/mongo.service";
+import { MongoService, ragConnection } from "../infrastructure/mongo/mongo.service";
 import { isDryRun, printSummary } from "./script-utils";
 
 const vectorDefinition = {

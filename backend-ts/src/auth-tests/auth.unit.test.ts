@@ -12,7 +12,7 @@ import { UserModel } from "../modules/auth/user.model";
 import { userSchema } from "../modules/auth/user.schema";
 import type { UserDocument } from "../modules/auth/user.types";
 import { ChunkModel } from "../modules/legal-corpus/chunk.model";
-import { appConnection, ragConnection } from "../services/mongo.service";
+import { appConnection, ragConnection } from "../infrastructure/mongo/mongo.service";
 import type { UserRepository } from "../modules/auth/user.repository";
 import type { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
 import type { AuthEmailSender } from "../modules/auth/auth.service";

@@ -1,4 +1,4 @@
-import { MongoService, appConnection } from "../services/mongo.service";
+import { MongoService, appConnection } from "../infrastructure/mongo/mongo.service";
 import { isDryRun, printSummary } from "./script-utils";
 
 const run = async (): Promise<void> => {

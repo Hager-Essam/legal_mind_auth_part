@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { MongoService, ragConnection } from "../services/mongo.service";
+import { MongoService, ragConnection } from "../infrastructure/mongo/mongo.service";
 
 const CHUNKS_PER_FILE = 500;
 const OUTPUT_DIR = "exports";

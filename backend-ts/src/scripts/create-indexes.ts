@@ -10,7 +10,7 @@
  */
 
 import { env } from "../config/env";
-import { MongoService, ragConnection } from "../services/mongo.service";
+import { MongoService, ragConnection } from "../infrastructure/mongo/mongo.service";
 
 async function createIndexes() {
   const mongoService = new MongoService();

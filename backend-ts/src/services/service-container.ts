@@ -4,7 +4,7 @@ import { ClassifierService } from "../modules/legal-query/classifier.service";
 import { LegalRefService } from "../modules/legal-query/legal-ref.service";
 import { QueryService } from "../modules/legal-query/query.service";
 import { QueryRewriteService } from "../modules/legal-query/query-rewrite.service";
-import { MongoService } from "./mongo.service";
+import { MongoService } from "../infrastructure/mongo/mongo.service";
 import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { RerankerService } from "../modules/legal-query/reranker.service";
 import { RetrievalService } from "../modules/legal-corpus/retrieval.service";

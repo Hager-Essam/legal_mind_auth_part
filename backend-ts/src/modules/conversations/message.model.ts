@@ -1,4 +1,4 @@
-import { appConnection } from "../../services/mongo.service";
+import { appConnection } from "../../infrastructure/mongo/mongo.service";
 import { messageSchema } from "./message.schema";
 import type { Message } from "./conversation.types";
 
