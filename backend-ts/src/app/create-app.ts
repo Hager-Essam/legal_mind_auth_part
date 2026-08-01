@@ -3,14 +3,14 @@ import express from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { env } from "../config/env";
-import { errorHandler, notFoundHandler } from "../middlewares/error-handler";
+import { errorHandler, notFoundHandler } from "../shared/http/error-handler";
 import { createQueryRouter } from "../routes/api/query";
 import { createHealthRouter } from "../modules/health/health.routes";
 import type { AppServices } from "../services/service-container";
 import { createAuthRouter } from "../modules/auth/auth.routes";
 import { createConversationRouter } from "../modules/conversations/conversation.routes";
-import { requestIdMiddleware } from "../middlewares/request-id.middleware";
-import { HttpError } from "../errors/http-error";
+import { requestIdMiddleware } from "../shared/http/request-id.middleware";
+import { HttpError } from "../shared/http/http-error";
 
 export const createApp = (services: AppServices) => {
   const app = express();

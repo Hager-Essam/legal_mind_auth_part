@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import type { ZodType } from "zod";
-import { failure, success, type Result } from "../core/result";
-import { RequestValidationError } from "../errors/request-validation.error";
+import { failure, success, type Result } from "../shared/result";
+import { RequestValidationError } from "../shared/http/request-validation.error";
 import { removeUploadedFile } from "./upload.middleware";
 
 export const validateBody = (schema: ZodType) => {

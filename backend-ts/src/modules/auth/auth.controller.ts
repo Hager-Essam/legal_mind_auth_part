@@ -10,7 +10,7 @@ import {
 import { AUTH_ERROR_CODES, AuthError } from "./auth.errors";
 import { removeUploadedFile } from "../../middlewares/upload.middleware";
 import type { UserRepository } from "../users/user.repository";
-import { tryAsyncResult } from "../../core/result";
+import { tryAsyncResult } from "../../shared/result";
 
 const tokenFromRequest = (request: Request): string | undefined =>
   request.cookies?.[REFRESH_COOKIE_NAME] ?? request.body?.refreshToken;

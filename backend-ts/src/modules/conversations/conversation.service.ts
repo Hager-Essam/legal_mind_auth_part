@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { HttpError } from "../../errors/http-error";
+import { HttpError } from "../../shared/http/http-error";
 import { ConversationModel } from "./conversation.model";
 import { MessageModel } from "./message.model";
 import type {

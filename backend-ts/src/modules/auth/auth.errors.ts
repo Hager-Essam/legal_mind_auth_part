@@ -1,4 +1,4 @@
-import { HttpError } from "../../errors/http-error";
+import { HttpError } from "../../shared/http/http-error";
 
 export const AUTH_ERROR_CODES = {
   required: "AUTH_REQUIRED",

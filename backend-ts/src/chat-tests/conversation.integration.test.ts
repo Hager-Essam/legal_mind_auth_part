@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { HttpError } from "../errors/http-error";
+import { HttpError } from "../shared/http/http-error";
 import { ConversationModel } from "../modules/conversations/conversation.model";
 import { MessageModel } from "../modules/conversations/message.model";
 import { ConversationService } from "../modules/conversations/conversation.service";

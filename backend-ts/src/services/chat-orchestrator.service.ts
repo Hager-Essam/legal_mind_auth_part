@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { env } from "../config/env";
-import { HttpError } from "../errors/http-error";
+import { HttpError } from "../shared/http/http-error";
 import { ConversationModel } from "../modules/conversations/conversation.model";
 import { MessageModel } from "../modules/conversations/message.model";
 import type {

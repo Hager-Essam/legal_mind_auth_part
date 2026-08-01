@@ -2,10 +2,10 @@ import type { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import { Error as MongooseError } from "mongoose";
 import { ZodError } from "zod";
-import { failure, type Failure } from "../core/result";
-import { env } from "../config/env";
-import { HttpError } from "../errors/http-error";
-import { RequestValidationError } from "../errors/request-validation.error";
+import { failure, type Failure } from "../result";
+import { env } from "../../config/env";
+import { HttpError } from "./http-error";
+import { RequestValidationError } from "./request-validation.error";
 
 type ApiError = {
   status: number;

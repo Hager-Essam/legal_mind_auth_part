@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { HttpError } from "../../errors/http-error";
+import { HttpError } from "../../shared/http/http-error";
 import type { AppServices } from "../../services/service-container";
 import type {
   Conversation,

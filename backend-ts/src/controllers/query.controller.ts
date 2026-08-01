@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { queryRequestSchema } from "../schemas";
-import { HttpError } from "../errors/http-error";
+import { HttpError } from "../shared/http/http-error";
 import type { AppServices } from "../services/service-container";
 
 export const createQueryController = (services: AppServices) => 

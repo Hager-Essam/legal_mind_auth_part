@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import type { AddressInfo } from "node:net";
 import { test } from "node:test";
 import express from "express";
-import { tryAsyncResult } from "../core/result";
+import { tryAsyncResult } from "../shared/result";
 import {
   errorHandler,
   toErrorResult,
-} from "../middlewares/error-handler";
-import { requestIdMiddleware } from "../middlewares/request-id.middleware";
+} from "../shared/http/error-handler";
+import { requestIdMiddleware } from "../shared/http/request-id.middleware";
 import { validateBody } from "../middlewares/validation.middleware";
 import { registerSchema } from "../modules/auth/auth.schemas";
 
