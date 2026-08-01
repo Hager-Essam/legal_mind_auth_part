@@ -7,14 +7,14 @@ import { AuthService, hashRefreshToken } from "../modules/auth/auth.service";
 import { AUTH_ERROR_CODES, AuthError } from "../modules/auth/auth.errors";
 import { toPublicUser } from "../modules/auth/auth.mapper";
 import { registerSchema } from "../modules/auth/auth.schemas";
-import { refreshTokenSchema } from "../modules/refresh-tokens/refresh-token.schema";
-import { UserModel } from "../modules/users/user.model";
-import { userSchema } from "../modules/users/user.schema";
-import type { UserDocument } from "../modules/users/user.types";
+import { refreshTokenSchema } from "../modules/auth/refresh-token.schema";
+import { UserModel } from "../modules/auth/user.model";
+import { userSchema } from "../modules/auth/user.schema";
+import type { UserDocument } from "../modules/auth/user.types";
 import { ChunkModel } from "../models/chunk.model";
 import { appConnection, ragConnection } from "../services/mongo.service";
-import type { UserRepository } from "../modules/users/user.repository";
-import type { RefreshTokenRepository } from "../modules/refresh-tokens/refresh-token.repository";
+import type { UserRepository } from "../modules/auth/user.repository";
+import type { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
 import type { EmailService } from "../services/email.service";
 
 const createAuthService = (): AuthService =>

@@ -1,8 +1,9 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import type { AppServices } from "../../services/service-container";
-import { validateBody } from "../../middlewares/validation.middleware";
-import { lawyerIdUpload } from "../../middlewares/upload.middleware";
+import type { AuthService } from "./auth.service";
+import type { UserRepository } from "./user.repository";
+import { validateBody } from "./auth-validation.middleware";
+import { lawyerIdUpload } from "./auth-upload.middleware";
 import { authenticate } from "./auth.middleware";
 import { createAuthController } from "./auth.controller";
 import {
@@ -33,7 +34,12 @@ const refreshLimiter = limiter(60 * 1000, 30);
 const forgotPasswordLimiter = limiter(60 * 60 * 1000, 5);
 const resendVerificationLimiter = limiter(60 * 60 * 1000, 5);
 
-export const createAuthRouter = (services: AppServices) => {
+export type AuthDependencies = {
+  authService: AuthService;
+  userRepository: UserRepository;
+};
+
+export const createAuthRouter = (services: AuthDependencies) => {
   const router = Router();
   const controller = createAuthController(
     services.authService,

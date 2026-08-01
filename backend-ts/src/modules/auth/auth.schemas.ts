@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { normalizeEmail } from "../users/user.schema";
+import { normalizeEmail } from "./user.schema";
 
 const passwordSchema = z
   .string()

@@ -3,9 +3,9 @@ import jwt, { type SignOptions } from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../../config/env";
 import type { EmailService } from "../../services/email.service";
-import type { RefreshTokenRepository } from "../refresh-tokens/refresh-token.repository";
-import type { UserRepository } from "../users/user.repository";
-import { USER_ROLES, type UserDocument } from "../users/user.types";
+import type { RefreshTokenRepository } from "./refresh-token.repository";
+import type { UserRepository } from "./user.repository";
+import { USER_ROLES, type UserDocument } from "./user.types";
 import { AUTH_ERROR_CODES, AuthError } from "./auth.errors";
 import type { AccessTokenPayload, RegisterInput } from "./auth.types";
 

@@ -8,8 +8,8 @@ import {
   setRefreshCookie,
 } from "./auth.cookies";
 import { AUTH_ERROR_CODES, AuthError } from "./auth.errors";
-import { removeUploadedFile } from "../../middlewares/upload.middleware";
-import type { UserRepository } from "../users/user.repository";
+import { removeUploadedFile } from "./auth-upload.middleware";
+import type { UserRepository } from "./user.repository";
 import { tryAsyncResult } from "../../shared/result";
 
 const tokenFromRequest = (request: Request): string | undefined =>

@@ -8,7 +8,7 @@ import {
   toErrorResult,
 } from "../shared/http/error-handler";
 import { requestIdMiddleware } from "../shared/http/request-id.middleware";
-import { validateBody } from "../middlewares/validation.middleware";
+import { validateBody } from "../modules/auth/auth-validation.middleware";
 import { registerSchema } from "../modules/auth/auth.schemas";
 
 test("Result captures expected asynchronous failures without throwing", async () => {

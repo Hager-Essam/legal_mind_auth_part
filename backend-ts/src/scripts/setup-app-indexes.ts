@@ -1,7 +1,7 @@
 import { ConversationModel } from "../modules/conversations/conversation.model";
 import { MessageModel } from "../modules/conversations/message.model";
-import { RefreshTokenModel } from "../modules/refresh-tokens/refresh-token.model";
-import { UserModel } from "../modules/users/user.model";
+import { RefreshTokenModel } from "../modules/auth/refresh-token.model";
+import { UserModel } from "../modules/auth/user.model";
 import { MongoService } from "../services/mongo.service";
 import { isDryRun, printSummary } from "./script-utils";
 

@@ -1,7 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import type { AuthService } from "./auth.service";
-import type { UserRepository } from "../users/user.repository";
-import type { UserRole } from "../users/user.types";
+import type { UserRepository } from "./user.repository";
+import type { UserRole } from "./user.types";
 import { AUTH_ERROR_CODES, AuthError } from "./auth.errors";
 
 const bearerToken = (request: Request): string | null => {

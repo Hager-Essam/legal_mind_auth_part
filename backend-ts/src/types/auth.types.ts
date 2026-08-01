@@ -1,4 +1,4 @@
-import type { UserRole } from "../modules/users/user.types";
+import type { UserRole } from "../modules/auth/user.types";
 
 export type AuthenticatedUser = {
   id: string;

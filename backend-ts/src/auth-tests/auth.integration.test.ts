@@ -7,10 +7,10 @@ import { AuthService } from "../modules/auth/auth.service";
 import { AUTH_ERROR_CODES, AuthError } from "../modules/auth/auth.errors";
 import { toPublicUser } from "../modules/auth/auth.mapper";
 import { registerSchema } from "../modules/auth/auth.schemas";
-import { RefreshTokenModel } from "../modules/refresh-tokens/refresh-token.model";
-import { RefreshTokenRepository } from "../modules/refresh-tokens/refresh-token.repository";
-import { UserModel } from "../modules/users/user.model";
-import { UserRepository } from "../modules/users/user.repository";
+import { RefreshTokenModel } from "../modules/auth/refresh-token.model";
+import { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
+import { UserModel } from "../modules/auth/user.model";
+import { UserRepository } from "../modules/auth/user.repository";
 import { EmailService } from "../services/email.service";
 import { appConnection } from "../services/mongo.service";
 

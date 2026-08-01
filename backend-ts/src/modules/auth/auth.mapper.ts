@@ -1,4 +1,4 @@
-import type { UserDocument } from "../users/user.types";
+import type { UserDocument } from "./user.types";
 
 export const toPublicUser = (user: UserDocument) => ({
   id: user._id.toString(),
