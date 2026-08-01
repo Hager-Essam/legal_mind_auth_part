@@ -10,7 +10,7 @@ export const validateSourceCitations = (
   let validCitationCount = 0;
   const sanitized = answer.replace(
     citationPattern,
-    (fullCitation, sourceList: string) => {
+    (_fullCitation, sourceList: string) => {
       const ids = sourceList.split(",").map((value) => value.trim());
       if (ids.every((id) => allowed.has(id))) {
         validCitationCount += 1;
