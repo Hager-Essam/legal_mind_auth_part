@@ -5,7 +5,7 @@ import { LegalRefService } from "./legal-ref.service";
 import { QueryService } from "./query.service";
 import { QueryRewriteService } from "./query-rewrite.service";
 import { MongoService } from "./mongo.service";
-import { ProviderConfigService } from "./provider-config.service";
+import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { RerankerService } from "./reranker.service";
 import { RetrievalService } from "./retrieval.service";
 import { UserRepository } from "../modules/auth/user.repository";

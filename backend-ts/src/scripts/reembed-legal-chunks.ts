@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { env } from "../config/env";
 import { EmbeddingService } from "../services/embedding.service";
 import { MongoService, ragConnection } from "../services/mongo.service";
-import { ProviderConfigService } from "../services/provider-config.service";
+import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { isDryRun } from "./script-utils";
 
 const conservativeMode = process.argv.includes("--conservative");

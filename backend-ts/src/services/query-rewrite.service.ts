@@ -6,8 +6,8 @@ import {
   expandRetrievalQuery,
   type ResolvedAuthorityHint,
 } from "../utils/law-mapping";
-import { ProviderConfigService } from "./provider-config.service";
-import { requestProviderText } from "./provider-http.service";
+import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
+import { requestProviderText } from "../infrastructure/provider/provider-http.service";
 
 const LLM_REWRITE_TIMEOUT_MS = 8_000;
 const AUTHORITY_TITLE_CACHE_MS = 5 * 60_000;

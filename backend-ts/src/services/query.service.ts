@@ -13,7 +13,7 @@ import { validateSourceCitations } from "../utils/citation-validator";
 import { ClassifierService } from "./classifier.service";
 import { GenerationService } from "./generation.service";
 import { LegalRefService } from "./legal-ref.service";
-import { ProviderConfigService } from "./provider-config.service";
+import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { QueryRewriteService } from "./query-rewrite.service";
 import { RerankerService } from "./reranker.service";
 import { RetrievalService } from "./retrieval.service";

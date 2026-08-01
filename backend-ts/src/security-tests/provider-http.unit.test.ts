@@ -3,9 +3,9 @@ import { test } from "node:test";
 import {
   ProviderHttpError,
   requestProviderText,
-} from "../services/provider-http.service";
+} from "../infrastructure/provider/provider-http.service";
 import { EmbeddingService } from "../services/embedding.service";
-import type { ProviderConfigService } from "../services/provider-config.service";
+import type { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { env } from "../config/env";
 
 const originalFetch = globalThis.fetch;

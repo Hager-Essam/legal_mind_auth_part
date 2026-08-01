@@ -2,8 +2,8 @@ import { performance } from "node:perf_hooks";
 import { env } from "../config/env";
 import type { LegalChunks } from "../schemas";
 import { deduplicateEvidence, scoreEvidenceChunk, selectTopEvidence } from "../utils/evidence-selection";
-import { ProviderConfigService } from "./provider-config.service";
-import { requestProviderText } from "./provider-http.service";
+import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
+import { requestProviderText } from "../infrastructure/provider/provider-http.service";
 
 // DashScope rerank endpoint uses "compatible-api" instead of "compatible-mode"
 const getRerankUrl = (baseUrl: string): string => `${baseUrl.replace("compatible-mode", "compatible-api")}/reranks`;

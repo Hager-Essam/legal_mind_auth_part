@@ -1,5 +1,5 @@
-import { env } from "../config/env";
-import type { ProviderSummary } from "../types/provider.types";
+import { env } from "../../config/env";
+import type { ProviderSummary } from "../../types/provider.types";
 
 export class ProviderConfigService {
   private keyIndex = 0;

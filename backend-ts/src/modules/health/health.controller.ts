@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { env } from "../../config/env";
 import type { MongoService } from "../../services/mongo.service";
-import type { ProviderConfigService } from "../../services/provider-config.service";
+import type { ProviderConfigService } from "../../infrastructure/provider/provider-config.service";
 
 export type HealthDependencies = {
   mongoService: Pick<MongoService, "health">;
