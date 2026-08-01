@@ -1,5 +1,5 @@
 import nodemailer, { type Transporter } from "nodemailer";
-import { env } from "../config/env";
+import { env } from "../../config/env";
 
 type DevelopmentEmail = {
   to: string;

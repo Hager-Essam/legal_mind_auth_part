@@ -11,7 +11,7 @@ import { RefreshTokenModel } from "../modules/auth/refresh-token.model";
 import { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
 import { UserModel } from "../modules/auth/user.model";
 import { UserRepository } from "../modules/auth/user.repository";
-import { EmailService } from "../services/email.service";
+import { EmailService } from "../infrastructure/email/email.service";
 import { appConnection } from "../services/mongo.service";
 
 let mongo: MongoMemoryServer;

@@ -15,13 +15,13 @@ import { ChunkModel } from "../models/chunk.model";
 import { appConnection, ragConnection } from "../services/mongo.service";
 import type { UserRepository } from "../modules/auth/user.repository";
 import type { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
-import type { EmailService } from "../services/email.service";
+import type { AuthEmailSender } from "../modules/auth/auth.service";
 
 const createAuthService = (): AuthService =>
   new AuthService(
     {} as UserRepository,
     {} as RefreshTokenRepository,
-    {} as EmailService,
+    {} as AuthEmailSender,
   );
 
 const fakeUser = {

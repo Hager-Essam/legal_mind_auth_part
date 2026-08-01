@@ -10,7 +10,7 @@ import { RerankerService } from "./reranker.service";
 import { RetrievalService } from "./retrieval.service";
 import { UserRepository } from "../modules/auth/user.repository";
 import { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
-import { EmailService } from "./email.service";
+import { EmailService } from "../infrastructure/email/email.service";
 import { AuthService } from "../modules/auth/auth.service";
 import { ConversationService } from "../modules/conversations/conversation.service";
 import { ConversationMemoryService } from "./conversation-memory.service";

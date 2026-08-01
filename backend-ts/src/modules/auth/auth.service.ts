@@ -2,7 +2,6 @@ import crypto from "node:crypto";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../../config/env";
-import type { EmailService } from "../../services/email.service";
 import type { RefreshTokenRepository } from "./refresh-token.repository";
 import type { UserRepository } from "./user.repository";
 import { USER_ROLES, type UserDocument } from "./user.types";
@@ -23,11 +22,17 @@ const createOpaqueToken = (): string => crypto.randomBytes(40).toString("hex");
 const expiresAtFromNow = (): Date =>
   new Date(Date.now() + env.refreshTokenDays * 24 * 60 * 60 * 1000);
 
+export type AuthEmailSender = {
+  sendVerificationEmail(to: string, token: string, fullName: string): Promise<void>;
+  sendPasswordResetEmail(to: string, token: string, fullName: string): Promise<void>;
+  sendPasswordResetConfirmation(to: string, fullName: string): Promise<void>;
+};
+
 export class AuthService {
   constructor(
     private readonly users: UserRepository,
     private readonly refreshTokens: RefreshTokenRepository,
-    private readonly email: EmailService,
+    private readonly email: AuthEmailSender,
   ) {}
 
   generateAccessToken(user: UserDocument): string {
