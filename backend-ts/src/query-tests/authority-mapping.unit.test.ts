@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { LegalChunks } from "../schemas/chunk.schema";
+import type { LegalChunks } from "../modules/legal-corpus/chunk.schema";
 import type { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { QueryRewriteService } from "../modules/legal-query/query-rewrite.service";
 import {
   MAX_AUTHORITY_BOOST,
   applyAuthorityBoosts,
   detectAuthorityHints,
-} from "../utils/law-mapping";
+} from "../modules/legal-corpus/law-mapping";
 
 const LABOR_ID = "eg-law-14-2025-labor";
 const SOCIAL_INSURANCE_ID = "eg-law-148-2019-social-insurance-pensions";

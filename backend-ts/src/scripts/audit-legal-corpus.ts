@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { authorityStatusRegistry, matchesAuthorityEntry } from "../legal-governance/authority-status-registry";
+import { authorityStatusRegistry, matchesAuthorityEntry } from "../modules/legal-corpus/authority-status-registry";
 import { MongoService, ragConnection } from "../services/mongo.service";
 
 type Chunk = Record<string, unknown> & {

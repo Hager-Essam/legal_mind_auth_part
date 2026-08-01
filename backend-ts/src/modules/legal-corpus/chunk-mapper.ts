@@ -1,5 +1,5 @@
-import type { ChunkDocument } from "../models/chunk.model";
-import type { LegalChunks } from "../schemas/chunk.schema";
+import type { ChunkDocument } from "./chunk.model";
+import type { LegalChunks } from "./chunk.schema";
 
 // Maps a raw DB document into the API-facing LegalChunks shape
 export function toLegalChunk(doc: ChunkDocument, score?: number): LegalChunks {

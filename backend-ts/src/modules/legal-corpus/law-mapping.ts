@@ -1,4 +1,4 @@
-import type { LegalChunks } from "../schemas/chunk.schema";
+import type { LegalChunks } from "./chunk.schema";
 import { normalizeArabicQuery } from "./arabic-normalize";
 
 export type LegalDomain = "labor" | "social_insurance" | "public_contracts";

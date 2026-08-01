@@ -2,7 +2,7 @@ import {
   ARABIC_TO_WESTERN_DIGITS,
   TASHKEEL_RE,
   TATWEEL_RE,
-} from "../regex/arabic.patterns";
+} from "./arabic.patterns";
 
 const normalizeDigits = (text: string): string =>
   text.replace(

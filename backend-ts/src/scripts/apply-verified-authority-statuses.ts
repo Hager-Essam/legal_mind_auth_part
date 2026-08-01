@@ -2,7 +2,7 @@ import {
   authorityStatusRegistry,
   matchesAuthorityEntry,
   type AuthorityStatusRegistryEntry,
-} from "../legal-governance/authority-status-registry";
+} from "../modules/legal-corpus/authority-status-registry";
 import { MongoService, ragConnection } from "../services/mongo.service";
 import { isDryRun } from "./script-utils";
 

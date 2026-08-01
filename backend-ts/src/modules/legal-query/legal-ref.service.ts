@@ -1,5 +1,5 @@
 import type { ParsedLegalReference } from "./legal-ref-parser";
-import type { ChunkDocument } from "../../models/chunk.model";
+import type { ChunkDocument } from "../legal-corpus/chunk.model";
 
 export class LegalRefService {
   buildExactMatchAnswer(doc: ChunkDocument): string {

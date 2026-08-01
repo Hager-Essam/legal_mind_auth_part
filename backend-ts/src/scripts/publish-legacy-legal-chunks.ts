@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import type { AnyBulkWriteOperation, Document } from "mongodb";
-import { normalizeLawName } from "../utils/arabic-normalize";
+import { normalizeLawName } from "../modules/legal-corpus/arabic-normalize";
 import { MongoService, ragConnection } from "../services/mongo.service";
 import { isDryRun } from "./script-utils";
 

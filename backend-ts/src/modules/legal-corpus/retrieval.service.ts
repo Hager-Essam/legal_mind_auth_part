@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
-import { env } from "../config/env";
-import type { LegalChunks, QueryRequest } from "../schemas";
-import { parseLegalReference, type ParsedLegalReference } from "../modules/legal-query/legal-ref-parser";
-import { normalizeLawName } from "../utils/arabic-normalize";
-import { reciprocalRankFusion } from "../utils/rrf";
-import { escapeRegex } from "../utils/regex";
-import { EmbeddingService } from "../infrastructure/embeddings/embedding.service";
-import { ChunkModel, type ChunkDocument } from "../models/chunk.model";
-import { toLegalChunk } from "../utils/chunk-mapper";
-import type { SearchOptions } from "../types/search.types";
+import { env } from "../../config/env";
+import type { LegalChunks } from "./chunk.schema";
+import type { QueryRequest } from "../legal-query/query.schema";
+import { parseLegalReference, type ParsedLegalReference } from "../legal-query/legal-ref-parser";
+import { normalizeLawName } from "./arabic-normalize";
+import { reciprocalRankFusion } from "./rrf";
+import { escapeRegex } from "./regex";
+import { EmbeddingService } from "../../infrastructure/embeddings/embedding.service";
+import { ChunkModel, type ChunkDocument } from "./chunk.model";
+import { toLegalChunk } from "./chunk-mapper";
+import type { SearchOptions } from "./search.types";
 
 const VECTOR_INDEX_NAME = "legal_chunks_vector";
 const ATLAS_SEARCH_INDEX_NAME = "legal_chunks_text";

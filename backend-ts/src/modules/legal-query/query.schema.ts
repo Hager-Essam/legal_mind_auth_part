@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { legalChunksSchema } from "../../schemas/chunk.schema";
+import { legalChunksSchema } from "../legal-corpus/chunk.schema";
 
 export const questionCategorySchema = z.enum(["arabic_rag", "law_ref", "chat"]);
 export type QuestionCategory = z.infer<typeof questionCategorySchema>;

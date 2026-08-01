@@ -1,11 +1,11 @@
 import { env } from "../../config/env";
-import { ChunkModel } from "../../models/chunk.model";
+import { ChunkModel } from "../legal-corpus/chunk.model";
 import type { RewriteResult } from "./query.types";
 import {
   detectAuthorityHints,
   expandRetrievalQuery,
   type ResolvedAuthorityHint,
-} from "../../utils/law-mapping";
+} from "../legal-corpus/law-mapping";
 import { ProviderConfigService } from "../../infrastructure/provider/provider-config.service";
 import { requestProviderText } from "../../infrastructure/provider/provider-http.service";
 

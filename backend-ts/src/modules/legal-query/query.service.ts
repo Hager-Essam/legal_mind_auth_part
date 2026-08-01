@@ -2,9 +2,9 @@ import { performance } from "node:perf_hooks";
 import { env } from "../../config/env";
 import type { QueryRequest, QueryResponse } from "./query.schema";
 import { buildArabicLegalContext } from "./context-builder";
-import { toLegalChunk } from "../../utils/chunk-mapper";
+import { toLegalChunk } from "../legal-corpus/chunk-mapper";
 import { evaluateGrounding } from "./grounding-policy";
-import { applyAuthorityBoosts } from "../../utils/law-mapping";
+import { applyAuthorityBoosts } from "../legal-corpus/law-mapping";
 import {
   parseLegalReference,
   type ParsedLegalReference,
@@ -16,7 +16,7 @@ import { LegalRefService } from "./legal-ref.service";
 import { ProviderConfigService } from "../../infrastructure/provider/provider-config.service";
 import { QueryRewriteService } from "./query-rewrite.service";
 import { RerankerService } from "./reranker.service";
-import { RetrievalService } from "../../services/retrieval.service";
+import { RetrievalService } from "../legal-corpus/retrieval.service";
 
 const mergeReferences = (
   original: ParsedLegalReference,

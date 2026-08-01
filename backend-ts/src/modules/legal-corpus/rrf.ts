@@ -1,4 +1,4 @@
-import type { LegalChunks } from "../schemas";
+import type { LegalChunks } from "./chunk.schema";
 
 type ScoredEntry = { chunk: LegalChunks; score: number };
 

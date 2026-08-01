@@ -7,7 +7,7 @@ import { QueryRewriteService } from "../modules/legal-query/query-rewrite.servic
 import { MongoService } from "./mongo.service";
 import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { RerankerService } from "../modules/legal-query/reranker.service";
-import { RetrievalService } from "./retrieval.service";
+import { RetrievalService } from "../modules/legal-corpus/retrieval.service";
 import { UserRepository } from "../modules/auth/user.repository";
 import { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
 import { EmailService } from "../infrastructure/email/email.service";
