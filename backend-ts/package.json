@@ -17,6 +17,7 @@
     "test:chat": "tsx --test src/chat-tests/*.test.ts",
     "test:query": "tsx --test src/query-tests/*.test.ts",
     "test:security": "tsx --test src/security-tests/*.test.ts",
+    "test:contracts": "tsx --test src/contract-tests/*.test.ts",
     "migrate:auth": "tsx src/scripts/migrate-auth-storage.ts",
     "migrate:chat": "tsx src/scripts/migrate-chat-storage.ts",
     "migrate:legal-source-metadata": "tsx src/scripts/migrate-legal-source-metadata.ts",
@@ -54,7 +55,9 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^24.3.0",
     "@types/nodemailer": "^8.0.1",
+    "@types/supertest": "^7.2.1",
     "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   }
