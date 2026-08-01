@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import { env } from "../config/env";
 import { errorHandler, notFoundHandler } from "../middlewares/error-handler";
 import { createQueryRouter } from "../routes/api/query";
-import { createHealthRouter } from "../routes/health";
+import { createHealthRouter } from "../modules/health/health.routes";
 import type { AppServices } from "../services/service-container";
 import { createAuthRouter } from "../modules/auth/auth.routes";
 import { createConversationRouter } from "../modules/conversations/conversation.routes";

@@ -1,8 +1,14 @@
 import type { Request, Response } from "express";
-import { env } from "../config/env";
-import type { AppServices } from "../services/service-container";
+import { env } from "../../config/env";
+import type { MongoService } from "../../services/mongo.service";
+import type { ProviderConfigService } from "../../services/provider-config.service";
 
-export const createHealthController = (services: AppServices) => {
+export type HealthDependencies = {
+  mongoService: Pick<MongoService, "health">;
+  providerConfigService: Pick<ProviderConfigService, "getSummary">;
+};
+
+export const createHealthController = (services: HealthDependencies) => {
   return {
     health: async (_req: Request, res: Response) => {
       const mongo = await services.mongoService.health();

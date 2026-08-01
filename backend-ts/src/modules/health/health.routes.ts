@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { createHealthController } from "../controllers/health.controller";
-import type { AppServices } from "../services/service-container";
+import {
+  createHealthController,
+  type HealthDependencies,
+} from "./health.controller";
 
-export const createHealthRouter = (services: AppServices) => {
+export const createHealthRouter = (services: HealthDependencies) => {
   const router = Router();
   const controller = createHealthController(services);
   router.get("/health", controller.health);
