@@ -1,95 +1,186 @@
-# MongoDB Atlas Setup
+# MongoDB Atlas Search Setup & Deployment Guide
 
-## Databases and permissions
+> **Status**: Implemented
+> **Source verified**: `src/scripts/setup-atlas-search-indexes.ts`, `src/services/retrieval.service.ts`
+> **Last verified against code**: 2026-07-31
 
-Use one Atlas cluster and two logical databases:
+---
 
-- `legalmind_app`: `users`, `refresh_tokens`, `conversations`, `messages`,
-  and future `audit_events`.
-- `legalmind_rag`: `legal_chunks`, `legal_authorities`, and
-  `corpus_releases`.
+## Table of Contents
 
-Grant the application database user read/write access only to these two
-databases. Do not grant Atlas administrative roles to the running API. Restrict
-the Atlas IP access list to deployment egress addresses and approved developer
-addresses.
+- [1. Overview](#1-overview)
+- [2. Prerequisites & Atlas Requirements](#2-prerequisites--atlas-requirements)
+- [3. Index Definitions](#3-index-definitions)
+  - [3.1 Vector Search Index (`legal_chunks_vector`)](#31-vector-search-index-legal_chunks_vector)
+  - [3.2 Text Search Index (`legal_chunks_text`)](#32-text-search-index-legal_chunks_text)
+- [4. Automated Setup Script Execution](#4-automated-setup-script-execution)
+- [5. Code Coupling & Naming Invariants](#5-code-coupling--naming-invariants)
+- [6. Troubleshooting & Verification](#6-troubleshooting--verification)
+- [7. Related Documentation](#7-related-documentation)
 
-Configure:
+---
 
-```env
-LEGALMIND_APP_URI=mongodb+srv://...
-LEGALMIND_RAG_URI=mongodb+srv://...
-LEGALMIND_APP_DB=legalmind_app
-LEGALMIND_RAG_DB=legalmind_rag
-LEGALMIND_EMBEDDING_DIM=1024
+## 1. Overview
+
+LegalMind relies on MongoDB Atlas Search to deliver high-precision hybrid retrieval over Egyptian legal texts. This guide provides the complete JSON index definitions and setup instructions for configuring the two required search indexes on the `legalmind_rag.legal_chunks` collection:
+1. `legal_chunks_vector`: Vector Search index matching 1024-dimensional dense embeddings (`text-embedding-v4`).
+2. `legal_chunks_text`: Lexical Full-Text Search index utilizing the Lucene Arabic language analyzer.
+
+---
+
+## 2. Prerequisites & Atlas Requirements
+
+- **MongoDB Cluster**: MongoDB Atlas M10+ tier (Vector Search requires M10 or higher for production SLA, or Atlas Flex / M0 for development testing).
+- **Collection Location**: `legalmind_rag` database -> `legal_chunks` collection.
+- **Database User Permissions**: `readWrite` or `dbAdmin` privileges on `legalmind_rag`.
+
+---
+
+## 3. Index Definitions
+
+### 3.1 Vector Search Index (`legal_chunks_vector`)
+
+This index powers the `$vectorSearch` aggregation stage in `RetrievalService`.
+
+* **Index Name**: `legal_chunks_vector`
+* **Target Collection**: `legalmind_rag.legal_chunks`
+* **Vector Dimensions**: `1024`
+* **Similarity Metric**: `cosine`
+* **JSON Definition**:
+
+```json
+{
+  "fields": [
+    {
+      "type": "vector",
+      "path": "embedding",
+      "numDimensions": 1024,
+      "similarity": "cosine"
+    },
+    {
+      "type": "filter",
+      "path": "jurisdiction"
+    },
+    {
+      "type": "filter",
+      "path": "isRetrievable"
+    },
+    {
+      "type": "filter",
+      "path": "reviewStatus"
+    },
+    {
+      "type": "filter",
+      "path": "authorityStatus"
+    }
+  ]
+}
 ```
 
-The URIs may point at the same cluster, but model binding and database names
-remain separate. Complete URIs must never be logged.
+* **Why Filters Are Included**: Pre-filtering inside the vector index ensures non-Egyptian, draft, or quarantined documents are excluded before computing cosine similarity, drastically reducing memory usage and query latency.
 
-## Safe setup sequence
+---
 
-Run from `backend-ts` after taking a backup:
+### 3.2 Text Search Index (`legal_chunks_text`)
+
+This index powers the `$search` aggregation stage in `RetrievalService`.
+
+* **Index Name**: `legal_chunks_text`
+* **Target Collection**: `legalmind_rag.legal_chunks`
+* **Analyzer**: `lucene.arabic` (Provides Arabic stemming, normalization, and stop-word removal)
+* **JSON Definition**:
+
+```json
+{
+  "mappings": {
+    "dynamic": false,
+    "fields": {
+      "text": {
+        "type": "string",
+        "analyzer": "lucene.arabic"
+      },
+      "textNormalized": {
+        "type": "string",
+        "analyzer": "lucene.arabic"
+      },
+      "authorityTitle": {
+        "type": "string",
+        "analyzer": "lucene.arabic"
+      },
+      "authorityTitleNormalized": {
+        "type": "string",
+        "analyzer": "lucene.arabic"
+      },
+      "articleNumber": {
+        "type": "string",
+        "analyzer": "lucene.standard"
+      },
+      "lawNumber": {
+        "type": "string",
+        "analyzer": "lucene.standard"
+      },
+      "jurisdiction": {
+        "type": "token"
+      },
+      "isRetrievable": {
+        "type": "boolean"
+      },
+      "reviewStatus": {
+        "type": "token"
+      },
+      "authorityStatus": {
+        "type": "token"
+      }
+    }
+  }
+}
+```
+
+---
+
+## 4. Automated Setup Script Execution
+
+Instead of manually creating indexes in the Atlas UI, run the automated setup script included in the repository:
 
 ```bash
-npm install
-npm run migrate:auth -- --dry-run
-npm run migrate:chat -- --dry-run
-npm run migrate:legal-source-metadata -- --dry-run
-npm run indexes:app -- --dry-run
-npm run atlas:indexes -- --dry-run
+cd backend-ts
+npm run atlas:indexes
 ```
 
-Review the summaries, then remove `--dry-run` in the same order. Scripts are
-idempotent and exit non-zero when an operation fails.
+* **Script Source**: `src/scripts/setup-atlas-search-indexes.ts`
+* **Behavior**: Uses the MongoDB Node.js driver `createSearchIndex()` API to create or update both search indexes programmatically.
 
-`migrate:auth` adapts legacy records already present in `legalmind_app`; moving
-records from a separate legacy cluster/database still requires an Atlas
-export/import or a controlled transfer before running this migration.
+---
 
-## Standard indexes
+## 5. Code Coupling & Naming Invariants
 
-`npm run indexes:app` creates or verifies:
+> [!IMPORTANT]
+> The index names `legal_chunks_vector` and `legal_chunks_text` are hardcoded as constants in `src/services/retrieval.service.ts`:
+> ```ts
+> const VECTOR_INDEX_NAME = "legal_chunks_vector";
+> const TEXT_INDEX_NAME = "legal_chunks_text";
+> ```
+> Changing index names in MongoDB Atlas without updating these TypeScript constants will cause runtime `$vectorSearch` and `$search` aggregation pipeline failures.
 
-- normalized unique user email and user role/organization indexes;
-- unique refresh-token hash, expiry TTL, and user/revocation indexes;
-- unique conversation identifier and owner/list indexes;
-- unique message identifier, sequence, list, and partial idempotency indexes.
+---
 
-The idempotency index is partial rather than merely sparse because it is a
-compound index with an always-present owner field. MongoDB sparse compound
-indexes can still index a missing idempotency value as `null`, which would
-incorrectly limit each owner to one assistant message.
+## 6. Troubleshooting & Verification
 
-## Atlas Search indexes
+### 6.1 Index Build Status Verification
+Run the database diagnostic script:
+```bash
+npm run diagnose
+```
+This script queries index build statuses and prints the total indexed document count.
 
-`npm run atlas:indexes` targets:
+### 6.2 Common Issues
+- **`MongoServerError: Index not found`**: The index has not finished building. Atlas search index initial builds take 2-5 minutes depending on collection size.
+- **`Vector dimension mismatch`**: Ensure `LEGALMIND_EMBEDDING_DIM=1024` matches the `numDimensions: 1024` definition in the vector index.
 
-- `legal_chunks_vector` for the configured embedding dimension and governance
-  filters;
-- `legal_chunks_text` for Arabic legal text, official/normalized titles,
-  normalized law name, subject, and article number.
+---
 
-Atlas Search index creation is asynchronous. In Atlas, open Search & Vector
-Search for `legalmind_rag.legal_chunks` and wait until both indexes report
-`READY` before retrieval verification. Confirm the vector dimension exactly
-matches `LEGALMIND_EMBEDDING_DIM`.
+## 7. Related Documentation
 
-## Verification
-
-1. Start the API and inspect `/health` and `/ready`; application and RAG
-   connectivity are reported separately.
-2. Confirm no raw refresh token exists in `refresh_tokens`.
-3. Confirm legacy corpus records remain non-retrievable until governance
-   metadata is reviewed and published.
-4. Execute one authenticated query and one saved conversation turn.
-5. Reopen that turn and compare its saved source snapshots with the answer.
-
-## Rollback
-
-Do not delete the source backup until functional verification is complete.
-Application index creation is additive. Governance migration intentionally
-fails closed; its safe rollback is to restore reviewed metadata from backup,
-not to make unknown records retrievable. If deployment must be reverted, stop
-the new API first, restore the database snapshot, and deploy the prior
-application version.
+- [Search & Indexing Guide](SEARCH_AND_INDEXING.md) - Standard database indexes reference.
+- [Retrieval Service Implementation](services/RETRIEVAL_SERVICE_IMPLEMENTATION.md) - RAG retrieval execution.
+- [Database Architecture](DATABASE_ARCHITECTURE.md) - Schema specifications.

@@ -1,0 +1,223 @@
+{
+  "normalization": {
+    "excludedPaths": [
+      "$..request_id",
+      "$..id",
+      "$..conversation_id",
+      "$..message_id",
+      "$..next_cursor",
+      "$..createdAt",
+      "$..updatedAt",
+      "$..created_at",
+      "$..updated_at",
+      "$..last_message_at",
+      "$..retrievedAt",
+      "$..latency_ms",
+      "$..diagnostics.latencyMs",
+      "$..access_token",
+      "$..llm_provider_used",
+      "$..diagnostics.llmProvider",
+      "$..diagnostics.llmModel",
+      "$..answer"
+    ],
+    "ordering": "Preserve array order except equal-score source results without a deterministic tiebreaker."
+  },
+  "routes": {
+    "GET /health": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "service": "LegalMind API",
+        "environment": "test",
+        "checks": {
+          "applicationDatabase": {"connected": true, "readyState": 1, "pingOk": true},
+          "ragDatabase": {"connected": true, "readyState": 1, "pingOk": true}
+        }
+      }
+    },
+    "GET /ready": {
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "checks": {"applicationDatabase": true, "ragDatabase": true, "provider": true}
+      }
+    },
+    "POST /api/v1/auth/register": {
+      "request": {
+        "multipart": {
+          "fullName": "Contract Lawyer",
+          "email": "contract@example.test",
+          "password": "ContractPass123",
+          "officeName": "Contract Office",
+          "teamSize": "solo",
+          "lawyerIdDocument": "<fixture.png>"
+        }
+      },
+      "status": 201,
+      "body": {
+        "message": "Registration succeeded. Verify your email before signing in.",
+        "user": {
+          "fullName": "Contract Lawyer",
+          "email": "contract@example.test",
+          "role": "pending_lawyer",
+          "officeName": "Contract Office",
+          "teamSize": "solo",
+          "isActive": true,
+          "isEmailVerified": false,
+          "organizationId": null
+        }
+      }
+    },
+    "POST /api/v1/auth/verify-email": {
+      "request": {"token": "<32-plus-character-verification-token>"},
+      "status": 200,
+      "body": {"message": "Email verification succeeded."}
+    },
+    "POST /api/v1/auth/resend-verification": {
+      "request": {"email": "contract@example.test"},
+      "status": 200,
+      "body": {"message": "If the account exists and is unverified, a verification email will be sent."}
+    },
+    "POST /api/v1/auth/login": {
+      "request": {"email": "contract@example.test", "password": "ContractPass123"},
+      "status": 200,
+      "body": {
+        "user": {
+          "fullName": "Contract Lawyer",
+          "email": "contract@example.test",
+          "role": "pending_lawyer",
+          "officeName": "Contract Office",
+          "teamSize": "solo",
+          "isActive": true,
+          "isEmailVerified": true,
+          "organizationId": null
+        }
+      }
+    },
+    "POST /api/v1/auth/refresh-token": {
+      "request": {"refreshToken": "<32-plus-character-refresh-token>"},
+      "status": 200,
+      "body": {
+        "user": {
+          "fullName": "Contract Lawyer",
+          "email": "contract@example.test",
+          "role": "pending_lawyer",
+          "isActive": true,
+          "isEmailVerified": true,
+          "organizationId": null
+        }
+      }
+    },
+    "POST /api/v1/auth/logout": {
+      "request": {},
+      "status": 204,
+      "body": null
+    },
+    "POST /api/v1/query": {
+      "request": {"query": "ما هي حقوق العامل؟", "top_k": 5, "user_role": "citizen"},
+      "status": 200,
+      "body": {
+        "source_chunks": [],
+        "category": "arabic_rag",
+        "evidence_relevance_score": 0
+      }
+    },
+    "GET /api/v1/conversations": {
+      "request": {"query": {"limit": 20, "status": "active"}},
+      "status": 200,
+      "body": {"conversations": [], "next_cursor": null}
+    },
+    "POST /api/v1/conversations": {
+      "request": {"title": "Contract conversation", "user_role": "citizen"},
+      "status": 201,
+      "body": {
+        "title": "Contract conversation",
+        "status": "active",
+        "jurisdiction": "EG",
+        "default_user_role": "citizen",
+        "summary": "",
+        "summary_version": 0,
+        "message_count": 0
+      }
+    },
+    "GET /api/v1/conversations/:conversationId": {
+      "status": 200,
+      "body": {
+        "title": "Contract conversation",
+        "status": "active",
+        "jurisdiction": "EG",
+        "default_user_role": "citizen",
+        "summary": "",
+        "summary_version": 0,
+        "message_count": 0
+      }
+    },
+    "GET /api/v1/conversations/:conversationId/messages": {
+      "request": {"query": {"limit": 50}},
+      "status": 200,
+      "body": {"messages": [], "next_cursor": null}
+    },
+    "POST /api/v1/conversations/:conversationId/messages": {
+      "request": {
+        "content": "ما هي حقوق العامل؟",
+        "idempotency_key": "11111111-1111-4111-8111-111111111111",
+        "top_k": 5,
+        "user_role": "citizen"
+      },
+      "status": 201,
+      "body": {
+        "user_message": {
+          "role": "user",
+          "status": "completed",
+          "sequence": 1,
+          "content": "ما هي حقوق العامل؟",
+          "idempotency_key": "11111111-1111-4111-8111-111111111111"
+        },
+        "assistant_message": {
+          "role": "assistant",
+          "status": "completed",
+          "sequence": 2,
+          "category": "arabic_rag"
+        }
+      }
+    },
+    "PATCH /api/v1/conversations/:conversationId": {
+      "request": {"title": "Renamed contract conversation"},
+      "status": 200,
+      "body": {"title": "Renamed contract conversation", "status": "active"}
+    },
+    "DELETE /api/v1/conversations/:conversationId": {
+      "status": 204,
+      "body": null
+    }
+  },
+  "errors": {
+    "validation": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": "VALIDATION_ERROR",
+        "message": "query: Too small: expected string to have >=3 characters",
+        "details": {
+          "fields": {"query": ["Too small: expected string to have >=3 characters"]}
+        }
+      }
+    },
+    "unauthenticated": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": "AUTH_REQUIRED",
+        "message": "Authentication is required."
+      }
+    },
+    "notFound": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": "CONVERSATION_NOT_FOUND",
+        "message": "Conversation not found."
+      }
+    }
+  }
+}
