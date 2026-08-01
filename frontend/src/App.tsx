@@ -1,12 +1,14 @@
 import {
   Archive,
   ArrowUp,
+  BadgeCheck,
   BookOpenText,
   ChevronDown,
   FileBadge,
   LogOut,
   Menu,
   MessageSquare,
+  MailWarning,
   MoreHorizontal,
   Plus,
   RefreshCw,
@@ -29,6 +31,8 @@ import {
   logout,
   refreshAccessToken,
   register,
+  resendVerification,
+  verifyEmail,
 } from "./api";
 import type {
   ChatMessage,
@@ -48,6 +52,151 @@ const formatDate = (value: string) =>
 const isArabic = (value: string) => /[\u0600-\u06ff]/.test(value);
 
 type AuthView = "login" | "register";
+
+function EmailVerificationScreen({ token }: { token: string | null }) {
+  const [status, setStatus] = useState<
+    "verifying" | "verified" | "failed" | "missing"
+  >(token ? "verifying" : "missing");
+  const [error, setError] = useState("");
+  const [resendNotice, setResendNotice] = useState("");
+  const [resending, setResending] = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+    let active = true;
+    verifyEmail(token)
+      .then(() => {
+        if (active) setStatus("verified");
+      })
+      .catch((cause) => {
+        if (!active) return;
+        setStatus("failed");
+        setError(
+          cause instanceof ApiError
+            ? cause.message
+            : "تعذر الاتصال بالخادم للتحقق من البريد الإلكتروني.",
+        );
+      });
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
+  const submitResend = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    setResending(true);
+    setError("");
+    setResendNotice("");
+    try {
+      await resendVerification(String(form.get("email")));
+      setResendNotice(
+        "إذا كان الحساب موجوداً ولم يُفعّل، فسيصل رابط تحقق جديد إلى البريد.",
+      );
+    } catch (cause) {
+      setError(
+        cause instanceof ApiError
+          ? cause.message
+          : "تعذر إرسال رابط تحقق جديد.",
+      );
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const goToLogin = () => {
+    window.location.assign("/");
+  };
+
+  const isFailure = status === "failed" || status === "missing";
+
+  return (
+    <main className="auth-shell verification-shell">
+      <section className="auth-masthead" aria-label="LegalMind email verification">
+        <div className="brand-seal"><Scale size={31} strokeWidth={1.5} /></div>
+        <p className="eyebrow">LM / EMAIL VERIFICATION</p>
+        <h1>ليجال<span>مايند</span></h1>
+        <p className="auth-thesis">
+          تأكيد البريد يحمي حسابك ومحادثاتك القانونية من الوصول غير المصرح به.
+        </p>
+      </section>
+
+      <section className="auth-panel verification-panel">
+        <div
+          className={`verification-mark ${status}`}
+          aria-hidden="true"
+        >
+          {status === "verified" ? (
+            <BadgeCheck size={34} />
+          ) : isFailure ? (
+            <MailWarning size={34} />
+          ) : (
+            <RefreshCw size={30} className="verification-spinner" />
+          )}
+        </div>
+
+        {status === "verifying" ? (
+          <>
+            <p className="case-number">CHECKING SECURE TOKEN</p>
+            <h2>جارٍ التحقق من بريدك الإلكتروني…</h2>
+            <p>يرجى الانتظار لحظات وعدم إغلاق الصفحة.</p>
+          </>
+        ) : null}
+
+        {status === "verified" ? (
+          <>
+            <p className="case-number">EMAIL VERIFIED</p>
+            <h2>تم تفعيل البريد الإلكتروني</h2>
+            <p>
+              أصبح حسابك جاهزاً. يمكنك الآن تسجيل الدخول إلى مساحة البحث
+              القانونية.
+            </p>
+            <button className="primary-action" onClick={goToLogin}>
+              الانتقال إلى تسجيل الدخول
+            </button>
+          </>
+        ) : null}
+
+        {isFailure ? (
+          <>
+            <p className="case-number">VERIFICATION LINK ERROR</p>
+            <h2>
+              {status === "missing"
+                ? "رابط التحقق غير مكتمل"
+                : "تعذر تفعيل البريد الإلكتروني"}
+            </h2>
+            <p className="form-notice error">
+              {status === "missing"
+                ? "لا يحتوي الرابط على رمز تحقق. افتح الرابط الكامل الموجود في رسالة البريد."
+                : error}
+            </p>
+            <form className="auth-form verification-resend" onSubmit={submitResend}>
+              <label>
+                البريد الإلكتروني
+                <input
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  placeholder="name@example.com"
+                />
+              </label>
+              <button className="primary-action" disabled={resending}>
+                {resending ? "جارٍ الإرسال…" : "إرسال رابط تحقق جديد"}
+              </button>
+            </form>
+            {resendNotice ? (
+              <p className="form-notice success">{resendNotice}</p>
+            ) : null}
+            <button className="text-action" onClick={goToLogin}>
+              العودة إلى تسجيل الدخول
+            </button>
+          </>
+        ) : null}
+      </section>
+    </main>
+  );
+}
 
 function AuthScreen({ onAuthenticated }: { onAuthenticated: (user: PublicUser) => void }) {
   const [view, setView] = useState<AuthView>("login");
@@ -450,7 +599,7 @@ function Workspace({
   );
 }
 
-export function App() {
+function SessionApp() {
   const [user, setUser] = useState<PublicUser | null>(null);
   const [booting, setBooting] = useState(true);
 
@@ -465,4 +614,15 @@ export function App() {
   return <Workspace user={user} onLogout={() => {
     void logout().finally(() => setUser(null));
   }} />;
+}
+
+export function App() {
+  if (window.location.pathname.replace(/\/+$/, "") === "/verify-email") {
+    return (
+      <EmailVerificationScreen
+        token={new URLSearchParams(window.location.search).get("token")}
+      />
+    );
+  }
+  return <SessionApp />;
 }

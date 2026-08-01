@@ -30,6 +30,33 @@ with sync_playwright() as playwright:
         full_page=True,
     )
 
+    verification_calls = [0]
+    verification = browser.new_page(viewport={"width": 1100, "height": 800})
+
+    def mock_verification(route):
+        if route.request.url.endswith("/auth/verify-email"):
+            verification_calls[0] += 1
+            route.fulfill(
+                status=200,
+                content_type="application/json",
+                body='{"message":"Email verification succeeded."}',
+            )
+        else:
+            route.continue_()
+
+    verification.route("**/api/v1/**", mock_verification)
+    verification.goto(
+        f"http://127.0.0.1:5173/verify-email?token={'a' * 64}"
+    )
+    verification.get_by_role(
+        "heading", name="تم تفعيل البريد الإلكتروني"
+    ).wait_for()
+    assert verification_calls[0] == 1
+    verification.screenshot(
+        path=str(ARTIFACTS / "email-verified.png"),
+        full_page=True,
+    )
+
     workspace = browser.new_page(viewport={"width": 1440, "height": 1000})
 
     def mock_api(route):
