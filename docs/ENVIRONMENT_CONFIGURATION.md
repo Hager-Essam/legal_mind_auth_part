@@ -14,7 +14,6 @@
   - [3.1 Application Settings](#31-application-settings)
   - [3.2 Authentication & JWT Settings](#32-authentication--jwt-settings)
   - [3.3 Email Settings](#33-email-settings)
-  - [3.4 Private Upload Settings](#34-private-upload-settings)
   - [3.5 Database Settings](#35-database-settings)
   - [3.6 DashScope Provider & Round-Robin Keys](#36-dashscope-provider--round-robin-keys)
   - [3.7 LLM Generation Settings](#37-llm-generation-settings)
@@ -55,8 +54,6 @@ LegalMind uses Zod (`src/config/env.ts`) to validate environment variables durin
 | `LEGALMIND_EMAIL_SECURE` | Email | No | `false` | No | EmailService | `false` | `true` for port 465 |
 | `LEGALMIND_EMAIL_USER` | Email | Conditional | (empty string) | **YES** | EmailService | `smtp_username` | SMTP account username |
 | `LEGALMIND_EMAIL_PASSWORD` | Email | Conditional | (empty string) | **YES** | EmailService | `smtp_password` | SMTP account password |
-| `LEGALMIND_LAWYER_ID_UPLOAD_DIR` | Uploads | No | `uploads/private/lawyer-ids` | No | Multer | `uploads/private/lawyer-ids` | Private disk upload directory |
-| `LEGALMIND_LAWYER_ID_MAX_MB` | Uploads | No | `5` | No | Multer | `5` | Max upload size limit (MB) |
 | `LEGALMIND_APP_URI` | Database | No | `mongodb://localhost:27017` | **YES** | MongoService | `mongodb://localhost:27017` | MongoDB Atlas application URI |
 | `LEGALMIND_RAG_URI` | Database | No | `mongodb://localhost:27017` | **YES** | MongoService | `mongodb://localhost:27017` | MongoDB Atlas RAG URI |
 | `LEGALMIND_APP_DB` | Database | No | `legalmind_app` | No | MongoService | `legalmind_app` | Application DB name |

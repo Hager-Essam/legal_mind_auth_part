@@ -32,5 +32,5 @@
 - API-key rotation is per process, round-robin, and not health-aware.
 - Social chat has no model fallback. Grounded fallback applies only after
   retryable/network primary-model failures.
-- No automated full-route E2E, live Atlas integration, CORS, upload-signature,
+- No automated full-route E2E, live Atlas integration, CORS,
   SMTP, or contract-analysis tests exist.

@@ -1,8 +1,5 @@
 import { ProviderConfigService } from "../../infrastructure/provider/provider-config.service";
-import {
-  ProviderHttpError,
-  requestProviderText,
-} from "../../infrastructure/provider/provider-http.service";
+import { ProviderHttpError, requestProviderText } from "../../infrastructure/provider/provider-http.service";
 
 type DashScopeChatCompletionResponse = {
   choices?: Array<{
@@ -44,21 +41,23 @@ const GENERATION_TIMEOUT_MS = 30_000;
 export class GenerationService {
   constructor(private readonly providerConfigService: ProviderConfigService) {}
 
-  async generateGroundedArabicAnswer(
-    params: GroundedArabicAnswerParams,
-  ): Promise<string> {
+  async generateGroundedArabicAnswer(params: GroundedArabicAnswerParams): Promise<string> {
     const provider = this.providerConfigService.getSummary();
+
     try {
       return await this.generateChatCompletion(provider.llmModel, params);
     } catch (error) {
       if (error instanceof ProviderHttpError && !error.retryable) throw error;
+
       if (provider.llmModelFallback === provider.llmModel) throw error;
+
       return this.generateChatCompletion(provider.llmModelFallback, params);
     }
   }
 
   async generateChatAnswer(question: string): Promise<string> {
     const provider = this.providerConfigService.getSummary();
+
     return this.requestCompletion({
       model: provider.llmModelFallback,
       messages: [
@@ -70,10 +69,7 @@ export class GenerationService {
     });
   }
 
-  private async generateChatCompletion(
-    model: string,
-    params: GroundedArabicAnswerParams,
-  ): Promise<string> {
+  private async generateChatCompletion(model: string, params: GroundedArabicAnswerParams): Promise<string> {
     return this.requestCompletion({
       model,
       messages: [
@@ -114,30 +110,38 @@ export class GenerationService {
       {
         timeoutMs: GENERATION_TIMEOUT_MS,
         totalRetryBudgetMs: 45_000,
-      },
+      }
     );
-      if (!text.trim()) {
-        throw new Error("Provider returned an empty response.");
-      }
-      let payload: DashScopeChatCompletionResponse;
-      try {
-        payload = JSON.parse(text) as DashScopeChatCompletionResponse;
-      } catch {
-        throw new Error("Provider returned invalid JSON.");
-      }
-      const answer = this.extractAnswerText(payload);
-      if (!answer) throw new Error("Provider returned an empty answer.");
-      return answer;
+
+    if (!text.trim()) {
+      throw new Error("Provider returned an empty response.");
+    }
+    let payload: DashScopeChatCompletionResponse;
+
+    try {
+      payload = JSON.parse(text) as DashScopeChatCompletionResponse;
+    } catch {
+      throw new Error("Provider returned invalid JSON.");
+    }
+    const answer = this.extractAnswerText(payload);
+
+    if (!answer) throw new Error("Provider returned an empty answer.");
+
+    return answer;
   }
 
-  private extractAnswerText(
-    payload: DashScopeChatCompletionResponse,
-  ): string {
+  private extractAnswerText(payload: DashScopeChatCompletionResponse): string {
     const content = payload.choices?.[0]?.message?.content;
+
     if (typeof content === "string") return content.trim();
+
     if (Array.isArray(content)) {
-      return content.map((item) => item.text ?? "").join("").trim();
+      return content
+        .map((item) => item.text ?? "")
+        .join("")
+        .trim();
     }
+
     return "";
   }
 }

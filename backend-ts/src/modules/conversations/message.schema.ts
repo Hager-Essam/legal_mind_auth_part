@@ -25,7 +25,7 @@ const sourceSnapshotSchema = new Schema<SourceSnapshot>(
     corpusReleaseId: String,
     retrievedAt: { type: Date, required: true },
   },
-  { _id: false },
+  { _id: false }
 );
 
 const diagnosticsSchema = new Schema(
@@ -42,7 +42,7 @@ const diagnosticsSchema = new Schema(
     llmModel: { type: String, default: null },
     corpusReleaseId: String,
   },
-  { _id: false },
+  { _id: false }
 );
 
 const messageErrorSchema = new Schema(
@@ -50,7 +50,7 @@ const messageErrorSchema = new Schema(
     code: { type: String, required: true },
     safeMessage: { type: String, required: true },
   },
-  { _id: false },
+  { _id: false }
 );
 
 export const messageSchema = new Schema<Message>(
@@ -87,26 +87,20 @@ export const messageSchema = new Schema<Message>(
     collection: "messages",
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-messageSchema.index(
-  { messageId: 1 },
-  { unique: true, name: "messages_id_unique" },
-);
+messageSchema.index({ messageId: 1 }, { unique: true, name: "messages_id_unique" });
 messageSchema.index(
   { conversationId: 1, sequence: 1 },
-  { unique: true, name: "messages_conversation_sequence_unique" },
+  { unique: true, name: "messages_conversation_sequence_unique" }
 );
-messageSchema.index(
-  { conversationId: 1, createdAt: 1 },
-  { name: "messages_conversation_created" },
-);
+messageSchema.index({ conversationId: 1, createdAt: 1 }, { name: "messages_conversation_created" });
 messageSchema.index(
   { ownerUserId: 1, idempotencyKey: 1 },
   {
     unique: true,
     partialFilterExpression: { idempotencyKey: { $type: "string" } },
     name: "messages_owner_idempotency_unique",
-  },
+  }
 );

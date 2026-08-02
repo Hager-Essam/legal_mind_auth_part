@@ -3,14 +3,8 @@ import { env } from "../../config/env";
 import { HttpError } from "../../shared/http/http-error";
 import { ConversationModel } from "./conversation.model";
 import { MessageModel } from "./message.model";
-import type {
-  Message,
-  SourceSnapshot,
-} from "./conversation.types";
-import type {
-  ConversationOwner,
-  ConversationService,
-} from "./conversation.service";
+import type { Message, SourceSnapshot } from "./conversation.types";
+import type { ConversationOwner, ConversationService } from "./conversation.service";
 import type { QueryService } from "../legal-query/query.service";
 import type { ConversationMemoryService } from "./conversation-memory.service";
 import type { SourceSnapshotService } from "./source-snapshot.service";
@@ -27,37 +21,27 @@ export class ChatOrchestratorService {
     private readonly conversations: ConversationService,
     private readonly memory: ConversationMemoryService,
     private readonly snapshots: SourceSnapshotService,
-    private readonly queryService: QueryService,
+    private readonly queryService: QueryService
   ) {}
 
-  async sendMessage(
-    conversationId: string,
-    owner: ConversationOwner,
-    input: SendConversationMessageInput,
-  ) {
+  async sendMessage(conversationId: string, owner: ConversationOwner, input: SendConversationMessageInput) {
     const conversation = await this.conversations.get(conversationId, owner);
     const existingUser = await MessageModel.findOne({
       ownerUserId: owner.id,
       idempotencyKey: input.idempotency_key,
     });
+
     if (existingUser) {
-      if (
-        existingUser.conversationId !== conversationId ||
-        existingUser.content !== input.content
-      ) {
+      if (existingUser.conversationId !== conversationId || existingUser.content !== input.content) {
         throw new HttpError(
           409,
           "The idempotency key was already used for another request.",
           undefined,
-          "IDEMPOTENCY_KEY_CONFLICT",
+          "IDEMPOTENCY_KEY_CONFLICT"
         );
       }
-      return this.resumeOrReturnExisting(
-        conversation,
-        existingUser as unknown as Message,
-        owner,
-        input,
-      );
+
+      return this.resumeOrReturnExisting(conversation, existingUser as unknown as Message, owner, input);
     }
 
     const allocated = await ConversationModel.findOneAndUpdate(
@@ -66,20 +50,17 @@ export class ChatOrchestratorService {
         $inc: { messageCount: 2 },
         $set: { lastMessageAt: new Date() },
       },
-      { returnDocument: "after" },
+      { returnDocument: "after" }
     );
+
     if (!allocated) {
-      throw new HttpError(
-        404,
-        "Conversation not found.",
-        undefined,
-        "CONVERSATION_NOT_FOUND",
-      );
+      throw new HttpError(404, "Conversation not found.", undefined, "CONVERSATION_NOT_FOUND");
     }
     const assistantSequence = allocated.messageCount;
     const userSequence = assistantSequence - 1;
 
     let userMessage;
+
     try {
       userMessage = await MessageModel.create({
         messageId: crypto.randomUUID(),
@@ -94,25 +75,17 @@ export class ChatOrchestratorService {
         idempotencyKey: input.idempotency_key,
       });
     } catch (error) {
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "code" in error &&
-        error.code === 11000
-      ) {
+      if (typeof error === "object" && error !== null && "code" in error && error.code === 11000) {
         const duplicate = await MessageModel.findOne({
           ownerUserId: owner.id,
           idempotencyKey: input.idempotency_key,
         });
+
         if (duplicate) {
-          return this.resumeOrReturnExisting(
-            conversation,
-            duplicate as unknown as Message,
-            owner,
-            input,
-          );
+          return this.resumeOrReturnExisting(conversation, duplicate as unknown as Message, owner, input);
         }
       }
+
       throw error;
     }
 
@@ -132,7 +105,7 @@ export class ChatOrchestratorService {
       userMessage as unknown as Message,
       assistantMessage.messageId,
       owner,
-      input,
+      input
     );
   }
 
@@ -140,7 +113,7 @@ export class ChatOrchestratorService {
     conversation: InstanceType<typeof ConversationModel>,
     userMessage: Message,
     owner: ConversationOwner,
-    input: SendConversationMessageInput,
+    input: SendConversationMessageInput
   ) {
     let assistant = await MessageModel.findOne({
       conversationId: userMessage.conversationId,
@@ -149,6 +122,7 @@ export class ChatOrchestratorService {
       sequence: userMessage.sequence + 1,
       role: "assistant",
     });
+
     if (!assistant) {
       assistant = await MessageModel.create({
         messageId: crypto.randomUUID(),
@@ -161,6 +135,7 @@ export class ChatOrchestratorService {
         content: "Processing request.",
       });
     }
+
     if (assistant.status === "completed" || assistant.status === "pending") {
       return { userMessage, assistantMessage: assistant };
     }
@@ -168,13 +143,8 @@ export class ChatOrchestratorService {
     assistant.content = "Processing request.";
     assistant.error = undefined;
     await assistant.save();
-    return this.processAssistant(
-      conversation,
-      userMessage,
-      assistant.messageId,
-      owner,
-      input,
-    );
+
+    return this.processAssistant(conversation, userMessage, assistant.messageId, owner, input);
   }
 
   private async processAssistant(
@@ -182,13 +152,13 @@ export class ChatOrchestratorService {
     userMessage: Message,
     assistantMessageId: string,
     owner: ConversationOwner,
-    input: SendConversationMessageInput,
+    input: SendConversationMessageInput
   ) {
     try {
       const recentMessages = await this.memory.loadRecentMessages(
         conversation.conversationId,
         owner.id,
-        owner.organizationId,
+        owner.organizationId
       );
       const rewrite = await this.memory.resolve({
         summary: conversation.summary,
@@ -229,18 +199,13 @@ export class ChatOrchestratorService {
           },
           $unset: { error: 1 },
         },
-        { returnDocument: "after", runValidators: true },
+        { returnDocument: "after", runValidators: true }
       );
-      await this.memory.updateSummaryIfNeeded(
-        conversation.conversationId,
-        owner.id,
-        owner.organizationId,
-      );
+      await this.memory.updateSummaryIfNeeded(conversation.conversationId, owner.id, owner.organizationId);
+
       return { userMessage, assistantMessage: assistant };
     } catch (error) {
-      console.error(
-        `[ChatOrchestrator] Turn failed (${error instanceof Error ? error.name : "unknown"}).`,
-      );
+      console.error(`[ChatOrchestrator] Turn failed (${error instanceof Error ? error.name : "unknown"}).`);
       const assistant = await MessageModel.findOneAndUpdate(
         {
           messageId: assistantMessageId,
@@ -254,28 +219,27 @@ export class ChatOrchestratorService {
             content: "The answer could not be generated. Please retry.",
             error: {
               code: "CHAT_GENERATION_FAILED",
-              safeMessage:
-                "The answer could not be generated. Please retry.",
+              safeMessage: "The answer could not be generated. Please retry.",
             },
           },
         },
-        { returnDocument: "after" },
+        { returnDocument: "after" }
       );
+
       throw new HttpError(
         502,
         "The message was saved, but answer generation failed.",
         { assistant_message_id: assistant?.messageId },
-        "CHAT_GENERATION_FAILED",
+        "CHAT_GENERATION_FAILED"
       );
     }
   }
 
   private releaseId(snapshots: SourceSnapshot[]): string | undefined {
     const releaseIds = new Set(
-      snapshots
-        .map((snapshot) => snapshot.corpusReleaseId)
-        .filter((value): value is string => Boolean(value)),
+      snapshots.map((snapshot) => snapshot.corpusReleaseId).filter((value): value is string => Boolean(value))
     );
+
     return releaseIds.size === 1 ? [...releaseIds][0] : undefined;
   }
 }

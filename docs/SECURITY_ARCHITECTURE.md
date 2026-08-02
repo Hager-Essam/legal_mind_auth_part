@@ -1,7 +1,7 @@
 # LegalMind Security Architecture & Data Protection Guide
 
 > **Status**: Implemented (Graduation Scope) with Planned SaaS Security Framework
-> **Source verified**: `src/middlewares/auth.middleware.ts`, `src/middlewares/upload.middleware.ts`, `src/services/generation.service.ts`, `src/modules/auth/*`
+> **Source verified**: `src/middlewares/auth.middleware.ts`, `src/services/generation.service.ts`, `src/modules/auth/*`
 > **Last verified against code**: 2026-07-31
 
 ---
@@ -18,7 +18,7 @@
   - [3.1 User Ownership Scoping](#31-user-ownership-scoping)
   - [3.2 Enumeration Defense (404 vs. 403)](#32-enumeration-defense-404-vs-403)
 - [4. RAG Prompt Injection & Trust Boundaries](#4-rag-prompt-injection--trust-boundaries)
-- [5. Private Credential File Upload Security](#5-private-credential-file-upload-security)
+- [5. Registration Credential Handling](#5-registration-credential-handling)
 - [6. Network & Transport Security](#6-network--transport-security)
   - [6.1 CORS Policy](#61-cors-policy)
   - [6.2 Rate Limiting](#62-rate-limiting)
@@ -95,15 +95,9 @@ Strictly adhere to the rules:
 
 ---
 
-## 5. Private Credential File Upload Security
+## 5. Registration Credential Handling
 
-Lawyer syndicate ID card uploads are handled by `upload.middleware.ts` (`Multer`):
-* **Storage Location**: `uploads/private/lawyer-ids/` (Configured via `LEGALMIND_LAWYER_ID_UPLOAD_DIR`).
-* **File Type Whitelist**: MIME types restricted strictly to `image/jpeg`, `image/png`, and `application/pdf`.
-* **File Size Limit**: Max 5 MB (`LEGALMIND_LAWYER_ID_MAX_MB=5`).
-* **Storage Access**: Upload directory is located **outside** public Express static folders. Uploaded files are served only through authenticated admin routes.
-
----
+Public registration accepts validated profile fields as JSON and does not accept or persist identity-document uploads.
 
 ## 6. Network & Transport Security
 
@@ -131,7 +125,6 @@ All environment variables are parsed and validated by `src/config/env.ts` at sta
 |---|---|---|
 | **Multi-Tenancy** | User-level ownership (`ownerUserId`) | Multi-tenant organization isolation (`organizationId`), RBAC roles |
 | **Audit Logs** | Request ID log tracing | Dedicated `audit_events` immutable security ledger |
-| **Object Storage** | Local disk storage (`uploads/private/`) | S3 / Azure Blob encrypted bucket with temporary pre-signed URLs |
 | **Usage Budgeting** | Fixed IP rate limits | Per-tenant token quotas, tier-based rate limiting, billing controls |
 | **Data Retention** | Soft deletion (`status = 'deleted'`) | Automated retention policies, legal holds, permanent purge pipelines |
 

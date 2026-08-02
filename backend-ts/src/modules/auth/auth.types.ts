@@ -1,4 +1,4 @@
-import type { UserRole } from "./user.types";
+import type { UserRole } from "./users/user.types";
 
 export type AccessTokenPayload = {
   sub: string;
@@ -10,10 +10,8 @@ export type RegisterInput = {
   fullName: string;
   email: string;
   password: string;
-  officeName?: string;
+  officeName: string;
   teamSize: "solo" | "small" | "medium" | "large";
   phone?: string;
   barAssociationNumber?: string;
-  lawyerIdDocument: string;
 };
-

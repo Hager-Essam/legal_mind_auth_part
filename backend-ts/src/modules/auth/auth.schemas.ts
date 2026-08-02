@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { normalizeEmail } from "./user.schema";
+import { normalizeEmail } from "./users/user.schema";
 
 const passwordSchema = z
   .string()
@@ -17,11 +17,8 @@ const emailSchema = z
 
 const optionalTrimmedString = (maximum: number) =>
   z.preprocess(
-    (value) =>
-      typeof value === "string" && value.trim() === ""
-        ? undefined
-        : value,
-    z.string().trim().min(1).max(maximum).optional(),
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z.string().trim().min(1).max(maximum).optional()
   );
 
 export const registerSchema = z
@@ -46,27 +43,14 @@ export const registerSchema = z
   })
   .strict();
 
-export const loginSchema = z
-  .object({ email: emailSchema, password: z.string().min(1).max(128) })
-  .strict();
+export const loginSchema = z.object({ email: emailSchema, password: z.string().min(1).max(128) }).strict();
 
-export const refreshSchema = z
-  .object({ refreshToken: z.string().min(32).optional() })
-  .strict();
+export const refreshSchema = z.object({ refreshToken: z.string().min(32).optional() }).strict();
 
-export const forgotPasswordSchema = z
-  .object({ email: emailSchema })
-  .strict();
+export const forgotPasswordSchema = z.object({ email: emailSchema }).strict();
 
-export const resetPasswordSchema = z
-  .object({ token: z.string().min(32), password: passwordSchema })
-  .strict();
+export const resetPasswordSchema = z.object({ token: z.string().min(32), password: passwordSchema }).strict();
 
-export const verifyEmailSchema = z
-  .object({ token: z.string().min(32) })
-  .strict();
+export const verifyEmailSchema = z.object({ token: z.string().min(32) }).strict();
 
-export const resendVerificationSchema = z
-  .object({ email: emailSchema })
-  .strict();
-
+export const resendVerificationSchema = z.object({ email: emailSchema }).strict();

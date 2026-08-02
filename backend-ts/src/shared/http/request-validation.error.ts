@@ -15,20 +15,20 @@ export type ValidationErrorDetails = {
 const fieldFromIssue = (issue: ZodIssue): string =>
   issue.path.length > 0 ? issue.path.map(String).join(".") : "_form";
 
-export const validationDetailsFromZod = (
-  error: ZodError,
-): ValidationErrorDetails => {
+export const validationDetailsFromZod = (error: ZodError): ValidationErrorDetails => {
   const fields: Record<string, string[]> = {};
   const issues = error.issues.map((issue) => {
     const field = fieldFromIssue(issue);
     fields[field] ??= [];
     fields[field].push(issue.message);
+
     return {
       field,
       message: issue.message,
       code: issue.code,
     };
   });
+
   return { fields, issues };
 };
 

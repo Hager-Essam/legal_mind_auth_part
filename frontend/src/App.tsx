@@ -89,7 +89,7 @@ function EmailVerificationScreen({ token }: { token: string | null }) {
     setError("");
     setResendNotice("");
     try {
-      await resendVerification(String(form.get("email")));
+      await resendVerification(String(form.get("email") ?? ""));
       setResendNotice(
         "إذا كان الحساب موجوداً ولم يُفعّل، فسيصل رابط تحقق جديد إلى البريد.",
       );
@@ -211,7 +211,7 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (user: PublicUser) =
     const form = new FormData(event.currentTarget);
     try {
       onAuthenticated(
-        await login(String(form.get("email")), String(form.get("password"))),
+        await login(String(form.get("email") ?? ""), String(form.get("password") ?? "")),
       );
     } catch (cause) {
       setError(
@@ -229,7 +229,20 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (user: PublicUser) =
     setBusy(true);
     setError("");
     try {
-      await register(new FormData(event.currentTarget));
+      const form = new FormData(event.currentTarget);
+      await register({
+        fullName: String(form.get("fullName") ?? ""),
+        email: String(form.get("email") ?? ""),
+        password: String(form.get("password") ?? ""),
+        officeName: String(form.get("officeName") ?? ""),
+        teamSize: String(form.get("teamSize") ?? "solo") as
+          | "solo"
+          | "small"
+          | "medium"
+          | "large",
+        barAssociationNumber:
+          String(form.get("barAssociationNumber") ?? "") || undefined,
+      });
       setNotice("تم إنشاء الحساب. راجع بريدك الإلكتروني لتفعيل الحساب.");
       setView("login");
     } catch (cause) {
@@ -299,10 +312,6 @@ function AuthScreen({ onAuthenticated }: { onAuthenticated: (user: PublicUser) =
               </select>
             </label>
             <label>رقم القيد<input name="barAssociationNumber" /></label>
-            <label className="file-field">صورة كارنيه المحاماة
-              <input name="lawyerIdDocument" type="file" accept=".pdf,.jpg,.jpeg,.png" required />
-              <small>PDF أو JPG أو PNG — بحد أقصى 5 ميجابايت</small>
-            </label>
             <button className="primary-action" disabled={busy}>{busy ? "جارٍ الإرسال…" : "إرسال طلب التسجيل"}</button>
           </form>
         )}

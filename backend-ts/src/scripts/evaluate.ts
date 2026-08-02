@@ -81,6 +81,7 @@ async function callJudge(
     .replace(/```/g, "")
     .trim();
   const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+
   if (!jsonMatch) throw new Error(`Judge returned non-JSON: ${content}`);
 
   return JSON.parse(jsonMatch[0]) as JudgeScore;
@@ -254,6 +255,7 @@ async function evaluate() {
   const avgLatency = avg(successful.map((r) => r.latency_ms));
 
   const byCategory: Record<string, { f: number[]; r: number[] }> = {};
+
   for (const res of successful) {
     if (!byCategory[res.category]) byCategory[res.category] = { f: [], r: [] };
     byCategory[res.category].f.push(res.faithfulness);
@@ -270,6 +272,7 @@ async function evaluate() {
   console.log(`Avg answer relevancy: ${avgRelevancy.toFixed(3)}`);
   console.log(`Avg latency:          ${Math.round(avgLatency)}ms`);
   console.log("\nBy category:");
+
   for (const [cat, scores] of Object.entries(byCategory)) {
     const f = avg(scores.f);
     const r = avg(scores.r);

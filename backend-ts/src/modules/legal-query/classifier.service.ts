@@ -12,12 +12,12 @@ const socialOnlyPatterns = [
 const greetingPrefix =
   /^(?:(?:مرحبا|مرحباً|أهلا|أهلاً|اهلا|السلام عليكم|سلام|شكرا|شكراً|hi|hello|hey|thanks|thank you)\s*[,،:؛;.!؟?-]*\s*)+/i;
 
-export const stripGreetingPrefix = (query: string): string =>
-  query.trim().replace(greetingPrefix, "").trim();
+export const stripGreetingPrefix = (query: string): string => query.trim().replace(greetingPrefix, "").trim();
 
 export class ClassifierService {
   classify(request: QueryRequest): ClassificationResult {
     const query = request.query.trim();
+
     if (socialOnlyPatterns.some((pattern) => pattern.test(query))) {
       return { category: "chat" };
     }

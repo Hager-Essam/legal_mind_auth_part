@@ -52,10 +52,12 @@ const validateArtifact = (artifact: LawArtifact, expectedCount: number): void =>
     );
   }
   const uniqueNumbers = new Set(artifact.articles.map(({ articleNumber }) => articleNumber));
+
   if (uniqueNumbers.size !== artifact.articles.length) {
     throw new Error(artifact.authorityId + ": duplicate article numbers detected.");
   }
   const shortArticles = artifact.articles.filter(({ text }) => text.trim().length < 25);
+
   if (shortArticles.length > 0) {
     throw new Error(
       artifact.authorityId + ": suspiciously short articles: " +
@@ -69,6 +71,7 @@ const run = async (): Promise<void> => {
   const loaded = await Promise.all(
     INPUTS.map(async (input) => ({ ...input, artifact: await readArtifact(input.path) })),
   );
+
   for (const { artifact, expectedCount } of loaded) {
     validateArtifact(artifact, expectedCount);
   }
@@ -78,6 +81,7 @@ const run = async (): Promise<void> => {
       const articleKey = artifact.authorityId + ":article:" + articleNumber;
       const chunkId = sha256(articleKey).slice(0, 32);
       const text = "مادة (" + articleNumber + "):\n" + body.trim();
+
       return {
         chunk_id: chunkId,
         document_id: artifact.authorityId,
@@ -137,6 +141,7 @@ const run = async (): Promise<void> => {
 
   const mongo = new MongoService();
   await mongo.connect();
+
   try {
     const chunks = ragConnection.db!.collection("legal_chunks");
     const chunkIds = documents.map(({ chunk_id }) => chunk_id);
@@ -150,6 +155,7 @@ const run = async (): Promise<void> => {
     const result = await chunks.bulkWrite(documents.map((document) => {
       const changed = existingById.has(document.chunk_id) &&
         existingById.get(document.chunk_id) !== document.sourceTextHash;
+
       return {
         updateOne: {
           filter: { chunk_id: document.chunk_id },

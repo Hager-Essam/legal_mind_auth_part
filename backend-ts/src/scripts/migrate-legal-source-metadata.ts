@@ -5,6 +5,7 @@ const run = async (): Promise<void> => {
   const dryRun = isDryRun();
   const mongo = new MongoService();
   await mongo.connect();
+
   try {
     const chunks = ragConnection.db!.collection("legal_chunks");
     const filter = {
@@ -16,6 +17,7 @@ const run = async (): Promise<void> => {
       ],
     };
     const changed = await chunks.countDocuments(filter);
+
     if (!dryRun) {
       await chunks.updateMany(filter, [
         {
@@ -74,4 +76,4 @@ run().catch((error) => {
   );
   process.exitCode = 1;
 });
-
+

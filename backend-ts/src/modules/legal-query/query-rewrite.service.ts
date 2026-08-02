@@ -12,9 +12,7 @@ import { requestProviderText } from "../../infrastructure/provider/provider-http
 const LLM_REWRITE_TIMEOUT_MS = 8_000;
 const AUTHORITY_TITLE_CACHE_MS = 5 * 60_000;
 
-type AuthorityTitleLoader = (
-  authorityIds: string[],
-) => Promise<Map<string, string>>;
+type AuthorityTitleLoader = (authorityIds: string[]) => Promise<Map<string, string>>;
 
 const loadOfficialAuthorityTitles: AuthorityTitleLoader = async (authorityIds) => {
   const rows = await ChunkModel.find({
@@ -29,11 +27,13 @@ const loadOfficialAuthorityTitles: AuthorityTitleLoader = async (authorityIds) =
     .lean();
 
   const titles = new Map<string, string>();
+
   for (const row of rows) {
     if (row.authorityId && row.authorityTitleOfficial && !titles.has(row.authorityId)) {
       titles.set(row.authorityId, row.authorityTitleOfficial);
     }
   }
+
   return titles;
 };
 
@@ -49,21 +49,20 @@ export class QueryRewriteService {
 
   constructor(
     private readonly providerConfigService: ProviderConfigService,
-    private readonly authorityTitleLoader: AuthorityTitleLoader = loadOfficialAuthorityTitles,
+    private readonly authorityTitleLoader: AuthorityTitleLoader = loadOfficialAuthorityTitles
   ) {}
 
   private async resolveAuthorityHints(query: string): Promise<ResolvedAuthorityHint[]> {
     if (!env.enableAuthorityHints) return [];
 
     const hints = detectAuthorityHints(query);
+
     if (hints.length === 0) return [];
 
     const now = Date.now();
     const authorityIds = hints.map((hint) => hint.authorityId);
     const cacheIsFresh = now < this.authorityTitleCacheExpiresAt;
-    const cacheHasAll = authorityIds.every((authorityId) =>
-      this.authorityTitleCache.has(authorityId),
-    );
+    const cacheHasAll = authorityIds.every((authorityId) => this.authorityTitleCache.has(authorityId));
 
     if (!cacheIsFresh || !cacheHasAll) {
       try {
@@ -71,7 +70,7 @@ export class QueryRewriteService {
         this.authorityTitleCacheExpiresAt = now + AUTHORITY_TITLE_CACHE_MS;
       } catch (error) {
         console.error(
-          `[QueryRewriteService] Authority-title lookup failed (${error instanceof Error ? error.name : "unknown"}); continuing without query expansion.`,
+          `[QueryRewriteService] Authority-title lookup failed (${error instanceof Error ? error.name : "unknown"}); continuing without query expansion.`
         );
       }
     }
@@ -85,7 +84,7 @@ export class QueryRewriteService {
   private async buildResult(
     originalQuery: string,
     rewrittenQuery: string,
-    usedLlm: boolean,
+    usedLlm: boolean
   ): Promise<RewriteResult> {
     const hints = await this.resolveAuthorityHints(originalQuery);
     const mappingMatches = hints.flatMap((hint) => hint.matchedAliases);
@@ -98,29 +97,33 @@ export class QueryRewriteService {
       usedLlm,
       mappingMatch: mappingMatches[0] ?? null,
       mappingMatches,
-      authorityBoosts: hints.map(({ authorityId, weight }) => ({ authorityId, weight })),
+      authorityBoosts: hints.map(({ authorityId, weight }) => ({
+        authorityId,
+        weight,
+      })),
     };
   }
 
-  async rewrite(
-    query: string,
-    userRole?: "lawyer" | "citizen",
-  ): Promise<RewriteResult> {
+  async rewrite(query: string, userRole?: "lawyer" | "citizen"): Promise<RewriteResult> {
     const role = userRole ?? env.defaultUserRole;
+
     if (role === "lawyer" || !env.enableQueryRewrite || !env.enableLlmRewrite) {
       return this.buildResult(query, query, false);
     }
 
     try {
       const rewritten = await this.rewriteWithLlm(query);
+
       if (!rewritten.trim() || rewritten.length > 2_000) {
         return this.buildResult(query, query, false);
       }
+
       return this.buildResult(query, rewritten, true);
     } catch (error) {
       console.error(
-        `[QueryRewriteService] Rewrite failed (${error instanceof Error ? error.name : "unknown"}); using the original query.`,
+        `[QueryRewriteService] Rewrite failed (${error instanceof Error ? error.name : "unknown"}); using the original query.`
       );
+
       return this.buildResult(query, query, false);
     }
   }
@@ -149,16 +152,18 @@ export class QueryRewriteService {
         timeoutMs: LLM_REWRITE_TIMEOUT_MS,
         totalRetryBudgetMs: 12_000,
         maxAttempts: 2,
-      },
+      }
     );
     let payload: {
       choices?: Array<{ message?: { content?: string } }>;
     };
+
     try {
       payload = JSON.parse(text) as typeof payload;
     } catch {
       throw new Error("Rewrite provider returned invalid JSON.");
     }
+
     return payload.choices?.[0]?.message?.content?.trim() || query;
   }
 }

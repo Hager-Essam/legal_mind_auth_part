@@ -88,4 +88,3 @@ export type Message = {
   createdAt: Date;
   updatedAt: Date;
 };
-

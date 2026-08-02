@@ -1,21 +1,15 @@
 import bcrypt from "bcrypt";
 import crypto from "node:crypto";
 import { Schema } from "mongoose";
-import {
-  TEAM_SIZES,
-  USER_ROLES,
-  type UserDocument,
-} from "./user.types";
+import { TEAM_SIZES, USER_ROLES, type UserDocument } from "./user.types";
 
 const BCRYPT_COST = 10;
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 const EMAIL_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 
-export const normalizeEmail = (email: string): string =>
-  email.trim().toLowerCase();
+export const normalizeEmail = (email: string): string => email.trim().toLowerCase();
 
-const sha256 = (value: string): string =>
-  crypto.createHash("sha256").update(value).digest("hex");
+const sha256 = (value: string): string => crypto.createHash("sha256").update(value).digest("hex");
 
 export const userSchema = new Schema<UserDocument>(
   {
@@ -42,6 +36,8 @@ export const userSchema = new Schema<UserDocument>(
     officeName: { type: String, trim: true, maxlength: 200 },
     teamSize: { type: String, enum: TEAM_SIZES },
     phone: { type: String, trim: true },
+    avatarUrl: { type: String, trim: true },
+    avatarObjectKey: { type: String, trim: true, select: false },
     role: {
       type: String,
       enum: USER_ROLES,
@@ -63,18 +59,12 @@ export const userSchema = new Schema<UserDocument>(
     collection: "users",
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
 userSchema.index({ email: 1 }, { unique: true, name: "users_email_unique" });
-userSchema.index(
-  { role: 1, isActive: 1 },
-  { name: "users_role_active" },
-);
-userSchema.index(
-  { organizationId: 1, isActive: 1 },
-  { name: "users_organization_active" },
-);
+userSchema.index({ role: 1, isActive: 1 }, { name: "users_role_active" });
+userSchema.index({ organizationId: 1, isActive: 1 }, { name: "users_organization_active" });
 
 userSchema.pre("validate", function () {
   if (this.email) this.email = normalizeEmail(this.email);
@@ -85,9 +75,7 @@ userSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, BCRYPT_COST);
 });
 
-userSchema.methods.comparePassword = async function (
-  candidatePassword: string,
-): Promise<boolean> {
+userSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
@@ -95,14 +83,14 @@ userSchema.methods.createPasswordResetToken = function (): string {
   const token = crypto.randomBytes(32).toString("hex");
   this.passwordResetTokenHash = sha256(token);
   this.passwordResetExpires = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
+
   return token;
 };
 
 userSchema.methods.createEmailVerificationToken = function (): string {
   const token = crypto.randomBytes(32).toString("hex");
   this.emailVerificationTokenHash = sha256(token);
-  this.emailVerificationExpires = new Date(
-    Date.now() + EMAIL_VERIFICATION_TTL_MS,
-  );
+  this.emailVerificationExpires = new Date(Date.now() + EMAIL_VERIFICATION_TTL_MS);
+
   return token;
 };

@@ -40,4 +40,3 @@ export const updateConversationSchema = z
   .refine((value) => value.title !== undefined || value.status !== undefined, {
     message: "At least one conversation field must be supplied.",
   });
-

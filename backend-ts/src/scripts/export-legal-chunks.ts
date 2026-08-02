@@ -54,6 +54,7 @@ type ChunkExport = {
 
 const pickFields = (doc: Record<string, unknown>): ChunkExport => {
   const d = doc as Record<string, unknown>;
+
   return {
     _id: String(d._id ?? ""),
     chunk_id: String(d.chunk_id ?? ""),
@@ -101,6 +102,7 @@ const pickFields = (doc: Record<string, unknown>): ChunkExport => {
 const run = async (): Promise<void> => {
   const mongo = new MongoService();
   await mongo.connect();
+
   try {
     const collection = ragConnection.db!.collection("legal_chunks");
 

@@ -1,10 +1,7 @@
 import { z } from "zod";
 import { ConversationModel } from "./conversation.model";
 import { MessageModel } from "./message.model";
-import type {
-  ActiveLegalContext,
-  Message,
-} from "./conversation.types";
+import type { ActiveLegalContext, Message } from "./conversation.types";
 
 export const conversationRewriteResultSchema = z.object({
   isFollowUp: z.boolean(),
@@ -15,9 +12,7 @@ export const conversationRewriteResultSchema = z.object({
   clarificationQuestion: z.string().optional(),
 });
 
-export type ConversationRewriteResult = z.infer<
-  typeof conversationRewriteResultSchema
->;
+export type ConversationRewriteResult = z.infer<typeof conversationRewriteResultSchema>;
 
 const followUpPattern =
   /^(?:و?ماذا عن|و?ما (?:هو|هي|عن)|و?هل|طيب|ومدة|ومتى|وكيف|why|what about|and what|does that)(?:\s|[؟?،,:]|$)/i;
@@ -35,25 +30,18 @@ export class ConversationMemoryService {
         .reverse()
         .find(
           (message) =>
-            message.role === "user" &&
-            message.status === "completed" &&
-            message.content.trim() !== current,
+            message.role === "user" && message.status === "completed" && message.content.trim() !== current
         );
       const isFollowUp =
         Boolean(previousUserMessage) &&
         (followUpPattern.test(current) ||
-          (current.length < 100 &&
-            /(?:ذلك|هذا|هذه|تلك|المذكور|السابق|it|that|this)/i.test(current)));
+          (current.length < 100 && /(?:ذلك|هذا|هذه|تلك|المذكور|السابق|it|that|this)/i.test(current)));
 
       return conversationRewriteResultSchema.parse({
         isFollowUp,
         standaloneQuery:
-          isFollowUp && previousUserMessage
-            ? `${previousUserMessage.content.trim()} ${current}`
-            : current,
-        referencedAuthorities: [
-          ...input.activeLegalContext.authorityIds,
-        ],
+          isFollowUp && previousUserMessage ? `${previousUserMessage.content.trim()} ${current}` : current,
+        referencedAuthorities: [...input.activeLegalContext.authorityIds],
         referencedFacts: [...input.activeLegalContext.facts],
         needsClarification: false,
       });
@@ -72,7 +60,7 @@ export class ConversationMemoryService {
     conversationId: string,
     ownerUserId: string,
     organizationId: string | null,
-    limit = 12,
+    limit = 12
   ): Promise<Message[]> {
     const messages = await MessageModel.find({
       conversationId,
@@ -82,13 +70,14 @@ export class ConversationMemoryService {
       .sort({ sequence: -1 })
       .limit(limit)
       .lean();
+
     return messages.reverse() as Message[];
   }
 
   async updateSummaryIfNeeded(
     conversationId: string,
     ownerUserId: string,
-    organizationId: string | null,
+    organizationId: string | null
   ): Promise<void> {
     const conversation = await ConversationModel.findOne({
       conversationId,
@@ -96,42 +85,28 @@ export class ConversationMemoryService {
       organizationId,
       status: { $ne: "deleted" },
     });
+
     if (!conversation) return;
 
-    const recent = await this.loadRecentMessages(
-      conversationId,
-      ownerUserId,
-      organizationId,
-      12,
-    );
-    const characterCount = recent.reduce(
-      (total, message) => total + message.content.length,
-      0,
-    );
+    const recent = await this.loadRecentMessages(conversationId, ownerUserId, organizationId, 12);
+    const characterCount = recent.reduce((total, message) => total + message.content.length, 0);
     const shouldUpdate =
-      conversation.messageCount > 0 &&
-      (conversation.messageCount % 12 === 0 || characterCount > 8_000);
+      conversation.messageCount > 0 && (conversation.messageCount % 12 === 0 || characterCount > 8_000);
+
     if (!shouldUpdate) return;
 
     const userObjectives = recent
-      .filter(
-        (message) =>
-          message.role === "user" && message.status === "completed",
-      )
+      .filter((message) => message.role === "user" && message.status === "completed")
       .map((message) => message.content.trim())
       .filter(Boolean)
       .slice(-6);
     const unresolved = conversation.activeLegalContext.unresolvedQuestions;
     const summaryParts = [
-      userObjectives.length
-        ? `User objectives/questions: ${userObjectives.join(" | ")}`
-        : "",
+      userObjectives.length ? `User objectives/questions: ${userObjectives.join(" | ")}` : "",
       conversation.activeLegalContext.facts.length
         ? `User-provided facts: ${conversation.activeLegalContext.facts.join(" | ")}`
         : "",
-      unresolved.length
-        ? `Unresolved questions: ${unresolved.join(" | ")}`
-        : "",
+      unresolved.length ? `Unresolved questions: ${unresolved.join(" | ")}` : "",
       conversation.activeLegalContext.assumptions.length
         ? `Assumptions/uncertainties: ${conversation.activeLegalContext.assumptions.join(" | ")}`
         : "",

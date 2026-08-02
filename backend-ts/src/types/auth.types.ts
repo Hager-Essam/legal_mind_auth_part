@@ -1,4 +1,4 @@
-import type { UserRole } from "../modules/auth/user.types";
+import type { UserRole } from "../modules/auth/users/user.types";
 
 export type AuthenticatedUser = {
   id: string;
@@ -8,4 +8,3 @@ export type AuthenticatedUser = {
   isEmailVerified: boolean;
   organizationId: string | null;
 };
-

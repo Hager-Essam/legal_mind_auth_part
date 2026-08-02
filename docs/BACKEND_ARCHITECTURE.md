@@ -48,7 +48,6 @@ The system ensures strict legal grounding, eliminating hallucination risks by va
   - Reranker: `qwen3-rerank` (Semantic re-scoring)
 - **Validation & Schemas**: Zod 4.1+ for request payload validation & environment schema parsing.
 - **Authentication**: JWT (JSON Web Tokens) with HTTP-only `SameSite=Lax` refresh cookies, Bcrypt password hashing (12 rounds).
-- **Storage & Uploads**: Multer 2.2+ for private lawyer ID credential verification uploads.
 - **Email Service**: Nodemailer 9.0+ supporting SMTP transport and local development console logging.
 
 ---
@@ -199,8 +198,8 @@ flowchart TD
 
 ### 5.1 Authentication & User Management
 * **Implementation Status**: `Implemented`
-* **Primary Source Files**: `src/modules/auth/*`, `src/modules/users/*`, `src/modules/refresh-tokens/*`
-* **Responsibilities**: User registration, login, email verification, password reset, role authorization (`citizen`, `lawyer`, `admin`), JWT short-lived access tokens (15m), HTTP-only `SameSite=Lax` refresh cookie rotation (7d), and private lawyer ID uploads (`Multer`).
+* **Primary Source Files**: `src/modules/auth/*`, `src/modules/auth/users/*`, `src/modules/auth/refresh-tokens/*`
+* **Responsibilities**: User registration, login, email verification, password reset, role authorization (`citizen`, `lawyer`, `admin`), JWT short-lived access tokens (15m), HTTP-only `SameSite=Lax` refresh cookie rotation (7d).
 
 ### 5.2 Legal Chat Pipeline (RAG)
 * **Implementation Status**: `Implemented`
@@ -253,7 +252,6 @@ flowchart TD
 | **Multi-Tenancy** | Single user ownership (`ownerUserId`), optional `organizationId` | Full organization multi-tenancy, team roles, matter-level permissions |
 | **Corpus Governance** | Embedded chunk metadata (`authorityStatus`, `reviewStatus`) | Dedicated `legal_authorities` & `corpus_releases` database collections |
 | **Contract Analysis** | Planned proposal | Automated contract analysis, clause extraction, risk scoring |
-| **Storage & Uploads** | Local disk storage for lawyer IDs | AWS S3 / Azure Blob encrypted private storage with pre-signed URLs |
 | **Billing & Quotas** | Fixed rate-limiting per IP | Dynamic usage budgets, token tracking, subscription billing |
 
 ---

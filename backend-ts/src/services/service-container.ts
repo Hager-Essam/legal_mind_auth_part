@@ -8,14 +8,22 @@ import { MongoService } from "../infrastructure/mongo/mongo.service";
 import { ProviderConfigService } from "../infrastructure/provider/provider-config.service";
 import { RerankerService } from "../modules/legal-query/reranker.service";
 import { RetrievalService } from "../modules/legal-corpus/retrieval.service";
-import { UserRepository } from "../modules/auth/user.repository";
-import { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
+import { UserRepository } from "../modules/auth/users/user.repository";
+import { RefreshTokenRepository } from "../modules/auth/refresh-tokens/refresh-token.repository";
 import { EmailService } from "../infrastructure/email/email.service";
 import { AuthService } from "../modules/auth/auth.service";
 import { ConversationService } from "../modules/conversations/conversation.service";
 import { ConversationMemoryService } from "../modules/conversations/conversation-memory.service";
 import { SourceSnapshotService } from "../modules/conversations/source-snapshot.service";
 import { ChatOrchestratorService } from "../modules/conversations/chat-orchestrator.service";
+import { R2AvatarStorage } from "../infrastructure/storage/avatar-storage.service";
+import { UserProfileService } from "../modules/users/user-profile.service";
+import { BookmarkRepository } from "../modules/bookmarks/bookmark.repository";
+import { BookmarkService } from "../modules/bookmarks/bookmark.service";
+import { BlogRepository } from "../modules/blogs/blog.repository";
+import { BlogService } from "../modules/blogs/blog.service";
+import { CommentRepository } from "../modules/comments/comment.repository";
+import { CommentService } from "../modules/comments/comment.service";
 
 export type AppServices = {
   mongoService: MongoService;
@@ -36,6 +44,14 @@ export type AppServices = {
   conversationMemoryService: ConversationMemoryService;
   sourceSnapshotService: SourceSnapshotService;
   chatOrchestratorService: ChatOrchestratorService;
+  avatarStorageService: R2AvatarStorage;
+  userProfileService: UserProfileService;
+  bookmarkRepository: BookmarkRepository;
+  bookmarkService: BookmarkService;
+  blogRepository: BlogRepository;
+  blogService: BlogService;
+  commentRepository: CommentRepository;
+  commentService: CommentService;
 };
 
 export const createServices = (): AppServices => {
@@ -55,16 +71,12 @@ export const createServices = (): AppServices => {
     retrievalService,
     rerankerService,
     generationService,
-    queryRewriteService,
+    queryRewriteService
   );
   const userRepository = new UserRepository();
   const refreshTokenRepository = new RefreshTokenRepository();
   const emailService = new EmailService();
-  const authService = new AuthService(
-    userRepository,
-    refreshTokenRepository,
-    emailService,
-  );
+  const authService = new AuthService(userRepository, refreshTokenRepository, emailService);
   const conversationService = new ConversationService();
   const conversationMemoryService = new ConversationMemoryService();
   const sourceSnapshotService = new SourceSnapshotService();
@@ -72,8 +84,16 @@ export const createServices = (): AppServices => {
     conversationService,
     conversationMemoryService,
     sourceSnapshotService,
-    queryService,
+    queryService
   );
+  const avatarStorageService = new R2AvatarStorage();
+  const userProfileService = new UserProfileService(userRepository, avatarStorageService);
+  const bookmarkRepository = new BookmarkRepository();
+  const bookmarkService = new BookmarkService(bookmarkRepository);
+  const blogRepository = new BlogRepository();
+  const commentRepository = new CommentRepository();
+  const blogService = new BlogService(blogRepository, bookmarkRepository, commentRepository);
+  const commentService = new CommentService(commentRepository, blogRepository);
 
   return {
     mongoService,
@@ -94,5 +114,13 @@ export const createServices = (): AppServices => {
     conversationMemoryService,
     sourceSnapshotService,
     chatOrchestratorService,
+    avatarStorageService,
+    userProfileService,
+    bookmarkRepository,
+    bookmarkService,
+    blogRepository,
+    blogService,
+    commentRepository,
+    commentService,
   };
 };

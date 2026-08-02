@@ -5,7 +5,7 @@
 | Bootstrap/app | `src/index.ts`, `src/app/create-app.ts` | environment → listening Express app | both Mongo connections |
 | Container | `src/services/service-container.ts` | constructors → `AppServices` | service/repository graph |
 | Health/errors | `src/routes/health.ts`, `src/middlewares/*` | requests/errors → status/envelope | DB pings, request ID |
-| Auth | `src/modules/auth/*` | credentials/tokens → user/session DTOs | users, refresh tokens, email, upload |
+| Auth | `src/modules/auth/*` | credentials/tokens → user/session DTOs | users, refresh tokens, email |
 | Users/sessions | `src/modules/users/*`, `src/modules/refresh-tokens/*` | normalized records → persistence | app MongoDB |
 | Conversations | `src/modules/conversations/*` | owner-scoped CRUD/messages → DTOs | conversations, messages |
 | Chat orchestration | `src/services/chat-orchestrator.service.ts` | message/idempotency key → saved turn | memory, query, snapshots |

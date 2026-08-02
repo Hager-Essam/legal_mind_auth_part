@@ -24,6 +24,7 @@ const sortedCounts = (values: Map<string, number>) => [...values]
 const run = async (): Promise<void> => {
   const mongo = new MongoService();
   await mongo.connect();
+
   try {
     const collection = ragConnection.db!.collection("legal_chunks");
     const cursor = collection.aggregate<Chunk>([{ $project: {
@@ -50,17 +51,27 @@ const run = async (): Promise<void> => {
 
     for await (const chunk of cursor) {
       summary.totalChunks += 1;
+
       if (chunk.is_retrievable === true) summary.retrievableChunks += 1;
       const dimension = typeof chunk.embeddingDimension === "number" ? chunk.embeddingDimension : 0;
       dimensions.set(String(dimension), (dimensions.get(String(dimension)) ?? 0) + 1);
+
       if (dimension === 0) summary.missingEmbedding += 1;
+
       if (dimension > 0 && !str(chunk.embeddingModel)) summary.missingEmbeddingProvenance += 1;
+
       if (!str(chunk.jurisdiction)) summary.missingJurisdiction += 1;
+
       if (!str(chunk.authorityId)) summary.missingAuthorityId += 1;
+
       if (!str(chunk.authorityTitleOfficial)) summary.missingOfficialTitle += 1;
+
       if (!str(chunk.officialSourceUrl) && !str(chunk.source_file)) summary.missingOfficialSource += 1;
+
       if (!str(chunk.reviewStatus)) summary.missingReviewStatus += 1;
+
       if (!str(chunk.authorityStatus)) summary.missingAuthorityStatus += 1;
+
       if (!str(chunk.textStatus)) summary.missingTextStatus += 1;
 
       const lawCategory = str(chunk.law_category) || "(missing)";
@@ -70,21 +81,27 @@ const run = async (): Promise<void> => {
       const sourceDataset = str(chunk.source_dataset) || "(missing)";
       const rawKey = [lawCategory, lawName, lawNumber, lawYear, sourceDataset].join("\u001f");
       let group = groups.get(rawKey);
+
       if (!group) {
         group = { key: createHash("sha256").update(rawKey).digest("hex").slice(0, 16), lawCategory, lawName, lawNumber, lawYear, sourceDataset, chunkCount: 0, articles: new Set(), missingEmbeddingCount: 0, retrievableCount: 0, registryIds: new Set() };
         groups.set(rawKey, group);
       }
       group.chunkCount += 1;
+
       if (str(chunk.article_number)) group.articles.add(str(chunk.article_number));
+
       if (dimension === 0) group.missingEmbeddingCount += 1;
+
       if (chunk.is_retrievable === true) group.retrievableCount += 1;
       categories.set(lawCategory, (categories.get(lawCategory) ?? 0) + 1);
       datasets.set(sourceDataset, (datasets.get(sourceDataset) ?? 0) + 1);
+
       if (/السعودي|السعودية|المملكة العربية السعودية|الكويتي|الإماراتي|الاماراتي/i.test(lawName)) summary.nonEgyptianNameSignals += 1;
 
       for (const entry of authorityStatusRegistry) {
         if (!matchesAuthorityEntry(chunk, entry)) continue;
         summary.registryMatchedChunks += 1;
+
         if (entry.safeToDisableLegacyRetrieval) summary.confirmedLegacyChunksToDisable += 1;
         group.registryIds.add(entry.authorityId);
         registryCounts.set(entry.authorityId, (registryCounts.get(entry.authorityId) ?? 0) + 1);

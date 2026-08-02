@@ -7,10 +7,10 @@ import { AuthService } from "../modules/auth/auth.service";
 import { AUTH_ERROR_CODES, AuthError } from "../modules/auth/auth.errors";
 import { toPublicUser } from "../modules/auth/auth.mapper";
 import { registerSchema } from "../modules/auth/auth.schemas";
-import { RefreshTokenModel } from "../modules/auth/refresh-token.model";
-import { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
-import { UserModel } from "../modules/auth/user.model";
-import { UserRepository } from "../modules/auth/user.repository";
+import { RefreshTokenModel } from "../modules/auth/refresh-tokens/refresh-token.model";
+import { RefreshTokenRepository } from "../modules/auth/refresh-tokens/refresh-token.repository";
+import { UserModel } from "../modules/auth/users/user.model";
+import { UserRepository } from "../modules/auth/users/user.repository";
 import { EmailService } from "../infrastructure/email/email.service";
 import { appConnection } from "../infrastructure/mongo/mongo.service";
 
@@ -24,7 +24,6 @@ const registration = {
   password: "SecurePass123",
   officeName: "Test Office",
   teamSize: "solo" as const,
-  lawyerIdDocument: "uploads/private/lawyer-ids/test.pdf",
 };
 
 const tokenFromLastEmail = (): string => {
@@ -32,12 +31,14 @@ const tokenFromLastEmail = (): string => {
   assert.ok(actionUrl);
   const token = new URL(actionUrl).searchParams.get("token");
   assert.ok(token);
+
   return token;
 };
 
 const registerAndVerify = async () => {
   const user = await auth.register(registration);
   await auth.verifyEmail(tokenFromLastEmail());
+
   return (await UserModel.findById(user._id))!;
 };
 
@@ -60,7 +61,10 @@ before(async () => {
 });
 
 beforeEach(async () => {
-  await Promise.all([UserModel.deleteMany({}), RefreshTokenModel.deleteMany({})]);
+  await Promise.all([
+    UserModel.deleteMany({}),
+    RefreshTokenModel.deleteMany({}),
+  ]);
 });
 
 after(async () => {
@@ -108,14 +112,11 @@ test("login requires verification and returns hashed refresh-token storage", asy
       error.code === AUTH_ERROR_CODES.emailNotVerified,
   );
   await auth.verifyEmail(tokenFromLastEmail());
-  const session = await auth.login(
-    "LAWYER@example.com",
-    registration.password,
-  );
+  const session = await auth.login("LAWYER@example.com", registration.password);
   assert.ok(session.accessToken);
   assert.ok(session.refreshToken);
-  const rawRecord = await appConnection.db!
-    .collection("refresh_tokens")
+  const rawRecord = await appConnection
+    .db!.collection("refresh_tokens")
     .findOne({});
   assert.ok(rawRecord);
   assert.equal("token" in rawRecord, false);
@@ -124,10 +125,7 @@ test("login requires verification and returns hashed refresh-token storage", asy
 
 test("refresh rotation invalidates the old token and detects reuse", async () => {
   await registerAndVerify();
-  const first = await auth.login(
-    "lawyer@example.com",
-    registration.password,
-  );
+  const first = await auth.login("lawyer@example.com", registration.password);
   const second = await auth.refreshToken(first.refreshToken);
   assert.notEqual(second.refreshToken, first.refreshToken);
   await assert.rejects(
@@ -179,6 +177,7 @@ test("JWT verification restricts signature, issuer, audience, and algorithm", as
       audience: "legalmind-web",
     }),
   ];
+
   for (const token of invalidTokens) {
     assert.throws(
       () => auth.verifyAccessToken(token),
@@ -210,6 +209,7 @@ test("public user mapper excludes all sensitive fields and lawyer document path"
   const user = await registerAndVerify();
   const publicUser = toPublicUser(user);
   const serialized = JSON.stringify(publicUser);
+
   for (const forbidden of [
     "password",
     "TokenHash",

@@ -8,10 +8,8 @@ const relevanceScore = (chunk: LegalChunks): number =>
 
 const hasCitationMetadata = (chunk: LegalChunks): boolean => {
   const title = chunk.authorityTitleOfficial?.trim();
-  const pinpoint =
-    chunk.article_number?.trim() ||
-    chunk.appeal_number?.trim() ||
-    chunk.authorityId?.trim();
+  const pinpoint = chunk.article_number?.trim() || chunk.appeal_number?.trim() || chunk.authorityId?.trim();
+
   return Boolean(title && pinpoint);
 };
 
@@ -24,14 +22,12 @@ export const isQualifiedGroundingChunk = (chunk: LegalChunks): boolean =>
   (chunk.authorityStatus === "effective" ||
     chunk.authorityStatus === "amended" ||
     chunk.authorityStatus === "unknown" ||
-    (chunk.authorityType === "court_ruling" &&
-      chunk.authorityStatus === "historical")) &&
+    (chunk.authorityType === "court_ruling" && chunk.authorityStatus === "historical")) &&
   chunk.authorityType !== "generated_summary";
 
-export const evaluateGrounding = (
-  chunks: LegalChunks[],
-): GroundingDecision => {
+export const evaluateGrounding = (chunks: LegalChunks[]): GroundingDecision => {
   const qualifiedChunks = chunks.filter(isQualifiedGroundingChunk);
+
   if (qualifiedChunks.length === 0) {
     return {
       shouldGenerate: false,
@@ -40,5 +36,6 @@ export const evaluateGrounding = (
         "لا تتوفر أدلة قانونية مصرية منشورة وموثقة بما يكفي للإجابة بدقة. يرجى تحديد القانون أو المادة أو إعادة صياغة السؤال.",
     };
   }
+
   return { shouldGenerate: true, qualifiedChunks };
 };

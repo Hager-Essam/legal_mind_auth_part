@@ -19,4 +19,3 @@ export class AuthError extends HttpError {
     super(statusCode, message, undefined, code);
   }
 }
-

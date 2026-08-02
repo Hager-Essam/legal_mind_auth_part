@@ -1,4 +1,4 @@
-import { appConnection } from "../../infrastructure/mongo/mongo.service";
+import { appConnection } from "../../../infrastructure/mongo/mongo.service";
 import { userSchema } from "./user.schema";
 import type { UserDocument } from "./user.types";
 

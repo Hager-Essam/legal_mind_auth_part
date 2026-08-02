@@ -43,7 +43,7 @@ If query processing fails, the assistant becomes `failed` and the API returns
 `pending` and reprocesses it. A completed assistant is returned unchanged. An
 already pending assistant is also returned immediately; there is no worker.
 
-Registration differs: an email failure deletes the newly created user and the
-controller removes the uploaded file. Password-reset mail failure clears reset
+Registration differs: an email failure deletes the newly created user.
+Password-reset mail failure clears reset
 fields and returns the generic response. Reset-confirmation email failure does
 not undo an already changed password/session.

@@ -29,8 +29,10 @@ test("provider HTTP does not retry permanent 401 errors", async () => {
   let attempts = 0;
   globalThis.fetch = (async () => {
     attempts += 1;
+
     return new Response("unauthorized", { status: 401 });
   }) as typeof fetch;
+
   try {
     await assert.rejects(
       requestProviderText(
@@ -53,10 +55,12 @@ test("provider HTTP retries a retryable 500 and preserves the successful body", 
   let attempts = 0;
   globalThis.fetch = (async () => {
     attempts += 1;
+
     return attempts === 1
       ? new Response("temporary", { status: 500 })
       : new Response('{"ok":true}', { status: 200 });
   }) as typeof fetch;
+
   try {
     const text = await requestProviderText(
       "https://provider.invalid",
@@ -88,6 +92,7 @@ test("provider timeout remains active while reading the body", async () => {
         }),
     } as Response;
   }) as typeof fetch;
+
   try {
     await assert.rejects(
       requestProviderText(
@@ -120,6 +125,7 @@ test("embedding validation enforces dimensions, finite values, and batch orderin
       }),
       { status: 200 },
     )) as typeof fetch;
+
   try {
     const service = new EmbeddingService(embeddingProvider);
     const result = await service.embedDocuments(["first", "second"]);
@@ -134,6 +140,7 @@ test("embedding validation enforces dimensions, finite values, and batch orderin
       JSON.stringify({ data: [{ embedding: [1, 2, 3] }] }),
       { status: 200 },
     )) as typeof fetch;
+
   try {
     await assert.rejects(
       new EmbeddingService(embeddingProvider).embedQuery("invalid"),

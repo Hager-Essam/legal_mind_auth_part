@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from "express";
-import multer from "multer";
 import { Error as MongooseError } from "mongoose";
 import { ZodError } from "zod";
 import { failure, type Failure } from "../result";
@@ -15,17 +14,10 @@ type ApiError = {
   log: boolean;
 };
 
-const isMongoDuplicateKeyError = (
-  error: unknown,
-): error is { code: number } =>
-  typeof error === "object" &&
-  error !== null &&
-  "code" in error &&
-  error.code === 11000;
+const isMongoDuplicateKeyError = (error: unknown): error is { code: number } =>
+  typeof error === "object" && error !== null && "code" in error && error.code === 11000;
 
-export const toErrorResult = (
-  error: unknown,
-): Failure<ApiError> => {
+export const toErrorResult = (error: unknown): Failure<ApiError> => {
   if (error instanceof SyntaxError && "body" in error) {
     return failure({
       status: 400,
@@ -37,30 +29,12 @@ export const toErrorResult = (
 
   if (error instanceof ZodError) {
     const validationError = new RequestValidationError(error);
+
     return failure({
       status: validationError.statusCode,
       code: validationError.code,
       message: validationError.message,
       details: validationError.details,
-      log: false,
-    });
-  }
-
-  if (error instanceof multer.MulterError) {
-    const message =
-      error.code === "LIMIT_FILE_SIZE"
-        ? `The lawyer ID document exceeds the configured size limit.`
-        : error.code === "LIMIT_UNEXPECTED_FILE"
-          ? "The lawyer ID must be one PDF, JPG, JPEG, or PNG file with a safe filename."
-          : "The uploaded lawyer ID document is invalid.";
-    return failure({
-      status: 400,
-      code: "UPLOAD_VALIDATION_ERROR",
-      message,
-      details: {
-        field: error.field ?? "lawyerIdDocument",
-        uploadCode: error.code,
-      },
       log: false,
     });
   }
@@ -86,11 +60,9 @@ export const toErrorResult = (
 
   if (error instanceof MongooseError.ValidationError) {
     const fields = Object.fromEntries(
-      Object.entries(error.errors).map(([field, fieldError]) => [
-        field,
-        [fieldError.message],
-      ]),
+      Object.entries(error.errors).map(([field, fieldError]) => [field, [fieldError.message]])
     );
+
     return failure({
       status: 400,
       code: "DATABASE_VALIDATION_ERROR",
@@ -117,40 +89,23 @@ export const toErrorResult = (
   });
 };
 
-export const notFoundHandler = (
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-): void => {
-  next(
-    new HttpError(
-      404,
-      `Route not found: ${req.method} ${req.originalUrl}`,
-      undefined,
-      "ROUTE_NOT_FOUND",
-    ),
-  );
+export const notFoundHandler = (req: Request, _res: Response, next: NextFunction): void => {
+  next(new HttpError(404, `Route not found: ${req.method} ${req.originalUrl}`, undefined, "ROUTE_NOT_FOUND"));
 };
 
 export const errorHandler = (
   error: unknown,
   request: Request,
   response: Response,
-  _next: NextFunction,
+  _next: NextFunction
 ): void => {
   const result = toErrorResult(error);
   const apiError = result.error;
 
   if (apiError.log) {
-    console.error(
-      `[ErrorHandler] request=${request.requestId} code=${apiError.code}`,
-      error,
-    );
-    if (
-      error instanceof Error &&
-      error.stack &&
-      env.nodeEnv !== "production"
-    ) {
+    console.error(`[ErrorHandler] request=${request.requestId} code=${apiError.code}`, error);
+
+    if (error instanceof Error && error.stack && env.nodeEnv !== "production") {
       console.error(error.stack);
     }
   }
@@ -159,9 +114,7 @@ export const errorHandler = (
     success: false,
     error: apiError.code,
     message: apiError.message,
-    ...(apiError.details === undefined
-      ? {}
-      : { details: apiError.details }),
+    ...(apiError.details === undefined ? {} : { details: apiError.details }),
     request_id: request.requestId,
   });
 };

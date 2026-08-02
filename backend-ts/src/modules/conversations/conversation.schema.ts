@@ -1,8 +1,5 @@
 import { Schema } from "mongoose";
-import type {
-  ActiveLegalContext,
-  Conversation,
-} from "./conversation.types";
+import type { ActiveLegalContext, Conversation } from "./conversation.types";
 
 const lawReferenceSchema = new Schema(
   {
@@ -12,7 +9,7 @@ const lawReferenceSchema = new Schema(
     lawYear: String,
     articleNumbers: [String],
   },
-  { _id: false },
+  { _id: false }
 );
 
 const activeLegalContextSchema = new Schema<ActiveLegalContext>(
@@ -24,7 +21,7 @@ const activeLegalContextSchema = new Schema<ActiveLegalContext>(
     assumptions: { type: [String], default: [] },
     unresolvedQuestions: { type: [String], default: [] },
   },
-  { _id: false },
+  { _id: false }
 );
 
 export const conversationSchema = new Schema<Conversation>(
@@ -66,19 +63,15 @@ export const conversationSchema = new Schema<Conversation>(
     collection: "conversations",
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-conversationSchema.index(
-  { conversationId: 1 },
-  { unique: true, name: "conversations_id_unique" },
-);
+conversationSchema.index({ conversationId: 1 }, { unique: true, name: "conversations_id_unique" });
 conversationSchema.index(
   { ownerUserId: 1, status: 1, lastMessageAt: -1 },
-  { name: "conversations_owner_status_recent" },
+  { name: "conversations_owner_status_recent" }
 );
 conversationSchema.index(
   { organizationId: 1, ownerUserId: 1, lastMessageAt: -1 },
-  { name: "conversations_org_owner_recent" },
+  { name: "conversations_org_owner_recent" }
 );
-

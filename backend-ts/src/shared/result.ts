@@ -28,9 +28,7 @@ export const tryResult = <T>(operation: () => T): Result<T, unknown> => {
   }
 };
 
-export const tryAsyncResult = async <T>(
-  operation: () => Promise<T>,
-): Promise<Result<T, unknown>> => {
+export const tryAsyncResult = async <T>(operation: () => Promise<T>): Promise<Result<T, unknown>> => {
   try {
     return success(await operation());
   } catch (error) {
@@ -38,8 +36,5 @@ export const tryAsyncResult = async <T>(
   }
 };
 
-export const mapResult = <T, U, E>(
-  result: Result<T, E>,
-  mapper: (value: T) => U,
-): Result<U, E> =>
+export const mapResult = <T, U, E>(result: Result<T, E>, mapper: (value: T) => U): Result<U, E> =>
   result.ok ? success(mapper(result.value)) : result;

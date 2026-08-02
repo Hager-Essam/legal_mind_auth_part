@@ -94,9 +94,6 @@ button:disabled { cursor: not-allowed; opacity: .55; }
   transition: border-color .2s, box-shadow .2s;
 }
 .auth-form input:focus, .auth-form select:focus { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(185,146,69,.12); }
-.file-field { grid-column: 1 / -1; border: 1px dashed #b7a98e; padding: 14px; background: rgba(185,146,69,.05); }
-.file-field input { border: 0; background: transparent; padding: 4px; }
-.file-field small { color: var(--muted); font-weight: 400; }
 .primary-action {
   grid-column: 1 / -1; border: 0; background: var(--ink); color: #fff; padding: 14px 20px;
   border-bottom: 3px solid var(--brass); transition: transform .2s, background .2s;
@@ -252,7 +249,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 
 @media (max-width: 560px) {
   .registration-grid { grid-template-columns: 1fr; }
-  .file-field, .primary-action { grid-column: 1; }
+  .primary-action { grid-column: 1; }
   .auth-masthead h1 { font-size: 58px; }
   .message { grid-template-columns: 34px minmax(0,1fr); gap: 10px; }
   .message-mark { width: 30px; height: 30px; }

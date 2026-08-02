@@ -33,16 +33,20 @@ const authorityTypeFor = (
 ): "constitution" | "statute" | "court_ruling" | "secondary_source" => {
   const category = str(group._id.lawCategory);
   const title = str(group._id.lawName);
+
   if (
     group.hasAppealSignals ||
     /النقض|المحكمة\s+الادارية|المحكمة\s+الإدارية/i.test(category)
   ) {
     return "court_ruling";
   }
+
   if (/دستور/i.test(category) || /دستور/i.test(title)) return "constitution";
+
   if (/موسوعات/i.test(category) || /شرح|موسوعة/i.test(title)) {
     return "secondary_source";
   }
+
   return "statute";
 };
 
@@ -58,6 +62,7 @@ const run = async (): Promise<void> => {
   const dryRun = isDryRun() || !process.argv.includes("--apply");
   const mongo = new MongoService();
   await mongo.connect();
+
   try {
     const chunks = ragConnection.db!.collection("legal_chunks");
     const scope = { source_dataset: { $in: LEGACY_DATASETS } };
@@ -216,7 +221,9 @@ const run = async (): Promise<void> => {
       });
 
       processedGroups += 1;
+
       if (operations.length >= BATCH_SIZE) await flush();
+
       if (processedGroups % 250 === 0) {
         console.log(
           "publish:legacy progress " + processedGroups + "/" + groups.length,

@@ -19,15 +19,18 @@ const cleanArticleText = (articleNumber: number, body: string): string => {
     .filter((line) => !/الج[رـ]?ی?دة\s+الرسمیة|الجريدة\s+الرسمية/.test(line) && !/^\s*[0-9٠-٩۰-۹]+\s*$/.test(line))
     .map((line) => line.replace(/[ـ]/g, "").replace(/اال/g, "الا").replace(/األ/g, "الأ").replace(/اإل/g, "الإ").replace(/اآل/g, "الآ").replace(/(^|\s)وال(?=\s)/g, "$1ولا").replace(/(^|\s)فال(?=\s)/g, "$1فلا").replace(/(^|\s)ال(?=\s|[،؛:.])/g, "$1لا").replace(/\s+/g, " ").trim())
     .filter(Boolean).join("\n").replace(/\s+([،؛:.])/g, "$1").trim();
+
   return "مادة (" + articleNumber + "):\n" + cleaned;
 };
 const parseArticles = (text: string) => {
   const heading = /^مادة\s*\(([0-9٠-٩۰-۹]+)\)\s*:\s*$/gm;
   const matches = [...text.matchAll(heading)];
+
   return matches.map((match, index) => {
     const number = Number(westernDigits(match[1] ?? ""));
     const bodyStart = (match.index ?? 0) + match[0].length;
     const bodyEnd = matches[index + 1]?.index ?? text.length;
+
     return { articleNumber: number, text: cleanArticleText(number, text.slice(bodyStart, bodyEnd)) };
   });
 };
@@ -39,15 +42,18 @@ const run = async (): Promise<void> => {
   const sourceText = await readFile(inputPath, "utf8");
   const articles = parseArticles(sourceText);
   const numbers = articles.map((article) => article.articleNumber);
+
   if (articles.length !== 298 || numbers.some((number, index) => number !== index + 1)) {
     throw new Error("Expected the complete Article 1-298 sequence; parsed " + articles.length + ".");
   }
   const short = articles.filter((article) => article.text.length < 30);
+
   if (short.length > 0) throw new Error("Suspiciously short articles: " + short.map((article) => article.articleNumber).join(", "));
   const reviewedAt = new Date("2026-07-30T00:00:00.000Z");
   const documents = articles.map((article) => {
     const articleKey = AUTHORITY_ID + ":article:" + article.articleNumber;
     const chunkId = sha256(articleKey).slice(0, 32);
+
     return {
       chunk_id: chunkId, document_id: AUTHORITY_ID, parent_chunk_id: chunkId, child_index: -1,
       text: article.text, embedding_text: article.text, law_name: AUTHORITY_TITLE,
@@ -65,6 +71,7 @@ const run = async (): Promise<void> => {
       verificationMethod: "Official Ministry PDF; normalized embedded text; complete unique Article 1-298 sequence.",
     };
   });
+
   if (dryRun) {
     console.log(JSON.stringify({ dryRun, inputPath, sourceFileHash: sha256(sourceText),
       articleCount: documents.length, firstArticleLength: documents[0]?.text_len,
@@ -72,12 +79,14 @@ const run = async (): Promise<void> => {
     return;
   }
   const mongo = new MongoService(); await mongo.connect();
+
   try {
     const chunks = ragConnection.db!.collection("legal_chunks");
     const existing = await chunks.find({ authorityId: AUTHORITY_ID }, { projection: { chunk_id: 1, sourceTextHash: 1 } }).toArray();
     const existingById = new Map(existing.map((document) => [String(document.chunk_id), document.sourceTextHash]));
     await chunks.bulkWrite(documents.map((document) => {
       const changed = existingById.has(document.chunk_id) && existingById.get(document.chunk_id) !== document.sourceTextHash;
+
       return { updateOne: { filter: { chunk_id: document.chunk_id }, update: {
         $set: document,
         ...(changed ? { $unset: { embedding: "", embeddingModel: "", embeddingDim: "", embeddingContentHash: "", embeddingUpdatedAt: "" } } : {}),

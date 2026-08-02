@@ -1,10 +1,6 @@
 # Authentication architecture
 
-Registration accepts a multipart lawyer profile and credential. Multer writes a
-randomized PDF/JPEG/PNG filename in the private directory; Zod validates text
-fields. The service normalizes email, creates a bcrypt-hashed user, stores only
-the SHA-256 verification-token hash, and sends the raw token by link. If email
-sending fails, user and upload are rolled back.
+Registration accepts a strict JSON lawyer profile without document uploads. Zod validates and normalizes the fields; the service creates a bcrypt-hashed user, stores only the SHA-256 verification-token hash, and sends the raw token by link. If email delivery fails, the newly created user is rolled back.
 
 Login selects the hidden password, compares bcrypt, requires an active and
 verified account, records `lastLoginAt`, creates a JWT access token and a hashed

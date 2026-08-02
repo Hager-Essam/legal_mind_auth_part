@@ -11,7 +11,7 @@ multiple times. `apiFetch` retries the original request once, then clears memory
 if refresh fails.
 
 Login/reset stores the returned access token. Logout clears cookie server-side
-and memory locally. Registration sends `FormData`. Email-verification requests
+and memory locally. Registration sends a strict JSON profile without a document upload. Email-verification requests
 are cached per token to tolerate React Strict Mode duplicate mounts.
 
 For conversation sends, generate one UUID idempotency key and reuse that same

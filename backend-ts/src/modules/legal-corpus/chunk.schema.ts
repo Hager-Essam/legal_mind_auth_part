@@ -40,18 +40,12 @@ export const legalChunksSchema = z.object({
       "generated_summary",
     ])
     .optional(),
-  authorityStatus: z
-    .enum(["effective", "amended", "repealed", "historical", "unknown"])
-    .optional(),
+  authorityStatus: z.enum(["effective", "amended", "repealed", "historical", "unknown"]).optional(),
   effectiveFrom: z.string().optional(),
   effectiveTo: z.string().optional(),
-  textStatus: z
-    .enum(["verbatim", "extracted", "summary", "unknown"])
-    .optional(),
+  textStatus: z.enum(["verbatim", "extracted", "summary", "unknown"]).optional(),
   officialSourceUrl: z.string().optional(),
-  reviewStatus: z
-    .enum(["draft", "reviewed", "published", "quarantined"])
-    .optional(),
+  reviewStatus: z.enum(["draft", "reviewed", "published", "quarantined"]).optional(),
   reviewedBy: z.string().optional(),
   reviewedAt: z.date().optional(),
   corpusReleaseId: z.string().optional(),

@@ -30,21 +30,15 @@ export const refreshTokenSchema = new Schema<RefreshToken>(
     collection: "refresh_tokens",
     timestamps: true,
     versionKey: false,
-  },
+  }
 );
 
-refreshTokenSchema.index(
-  { tokenHash: 1 },
-  { unique: true, name: "refresh_tokens_hash_unique" },
-);
+refreshTokenSchema.index({ tokenHash: 1 }, { unique: true, name: "refresh_tokens_hash_unique" });
 refreshTokenSchema.index(
   { expiresAt: 1 },
   {
     expireAfterSeconds: 0,
     name: "refresh_tokens_expiry_ttl",
-  },
+  }
 );
-refreshTokenSchema.index(
-  { userId: 1, revokedAt: 1 },
-  { name: "refresh_tokens_user_revoked" },
-);
+refreshTokenSchema.index({ userId: 1, revokedAt: 1 }, { name: "refresh_tokens_user_revoked" });

@@ -69,7 +69,6 @@ LegalMind isolates application state from legal vector search data by maintainin
   - `emailVerificationToken` (String, Optional): Token for email verification.
   - `passwordResetToken` (String, Optional): Token for password reset.
   - `passwordResetExpires` (Date, Optional): Expiration timestamp for reset token.
-  - `lawyerCardUrl` (String, Optional): Relative filepath to uploaded syndicate card.
   - `organizationId` (String, Optional): Multi-tenant organization identifier.
   - `isActive` (Boolean, Default: `true`): Account status flag.
   - `createdAt`, `updatedAt` (Date): Timestamps.

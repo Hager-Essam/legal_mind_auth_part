@@ -1,0 +1,833 @@
+{
+  "info": {
+    "_postman_id": "d7b2aa44-4bd1-4f40-a6ef-6bc30987d29b",
+    "name": "LegalMind API — Frontend Integration",
+    "description": "Complete frontend collection for all 40 public backend endpoints. Import it with a LegalMind Frontend environment. Login stores the bearer access token automatically; refresh cookies remain HTTP-only in Postman's cookie jar. Registration is JSON-only; only the dedicated avatar endpoint uses multipart/form-data.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Service status",
+      "item": [
+        {
+          "name": "API information",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": "{{base_url}}/",
+            "description": "Service metadata and route roots."
+          }
+        },
+        {
+          "name": "Health",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": "{{base_url}}/health",
+            "description": "Liveness; returns 200 when both Mongo databases are reachable, otherwise 503."
+          }
+        },
+        {
+          "name": "Readiness",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": "{{base_url}}/ready",
+            "description": "Readiness for both databases and LLM configuration; returns 200 or 503."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "description": "Public requests explicitly disable the collection's bearer token. Login, refresh, and reset automatically update the access token.",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"{{test_full_name}}\",\n  \"email\": \"{{test_email}}\",\n  \"password\": \"{{test_password}}\",\n  \"officeName\": \"{{test_office_name}}\",\n  \"teamSize\": \"solo\",\n  \"phone\": \"+201000000000\",\n  \"barAssociationNumber\": \"12345\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/register",
+            "description": "Creates an account (201). Password: 8–128 characters containing lower-case, upper-case, and a digit. Email verification is required before login."
+          }
+        },
+        {
+          "name": "Verify email",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{verification_token}}\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/verify-email",
+            "description": "Verifies the emailed token."
+          }
+        },
+        {
+          "name": "Resend verification",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_email}}\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/resend-verification",
+            "description": "Generic success response; limited to 5 requests/hour."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.access_token) {",
+                  "    pm.collectionVariables.set('access_token', body.access_token);",
+                  "    if (pm.environment.name) pm.environment.set('access_token', body.access_token);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"{{test_password}}\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/login",
+            "description": "Returns access token and public user, and sets the HTTP-only refresh cookie. The test script captures the access token."
+          }
+        },
+        {
+          "name": "Refresh access token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.access_token) {",
+                  "    pm.collectionVariables.set('access_token', body.access_token);",
+                  "    if (pm.environment.name) pm.environment.set('access_token', body.access_token);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{base_url}}/api/v1/auth/refresh-token",
+            "description": "Rotates the refresh-token cookie and returns a new access token. For body-based testing use { \"refreshToken\": \"{{refresh_token}}\" }."
+          }
+        },
+        {
+          "name": "Current user",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/auth/me",
+            "description": "Bearer auth. Returns the public user."
+          }
+        },
+        {
+          "name": "Logout this session",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{base_url}}/api/v1/auth/logout",
+            "description": "Revokes this refresh-token session and clears the cookie (204)."
+          }
+        },
+        {
+          "name": "Logout all sessions",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{base_url}}/api/v1/auth/logout-all",
+            "description": "Bearer auth. Revokes all refresh sessions for the current user (204)."
+          }
+        },
+        {
+          "name": "Forgot password",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_email}}\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/forgot-password",
+            "description": "Requests a reset email; generic response prevents account enumeration."
+          }
+        },
+        {
+          "name": "Reset password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.access_token) {",
+                  "    pm.collectionVariables.set('access_token', body.access_token);",
+                  "    if (pm.environment.name) pm.environment.set('access_token', body.access_token);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{reset_token}}\",\n  \"password\": \"{{test_password}}\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/auth/reset-password",
+            "description": "Uses the emailed reset token, creates a new session, and captures its access token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "User profile, avatar & bookmarks",
+      "description": "All requests require bearer authentication. Registration stays application/json. Only Upload avatar uses multipart/form-data. Avatar bytes are held in memory and uploaded to Cloudflare R2; they are never written to backend local disk.",
+      "item": [
+        {
+          "name": "Edit profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Frontend Test User\",\n  \"officeName\": \"Frontend Test Office\",\n  \"phone\": \"+201000000000\",\n  \"barAssociationNumber\": \"12345\",\n  \"teamSize\": \"solo\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/users/profile",
+            "description": "REPLACE old PATCH /api/users/profile with PATCH /api/v1/users/profile. Send JSON and at least one field. Allowed fields: fullName, officeName, phone, barAssociationNumber, teamSize. The schema is strict: role, email, isActive, isEmailVerified, organizationId, avatarUrl, and unknown fields are rejected. Success: 200 { message, user }. The returned user is the same public-user shape used by auth and includes avatarUrl (string or null)."
+          }
+        },
+        {
+          "name": "Upload avatar to R2",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/v1/users/profile/avatar",
+            "description": "REPLACE old POST /api/users/profile/avatar with POST /api/v1/users/profile/avatar. This dedicated request is the ONLY user/auth flow that uses multipart/form-data; registration remains JSON-only and must not contain lawyerIdDocument. Select one file in the avatar field. Accepted: JPEG, PNG, or WebP; maximum 2 MB. MIME type and file signature are validated. The backend streams the in-memory file to Cloudflare R2 and stores the public URL; no local upload directory is used. Do not manually set Content-Type because Postman/browser must add the multipart boundary. Success: 200 { message, user }, read user.avatarUrl and replace the displayed avatar."
+          }
+        },
+        {
+          "name": "Toggle blog bookmark",
+          "event": [],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{base_url}}/api/v1/blogs/{{blog_id}}/bookmark",
+            "description": "REPLACE old POST /api/blogs/:blogId/bookmark with POST /api/v1/blogs/:blogId/bookmark. Toggles the authenticated user's bookmark for an existing published blog. Success: 200 { bookmarked: boolean, action: 'added' | 'removed' }. Update local state from bookmarked and fetch the bookmark list when bookmark_id is needed. Blog CRUD and comment CRUD are now available in their dedicated Postman folders."
+          }
+        },
+        {
+          "name": "List my bookmarks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  const first = body.bookmarks && body.bookmarks[0];",
+                  "  if (first && first.bookmark_id) { pm.collectionVariables.set('bookmark_id', first.bookmark_id); if (pm.environment.name) pm.environment.set('bookmark_id', first.bookmark_id); }",
+                  "  if (first && first.blog_id) { pm.collectionVariables.set('blog_id', first.blog_id); if (pm.environment.name) pm.environment.set('blog_id', first.blog_id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/users/me/bookmarks?page=1&limit=10",
+            "description": "REPLACE old GET /api/users/me/bookmarks with GET /api/v1/users/me/bookmarks. Query: page >= 1, limit 1-50. Success: 200 { bookmarks, pagination }. Each item has bookmark_id, blog_id, created_at, and a nested published blog projection. The script captures bookmark_id and blog_id from the first item."
+          }
+        },
+        {
+          "name": "Delete my bookmark",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/v1/users/me/bookmarks/{{bookmark_id}}",
+            "description": "REPLACE old DELETE /api/users/me/bookmarks/:bookmarkId with DELETE /api/v1/users/me/bookmarks/:bookmarkId. Deletes only a bookmark owned by the authenticated user and decrements its blog count. Success is 204 No Content: frontend code must not parse JSON."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Legal query",
+      "item": [
+        {
+          "name": "Ask legal question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"ما هي حقوق العامل عند إنهاء عقد العمل في مصر؟\",\n  \"top_k\": 5,\n  \"law_category\": \"labor\",\n  \"user_role\": \"citizen\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/query",
+            "description": "Bearer auth. Stateless RAG query; it is not stored in a conversation. query: 3–2000 chars, top_k: 1–50, law_category and user_role are optional."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversations",
+      "description": "Every endpoint requires bearer auth and uses current user/organization ownership. Create a conversation first to fill conversation_id.",
+      "item": [
+        {
+          "name": "Create",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.conversation_id) {",
+                  "    pm.collectionVariables.set('conversation_id', body.conversation_id);",
+                  "    if (pm.environment.name) pm.environment.set('conversation_id', body.conversation_id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Employment rights consultation\",\n  \"user_role\": \"citizen\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/conversations",
+            "description": "Creates a conversation (201) and saves its ID. Both fields are optional; title is 1–160 characters."
+          }
+        },
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/conversations?limit=20&status=active",
+            "description": "Lists newest-first. limit: 1–50; status: active|archived; cursor is an optional opaque pagination cursor."
+          }
+        },
+        {
+          "name": "Get",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/conversations/{{conversation_id}}",
+            "description": "Returns one owned conversation."
+          }
+        },
+        {
+          "name": "List messages",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/conversations/{{conversation_id}}/messages?limit=50",
+            "description": "Lists messages oldest-first. limit: 1–100; use next_cursor to paginate."
+          }
+        },
+        {
+          "name": "Send message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"ما هي مدة فترة الإخطار قبل إنهاء عقد العمل؟\",\n  \"idempotency_key\": \"{{$guid}}\",\n  \"top_k\": 5,\n  \"user_role\": \"citizen\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/conversations/{{conversation_id}}/messages",
+            "description": "Creates a saved user/assistant message pair (201). idempotency_key must be a UUID. Reuse it only to retry exactly the same message; rate limited to 20/minute."
+          }
+        },
+        {
+          "name": "Update",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Employment-rights consultation\",\n  \"status\": \"active\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/conversations/{{conversation_id}}",
+            "description": "Supply at least one of title or status; valid status is active|archived."
+          }
+        },
+        {
+          "name": "Delete",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/v1/conversations/{{conversation_id}}",
+            "description": "Soft-deletes the owned conversation (204)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Blogs",
+      "description": "Published browsing is public. Create/my/update/delete require bearer auth and update/delete enforce author ownership. Status moderation requires an admin token.",
+      "item": [
+        {
+          "name": "List published blogs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const id = body.blogs && body.blogs[0] && (body.blogs[0].id || body.blogs[0]._id);",
+                  "  if (id) { pm.collectionVariables.set('blog_id', id); if (pm.environment.name) pm.environment.set('blog_id', id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/blogs?page=1&limit=10&sort=newest",
+            "description": "REPLACE GET /api/blogs with GET /api/v1/blogs. Public. Query: page>=1, limit 1-50, sort newest|popular, optional search, category, comma-separated tags. Returns { blogs, pagination }; saves the first blog_id."
+          }
+        },
+        {
+          "name": "Blog categories",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/blogs/categories",
+            "description": "REPLACE GET /api/blogs/categories. Returns { categories: [{ value, label }] }. Values are the exact category strings accepted by create/update."
+          }
+        },
+        {
+          "name": "Popular blogs",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/blogs/popular?limit=5",
+            "description": "REPLACE GET /api/blogs/popular. Public; limit 1-50. Returns published blogs ordered by views."
+          }
+        },
+        {
+          "name": "Trending blogs",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/blogs/trending?limit=5",
+            "description": "REPLACE GET /api/blogs/trending. Public; returns most-viewed blogs published in the last seven days."
+          }
+        },
+        {
+          "name": "Get blog details",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/blogs/{{blog_id}}",
+            "description": "REPLACE GET /api/blogs/:id. Public published detail and increments views. Frontend may attach bearer auth to receive isBookmarked and let an author view their own unpublished post."
+          }
+        },
+        {
+          "name": "Create blog",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const id = body.blog && (body.blog.id || body.blog._id);",
+                  "  if (id) { pm.collectionVariables.set('blog_id', id); if (pm.environment.name) pm.environment.set('blog_id', id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Egyptian labor law overview\",\n  \"content\": \"This article explains an important Egyptian labor-law topic in sufficient detail.\",\n  \"excerpt\": \"A short overview for readers.\",\n  \"category\": \"Labor Law\",\n  \"tags\": [\"labor\", \"employment\"],\n  \"status\": \"published\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/blogs",
+            "description": "REPLACE POST /api/blogs. Bearer auth. Strict JSON; title 5-200, content 20-100000, excerpt <=500, coverImage URL or empty, <=10 tags, status draft|pending|published. Returns 201 { message, blog } and saves blog_id."
+          }
+        },
+        {
+          "name": "List my blogs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const id = body.blogs && body.blogs[0] && (body.blogs[0].id || body.blogs[0]._id);",
+                  "  if (id) { pm.collectionVariables.set('blog_id', id); if (pm.environment.name) pm.environment.set('blog_id', id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/blogs/me/my-blogs?page=1&limit=10",
+            "description": "REPLACE GET /api/blogs/me/my-blogs. Bearer auth. Returns all statuses owned by the current user with pagination."
+          }
+        },
+        {
+          "name": "Update my blog",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Egyptian labor law overview\",\n  \"status\": \"published\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/blogs/{{blog_id}}",
+            "description": "REPLACE PUT /api/blogs/:id. Bearer auth; author only. Send at least one create-blog field. Returns { message, blog }. A non-author receives 403."
+          }
+        },
+        {
+          "name": "Delete my blog",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/v1/blogs/{{blog_id}}",
+            "description": "REPLACE DELETE /api/blogs/:id. Author or admin only. Also removes the blog's bookmarks and comments. Returns 204 No Content; do not parse JSON."
+          }
+        },
+        {
+          "name": "Moderate blog status (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"published\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/blogs/{{blog_id}}/status",
+            "description": "REPLACE PATCH /api/blogs/:id/status. Admin bearer token required. status: draft|pending|published|rejected; rejectionReason is required for rejected. Normal frontend lawyer accounts receive 403."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "description": "Listing is public on published blogs. Create/update/delete require bearer auth; update/delete enforce comment ownership, with admin delete allowed.",
+      "item": [
+        {
+          "name": "List blog comments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const id = body.comments && body.comments[0] && (body.comments[0].id || body.comments[0]._id);",
+                  "  if (id) { pm.collectionVariables.set('comment_id', id); if (pm.environment.name) pm.environment.set('comment_id', id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": "{{base_url}}/api/v1/blogs/{{blog_id}}/comments?page=1&limit=20",
+            "description": "REPLACE GET /api/blogs/:blogId/comments. Public for a published blog. Query page>=1, limit 1-50. Returns { comments, pagination } and captures comment_id."
+          }
+        },
+        {
+          "name": "Create comment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const body = pm.response.json();",
+                  "  const id = body.comment && (body.comment.id || body.comment._id);",
+                  "  if (id) { pm.collectionVariables.set('comment_id', id); if (pm.environment.name) pm.environment.set('comment_id', id); }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"A useful legal comment.\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/blogs/{{blog_id}}/comments",
+            "description": "REPLACE POST /api/blogs/:blogId/comments. Bearer auth; published blogs only. content is 1-1000 characters. Returns 201 { message, comment } and saves comment_id."
+          }
+        },
+        {
+          "name": "Update my comment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"An updated legal comment.\"\n}"
+            },
+            "url": "{{base_url}}/api/v1/comments/{{comment_id}}",
+            "description": "REPLACE PUT /api/comments/:id. Bearer auth; comment author only. Returns { message, comment }."
+          }
+        },
+        {
+          "name": "Delete my comment",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/v1/comments/{{comment_id}}",
+            "description": "REPLACE DELETE /api/comments/:id. Author or admin only. Returns 204 No Content; do not parse JSON."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "conversation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "blog_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookmark_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "comment_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

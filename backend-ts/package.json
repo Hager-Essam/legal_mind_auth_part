@@ -15,6 +15,7 @@
     "test:auth:unit": "tsx --test src/auth-tests/*.unit.test.ts",
     "test:auth:integration": "tsx --test src/auth-tests/*.integration.test.ts",
     "test:chat": "tsx --test src/chat-tests/*.test.ts",
+    "test:blogs": "tsx --test src/blog-tests/*.test.ts",
     "test:query": "tsx --test src/query-tests/*.test.ts",
     "test:security": "tsx --test src/security-tests/*.test.ts",
     "test:contracts": "tsx --test src/contract-tests/*.test.ts",
@@ -32,6 +33,7 @@
     "classify:legacy-authorities": "tsx src/scripts/classify-completed-legacy-authorities.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1101.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

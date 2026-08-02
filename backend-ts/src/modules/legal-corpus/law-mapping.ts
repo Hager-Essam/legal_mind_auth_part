@@ -99,12 +99,12 @@ const DOMAIN_DEFINITIONS: DomainDefinition[] = [
       { number: "182", year: "2018" },
       { number: "89", year: "1998" },
     ],
-    explicitDomainPhrases: [
-      "قانون تنظيم التعاقدات التي تبرمها الجهات العامه",
-      "قانون المناقصات والمزايدات",
-    ],
+    explicitDomainPhrases: ["قانون تنظيم التعاقدات التي تبرمها الجهات العامه", "قانون المناقصات والمزايدات"],
     aliases: [
-      { phrase: "قانون تنظيم التعاقدات التي تبرمها الجهات العامه", weight: 0.07 },
+      {
+        phrase: "قانون تنظيم التعاقدات التي تبرمها الجهات العامه",
+        weight: 0.07,
+      },
       { phrase: "قانون المناقصات والمزايدات", weight: 0.065 },
       { phrase: "تعاقد حكومي", weight: 0.055 },
       { phrase: "عقد حكومي", weight: 0.05 },
@@ -125,17 +125,17 @@ const DOMAIN_DEFINITIONS: DomainDefinition[] = [
 ];
 
 const normalizeTokens = (value: string): string[] =>
-  normalizeArabicQuery(value)
-    .split(/\s+/u)
-    .filter(Boolean);
+  normalizeArabicQuery(value).split(/\s+/u).filter(Boolean);
 
 const containsTokenPhrase = (tokens: string[], phrase: string): boolean => {
   const phraseTokens = normalizeTokens(phrase);
+
   if (phraseTokens.length === 0 || phraseTokens.length > tokens.length) return false;
 
   for (let start = 0; start <= tokens.length - phraseTokens.length; start += 1) {
     if (phraseTokens.every((token, offset) => tokens[start + offset] === token)) return true;
   }
+
   return false;
 };
 
@@ -143,24 +143,24 @@ const extractExplicitLawReferences = (normalizedQuery: string) => {
   const references: Array<{ number: string; year: string; index: number }> = [];
   const pattern = /(?:رقم\s+)?(\d+)\s+(?:(?:لسنه|سنه)\s+)?(\d{4})/gu;
   let match: RegExpExecArray | null;
+
   while ((match = pattern.exec(normalizedQuery)) !== null) {
     references.push({ number: match[1], year: match[2], index: match.index });
   }
+
   return references;
 };
 
-const hasSameDomainExplicitReference = (
-  normalizedQuery: string,
-  definition: DomainDefinition,
-): boolean => {
+const hasSameDomainExplicitReference = (normalizedQuery: string, definition: DomainDefinition): boolean => {
   const references = extractExplicitLawReferences(normalizedQuery);
+
   if (references.length === 0) return false;
 
   if (
     references.some((reference) =>
       definition.explicitLawReferences.some(
-        (known) => known.number === reference.number && known.year === reference.year,
-      ),
+        (known) => known.number === reference.number && known.year === reference.year
+      )
     )
   ) {
     return true;
@@ -169,10 +169,8 @@ const hasSameDomainExplicitReference = (
   return definition.explicitDomainPhrases.some((phrase) => {
     const normalizedPhrase = normalizeArabicQuery(phrase);
     const phraseIndex = normalizedQuery.indexOf(normalizedPhrase);
-    return (
-      phraseIndex >= 0 &&
-      references.some((reference) => Math.abs(reference.index - phraseIndex) <= 80)
-    );
+
+    return phraseIndex >= 0 && references.some((reference) => Math.abs(reference.index - phraseIndex) <= 80);
   });
 };
 
@@ -185,6 +183,7 @@ export const detectAuthorityHints = (query: string): DetectedAuthorityHint[] => 
 
     const matches = definition.aliases.filter((alias) => {
       if (!containsTokenPhrase(tokens, alias.phrase)) return false;
+
       return (
         !alias.requiredContext ||
         alias.requiredContext.some((context) => containsTokenPhrase(tokens, context))
@@ -193,8 +192,9 @@ export const detectAuthorityHints = (query: string): DetectedAuthorityHint[] => 
 
     const weight = Math.min(
       MAX_AUTHORITY_BOOST,
-      matches.reduce((sum, match) => sum + match.weight, 0),
+      matches.reduce((sum, match) => sum + match.weight, 0)
     );
+
     if (weight < MIN_DOMAIN_WEIGHT) return [];
 
     return [
@@ -208,35 +208,30 @@ export const detectAuthorityHints = (query: string): DetectedAuthorityHint[] => 
   });
 };
 
-export const expandRetrievalQuery = (
-  baseQuery: string,
-  hints: ResolvedAuthorityHint[],
-): string => {
+export const expandRetrievalQuery = (baseQuery: string, hints: ResolvedAuthorityHint[]): string => {
   const titles = [
     ...new Set(
-      hints
-        .map((hint) => hint.officialTitle?.trim())
-        .filter((title): title is string => Boolean(title)),
+      hints.map((hint) => hint.officialTitle?.trim()).filter((title): title is string => Boolean(title))
     ),
   ];
+
   return titles.length === 0 ? baseQuery.trim() : `${baseQuery.trim()} ${titles.join(" ")}`;
 };
 
 export const applyAuthorityBoosts = (
   chunks: LegalChunks[],
-  boosts: Array<{ authorityId: string; weight: number }>,
+  boosts: Array<{ authorityId: string; weight: number }>
 ): LegalChunks[] => {
   const weights = new Map(
-    boosts.map((boost) => [
-      boost.authorityId,
-      Math.min(MAX_AUTHORITY_BOOST, Math.max(0, boost.weight)),
-    ]),
+    boosts.map((boost) => [boost.authorityId, Math.min(MAX_AUTHORITY_BOOST, Math.max(0, boost.weight))])
   );
 
   return chunks
     .map((chunk) => {
-      const boost = chunk.authorityId ? weights.get(chunk.authorityId) ?? 0 : 0;
+      const boost = chunk.authorityId ? (weights.get(chunk.authorityId) ?? 0) : 0;
+
       if (boost === 0) return { ...chunk };
+
       return {
         ...chunk,
         rerank_score: Number(Math.min(1, (chunk.rerank_score ?? 0) + boost).toFixed(6)),

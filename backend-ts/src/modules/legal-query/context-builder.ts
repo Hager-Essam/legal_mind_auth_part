@@ -10,13 +10,11 @@ const escapeXml = (value: string): string =>
         "&": "&amp;",
         "'": "&apos;",
         '"': "&quot;",
-      })[character]!,
+      })[character]!
   );
 
 const element = (name: string, value: string | undefined): string =>
-  value?.trim()
-    ? `    <${name}>${escapeXml(value.trim())}</${name}>`
-    : "";
+  value?.trim() ? `    <${name}>${escapeXml(value.trim())}</${name}>` : "";
 
 export const buildArabicLegalContext = (chunks: LegalChunks[]): string => {
   const sources = chunks.map((chunk, index) => {
@@ -30,7 +28,9 @@ export const buildArabicLegalContext = (chunks: LegalChunks[]): string => {
       element("text", chunk.content),
       "  </source>",
     ].filter(Boolean);
+
     return fields.join("\n");
   });
+
   return `<legal_evidence>\n${sources.join("\n")}\n</legal_evidence>`;
 };

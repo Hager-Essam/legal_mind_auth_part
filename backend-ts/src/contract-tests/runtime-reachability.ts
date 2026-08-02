@@ -37,12 +37,15 @@ export const runtimeReachabilityScope = {
 
 export const isInRuntimeReachabilityScope = (path: string): boolean => {
   const candidate = normalized(path);
+
   if (candidate.endsWith(".d.ts") || candidate.includes(".test.") || candidate.includes(".spec.")) {
     return false;
   }
+
   if (runtimeReachabilityScope.excludedSegments.some((segment) => candidate.includes(segment))) {
     return false;
   }
+
   return runtimeReachabilityScope.entryPoints.includes(candidate as "src/index.ts")
     || runtimeReachabilityScope.productionRoots.some((root) => candidate.startsWith(root));
 };

@@ -19,7 +19,47 @@ with sync_playwright() as playwright:
 
     desktop.get_by_role("button", name="حساب جديد").click()
     desktop.get_by_role("heading", name="طلب حساب محامٍ").wait_for()
-    assert desktop.locator('input[name="lawyerIdDocument"]').count() == 1
+    assert desktop.locator('input[name="lawyerIdDocument"]').count() == 0
+
+    registration_requests: list[dict] = []
+
+    def mock_registration(route):
+        registration_requests.append(
+            {
+                "content_type": route.request.headers.get("content-type"),
+                "payload": route.request.post_data_json,
+            }
+        )
+        route.fulfill(
+            status=201,
+            content_type="application/json",
+            body='{"message":"Registration succeeded.","user":{}}',
+        )
+
+    desktop.route("**/api/v1/auth/register", mock_registration)
+    registration_form = desktop.locator("form.registration-grid")
+    registration_form.locator('input[name="fullName"]').fill("Contract Lawyer")
+    registration_form.locator('input[name="email"]').fill("contract@example.test")
+    registration_form.locator('input[name="password"]').fill("ContractPass123")
+    registration_form.locator('input[name="officeName"]').fill("Contract Office")
+    registration_form.locator('select[name="teamSize"]').select_option("solo")
+    registration_form.locator('input[name="barAssociationNumber"]').fill("BAR-1")
+    registration_form.locator("button.primary-action").click()
+    desktop.locator('form input[autocomplete="current-password"]').wait_for()
+
+    assert registration_requests == [
+        {
+            "content_type": "application/json",
+            "payload": {
+                "fullName": "Contract Lawyer",
+                "email": "contract@example.test",
+                "password": "ContractPass123",
+                "officeName": "Contract Office",
+                "teamSize": "solo",
+                "barAssociationNumber": "BAR-1",
+            },
+        }
+    ]
 
     mobile = browser.new_page(viewport={"width": 390, "height": 844})
     mobile.goto("http://127.0.0.1:5173")

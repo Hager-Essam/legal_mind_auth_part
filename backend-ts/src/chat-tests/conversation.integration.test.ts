@@ -215,7 +215,9 @@ test("failed generation is saved safely and retries do not duplicate the user me
   const queryService = {
     runQuery: async () => {
       attempts += 1;
+
       if (attempts === 1) throw new Error("secret provider failure");
+
       return {
         answer: "Retry succeeded [S1]",
         source_chunks: [{ ...evidence }],
@@ -259,4 +261,4 @@ test("failed generation is saved safely and retries do not duplicate the user me
   assert.equal(await MessageModel.countDocuments({}), 2);
   assert.equal(attempts, 2);
 });
-
+

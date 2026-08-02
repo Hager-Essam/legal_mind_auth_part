@@ -5,6 +5,7 @@ export const REFRESH_COOKIE_NAME = "legalmind_refresh_token";
 
 export const refreshCookieOptions = (): CookieOptions => {
   const crossSite = env.refreshCookieSameSite === "none";
+
   return {
     httpOnly: true,
     secure: env.nodeEnv === "production" || crossSite,
@@ -14,19 +15,11 @@ export const refreshCookieOptions = (): CookieOptions => {
   };
 };
 
-export const setRefreshCookie = (
-  response: Response,
-  refreshToken: string,
-): void => {
-  response.cookie(
-    REFRESH_COOKIE_NAME,
-    refreshToken,
-    refreshCookieOptions(),
-  );
+export const setRefreshCookie = (response: Response, refreshToken: string): void => {
+  response.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
 };
 
 export const clearRefreshCookie = (response: Response): void => {
   const { maxAge: _maxAge, ...options } = refreshCookieOptions();
   response.clearCookie(REFRESH_COOKIE_NAME, options);
 };
-

@@ -5,10 +5,7 @@ import { buildArabicLegalContext } from "./context-builder";
 import { toLegalChunk } from "../legal-corpus/chunk-mapper";
 import { evaluateGrounding } from "./grounding-policy";
 import { applyAuthorityBoosts } from "../legal-corpus/law-mapping";
-import {
-  parseLegalReference,
-  type ParsedLegalReference,
-} from "./legal-ref-parser";
+import { parseLegalReference, type ParsedLegalReference } from "./legal-ref-parser";
 import { validateSourceCitations } from "./citation-validator";
 import { ClassifierService } from "./classifier.service";
 import { GenerationService } from "./generation.service";
@@ -20,13 +17,11 @@ import { RetrievalService } from "../legal-corpus/retrieval.service";
 
 const mergeReferences = (
   original: ParsedLegalReference,
-  retrieval: ParsedLegalReference,
+  retrieval: ParsedLegalReference
 ): ParsedLegalReference => ({
   ...retrieval,
   articleNumber: original.articleNumber ?? retrieval.articleNumber,
-  articleNumbers: [
-    ...new Set([...original.articleNumbers, ...retrieval.articleNumbers]),
-  ],
+  articleNumbers: [...new Set([...original.articleNumbers, ...retrieval.articleNumbers])],
   paragraphs: [...new Set([...original.paragraphs, ...retrieval.paragraphs])],
   clauses: [...new Set([...original.clauses, ...retrieval.clauses])],
   lawName: original.lawName ?? retrieval.lawName,
@@ -44,19 +39,17 @@ export class QueryService {
     private readonly retrievalService: RetrievalService,
     private readonly rerankerService: RerankerService,
     private readonly generationService: GenerationService,
-    private readonly queryRewriteService: QueryRewriteService,
+    private readonly queryRewriteService: QueryRewriteService
   ) {}
 
   async runQuery(request: QueryRequest): Promise<QueryResponse> {
     const startedAt = performance.now();
     const provider = this.providerConfigService.getSummary();
-    const { category, parsedReference } =
-      this.classifierService.classify(request);
+    const { category, parsedReference } = this.classifierService.classify(request);
 
     if (category === "chat") {
-      const answer = await this.generationService.generateChatAnswer(
-        request.query,
-      );
+      const answer = await this.generationService.generateChatAnswer(request.query);
+
       return {
         answer,
         source_chunks: [],
@@ -65,51 +58,44 @@ export class QueryService {
         latency_ms: Math.round(performance.now() - startedAt),
       };
     }
+
     if (category === "law_ref") {
-      return this.runLawReference(
-        request,
-        startedAt,
-        provider.llmProvider,
-        parsedReference,
-      );
+      return this.runLawReference(request, startedAt, provider.llmProvider, parsedReference);
     }
-    return this.runRag(
-      request,
-      startedAt,
-      provider.llmProvider,
-      undefined,
-      parsedReference,
-    );
+
+    return this.runRag(request, startedAt, provider.llmProvider, undefined, parsedReference);
   }
 
   private async runLawReference(
     request: QueryRequest,
     startedAt: number,
     provider: string,
-    parsedReference?: ParsedLegalReference,
+    parsedReference?: ParsedLegalReference
   ): Promise<QueryResponse> {
     const reference = parsedReference ?? parseLegalReference(request.query);
+
     if (reference.articleNumbers.length > 0 && reference.lawName) {
       const found = [];
       const missing = [];
+
       for (const articleNumber of reference.articleNumbers) {
         const document = await this.retrievalService.findByArticle({
           ...reference,
           articleNumber,
           articleNumbers: [articleNumber],
         });
+
         if (document) found.push(document);
         else missing.push(articleNumber);
       }
+
       if (found.length > 0) {
-        const answers = found.map((document) =>
-          this.legalRefService.buildExactMatchAnswer(document),
-        );
+        const answers = found.map((document) => this.legalRefService.buildExactMatchAnswer(document));
+
         if (missing.length > 0) {
-          answers.push(
-            `لم يتم العثور على نتيجة منشورة مؤهلة للمواد: ${missing.join("، ")}.`,
-          );
+          answers.push(`لم يتم العثور على نتيجة منشورة مؤهلة للمواد: ${missing.join("، ")}.`);
         }
+
         return {
           answer: answers.join("\n\n"),
           source_chunks: found.flatMap((document) => [
@@ -126,15 +112,13 @@ export class QueryService {
     if (reference.appealNumber) {
       const document = await this.retrievalService.findByAppeal(
         reference.appealNumber,
-        reference.judicialYear,
+        reference.judicialYear
       );
+
       if (document) {
         return {
           answer: this.legalRefService.buildRulingAnswer(document),
-          source_chunks: [
-            toLegalChunk(document),
-            ...document._children.map((child) => toLegalChunk(child)),
-          ],
+          source_chunks: [toLegalChunk(document), ...document._children.map((child) => toLegalChunk(child))],
           llm_provider_used: null,
           category: "law_ref",
           latency_ms: Math.round(performance.now() - startedAt),
@@ -147,7 +131,7 @@ export class QueryService {
       startedAt,
       provider,
       "لم يتم العثور على تطابق مباشر منشور؛ تم استخدام البحث الدلالي.",
-      reference,
+      reference
     );
   }
 
@@ -156,38 +140,26 @@ export class QueryService {
     startedAt: number,
     provider: string,
     answerPrefix?: string,
-    originalReference?: ParsedLegalReference,
+    originalReference?: ParsedLegalReference
   ): Promise<QueryResponse> {
-    const original =
-      originalReference ?? parseLegalReference(request.query);
-    const rewrite = await this.queryRewriteService.rewrite(
-      request.query,
-      request.user_role,
-    );
+    const original = originalReference ?? parseLegalReference(request.query);
+    const rewrite = await this.queryRewriteService.rewrite(request.query, request.user_role);
     const retrievalReference = parseLegalReference(rewrite.rewrittenQuery);
     const mergedReference = mergeReferences(original, retrievalReference);
     const rewrittenRequest: QueryRequest = {
       ...request,
       query: rewrite.retrievalQuery,
     };
-    const candidates = await this.retrievalService.retrieveCandidateChunks(
-      rewrittenRequest,
-      mergedReference,
-    );
+    const candidates = await this.retrievalService.retrieveCandidateChunks(rewrittenRequest, mergedReference);
     const reranked = applyAuthorityBoosts(
-      await this.rerankerService.rerank(
-        request.query,
-        candidates,
-        Math.min(request.top_k, env.rerankTopK),
-      ),
-      rewrite.authorityBoosts,
+      await this.rerankerService.rerank(request.query, candidates, Math.min(request.top_k, env.rerankTopK)),
+      rewrite.authorityBoosts
     );
     const grounding = evaluateGrounding(reranked);
+
     if (!grounding.shouldGenerate) {
       return {
-        answer: [answerPrefix, grounding.refusalAnswer]
-          .filter(Boolean)
-          .join(" "),
+        answer: [answerPrefix, grounding.refusalAnswer].filter(Boolean).join(" "),
         source_chunks: [],
         llm_provider_used: provider,
         category: "arabic_rag",
@@ -198,14 +170,13 @@ export class QueryService {
     // Generation and the API response use the same qualified excerpts.
     const evidence = grounding.qualifiedChunks;
     const context = buildArabicLegalContext(evidence);
-    const generated = await this.generationService.generateGroundedArabicAnswer(
-      {
-        question: request.query,
-        context,
-        evidenceCount: evidence.length,
-      },
-    );
+    const generated = await this.generationService.generateGroundedArabicAnswer({
+      question: request.query,
+      context,
+      evidenceCount: evidence.length,
+    });
     const answer = validateSourceCitations(generated, evidence.length);
+
     return {
       answer: answerPrefix ? `${answerPrefix}\n\n${answer}` : answer,
       source_chunks: evidence,
@@ -213,13 +184,7 @@ export class QueryService {
       category: "arabic_rag",
       latency_ms: Math.round(performance.now() - startedAt),
       evidence_relevance_score: Math.max(
-        ...evidence.map(
-          (chunk) =>
-            chunk.rerank_score ??
-            chunk.similarity_score ??
-            chunk.rrf_score ??
-            0,
-        ),
+        ...evidence.map((chunk) => chunk.rerank_score ?? chunk.similarity_score ?? chunk.rrf_score ?? 0)
       ),
     };
   }

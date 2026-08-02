@@ -25,17 +25,24 @@ const mongoAuthorityEligibility: Record<string, unknown> = {
 const vectorAuthorityEligibility = {
   $or: [
     { authorityStatus: { $in: CURRENT_AUTHORITY_STATUSES } },
-    { authorityType: { $eq: "court_ruling" }, authorityStatus: { $eq: "historical" } },
+    {
+      authorityType: { $eq: "court_ruling" },
+      authorityStatus: { $eq: "historical" },
+    },
   ],
 };
 const atlasSearchAuthorityEligibility = {
   compound: {
     should: [
       { in: { path: "authorityStatus", value: CURRENT_AUTHORITY_STATUSES } },
-      { compound: { must: [
-        { equals: { path: "authorityType", value: "court_ruling" } },
-        { equals: { path: "authorityStatus", value: "historical" } },
-      ] } },
+      {
+        compound: {
+          must: [
+            { equals: { path: "authorityType", value: "court_ruling" } },
+            { equals: { path: "authorityStatus", value: "historical" } },
+          ],
+        },
+      },
     ],
     minimumShouldMatch: 1,
   },
@@ -58,13 +65,17 @@ function extractContextWindow(parentText: string, childText: string, maxChars: n
 
   const prefix = start > 0 ? "… " : "";
   const suffix = end < parentText.length ? " …" : "";
+
   return prefix + parentText.slice(start, end) + suffix;
 }
 
 export class RetrievalService {
   constructor(private readonly embeddingService: EmbeddingService) {}
 
-  async retrieveCandidateChunks(request: QueryRequest, parsedRef?: ParsedLegalReference): Promise<LegalChunks[]> {
+  async retrieveCandidateChunks(
+    request: QueryRequest,
+    parsedRef?: ParsedLegalReference
+  ): Promise<LegalChunks[]> {
     const ref = parsedRef ?? parseLegalReference(request.query);
     const queryVector = await this.embeddingService.embedQuery(request.query);
     const overfetch = Math.max(env.retrievalOverfetch, request.top_k * 3);
@@ -91,16 +102,21 @@ export class RetrievalService {
     const keywordResults = keywordDocs.map((d) => toLegalChunk(d, d.score));
 
     if (keywordResults.length === 0) return vectorResults;
+
     return reciprocalRankFusion([vectorResults, keywordResults], env.rrfK);
   }
 
-  async findByArticle(parsedRef?: ParsedLegalReference): Promise<(ChunkDocument & { _children: ChunkDocument[] }) | null> {
+  async findByArticle(
+    parsedRef?: ParsedLegalReference
+  ): Promise<(ChunkDocument & { _children: ChunkDocument[] }) | null> {
     const articleNumber = parsedRef?.articleNumber;
     const lawName = parsedRef?.lawName;
+
     if (!articleNumber || !lawName) return null;
 
     const normName = normalizeLawName(lawName);
     const words = normName.split(/\s+/).filter((w: string) => w.length > 1);
+
     if (words.length === 0) return null;
     const nameRegex = words.map((w: string) => escapeRegex(w)).join(".*");
 
@@ -138,13 +154,12 @@ export class RetrievalService {
         .limit(3)
         .lean();
       const authorities = new Set(
-        candidates.map(
-          (candidate) =>
-            candidate.authorityId ?? candidate.authorityTitleOfficial,
-        ),
+        candidates.map((candidate) => candidate.authorityId ?? candidate.authorityTitleOfficial)
       );
+
       if (authorities.size === 1) parent = candidates[0] ?? null;
     }
+
     if (!parent) return null;
 
     const children = await ChunkModel.find({
@@ -161,7 +176,10 @@ export class RetrievalService {
     return { ...parent, _children: children };
   }
 
-  async findByAppeal(appealNumber: string, judicialYear?: string | null): Promise<(ChunkDocument & { _children: ChunkDocument[] }) | null> {
+  async findByAppeal(
+    appealNumber: string,
+    judicialYear?: string | null
+  ): Promise<(ChunkDocument & { _children: ChunkDocument[] }) | null> {
     const filter: Record<string, unknown> = {
       appeal_number: appealNumber,
       child_index: { $in: [-1, null] },
@@ -170,9 +188,11 @@ export class RetrievalService {
       reviewStatus: "published",
       ...mongoAuthorityEligibility,
     };
+
     if (judicialYear) filter.judicial_year = judicialYear;
 
     const parent = await ChunkModel.findOne(filter).sort({ text_len: -1 }).lean();
+
     if (!parent) return null;
 
     const children = await ChunkModel.find({
@@ -189,7 +209,10 @@ export class RetrievalService {
     return { ...parent, _children: children };
   }
 
-  async vectorSearch(queryVector: number[], options: SearchOptions = {}): Promise<(ChunkDocument & { score?: number })[]> {
+  async vectorSearch(
+    queryVector: number[],
+    options: SearchOptions = {}
+  ): Promise<(ChunkDocument & { score?: number })[]> {
     if (queryVector.length === 0) return [];
 
     const topK = options.topK ?? env.retrievalTopK;
@@ -201,9 +224,13 @@ export class RetrievalService {
     };
 
     if (options.lawCategory) filter.law_category = { $eq: options.lawCategory };
+
     if (options.lawNumber) filter.law_number = { $eq: options.lawNumber };
+
     if (options.lawYear) filter.law_year = { $eq: options.lawYear };
+
     if (options.appealNumber) filter.appeal_number = { $eq: options.appealNumber };
+
     if (options.judicialYear) filter.judicial_year = { $eq: options.judicialYear };
 
     const pipeline: mongoose.PipelineStage[] = [
@@ -223,7 +250,10 @@ export class RetrievalService {
     return ChunkModel.aggregate(pipeline);
   }
 
-  async textSearch(query: string, options: SearchOptions = {}): Promise<(ChunkDocument & { score?: number })[]> {
+  async textSearch(
+    query: string,
+    options: SearchOptions = {}
+  ): Promise<(ChunkDocument & { score?: number })[]> {
     const topK = options.topK ?? env.sparseTopK;
     const mustClauses: object[] = [
       { equals: { path: "is_retrievable", value: true } },
@@ -232,11 +262,30 @@ export class RetrievalService {
       atlasSearchAuthorityEligibility,
     ];
 
-    if (options.lawCategory) mustClauses.push({ phrase: { path: "law_category", query: options.lawCategory } });
-    if (options.lawNumber) mustClauses.push({ phrase: { path: "law_number", query: options.lawNumber } });
-    if (options.lawYear) mustClauses.push({ phrase: { path: "law_year", query: options.lawYear } });
-    if (options.appealNumber) mustClauses.push({ phrase: { path: "appeal_number", query: options.appealNumber } });
-    if (options.judicialYear) mustClauses.push({ phrase: { path: "judicial_year", query: options.judicialYear } });
+    if (options.lawCategory)
+      mustClauses.push({
+        phrase: { path: "law_category", query: options.lawCategory },
+      });
+
+    if (options.lawNumber)
+      mustClauses.push({
+        phrase: { path: "law_number", query: options.lawNumber },
+      });
+
+    if (options.lawYear)
+      mustClauses.push({
+        phrase: { path: "law_year", query: options.lawYear },
+      });
+
+    if (options.appealNumber)
+      mustClauses.push({
+        phrase: { path: "appeal_number", query: options.appealNumber },
+      });
+
+    if (options.judicialYear)
+      mustClauses.push({
+        phrase: { path: "judicial_year", query: options.judicialYear },
+      });
 
     const pipeline: mongoose.PipelineStage[] = [
       {
@@ -245,11 +294,37 @@ export class RetrievalService {
           compound: {
             must: mustClauses,
             should: [
-              { text: { query, path: "text", score: { boost: { value: 1.5 } } } },
-              { text: { query, path: "law_name_normalized", score: { boost: { value: 2.0 } } } },
-              { text: { query, path: "authorityTitleOfficial", score: { boost: { value: 2.2 } } } },
-              { text: { query, path: "authorityTitleNormalized", score: { boost: { value: 2.0 } } } },
-              { text: { query, path: "case_subject", score: { boost: { value: 1.8 } } } },
+              {
+                text: { query, path: "text", score: { boost: { value: 1.5 } } },
+              },
+              {
+                text: {
+                  query,
+                  path: "law_name_normalized",
+                  score: { boost: { value: 2.0 } },
+                },
+              },
+              {
+                text: {
+                  query,
+                  path: "authorityTitleOfficial",
+                  score: { boost: { value: 2.2 } },
+                },
+              },
+              {
+                text: {
+                  query,
+                  path: "authorityTitleNormalized",
+                  score: { boost: { value: 2.0 } },
+                },
+              },
+              {
+                text: {
+                  query,
+                  path: "case_subject",
+                  score: { boost: { value: 1.8 } },
+                },
+              },
             ],
             minimumShouldMatch: 1,
           },
@@ -259,6 +334,7 @@ export class RetrievalService {
     ];
 
     pipeline.push({ $limit: topK });
+
     return ChunkModel.aggregate(pipeline);
   }
 
@@ -266,8 +342,14 @@ export class RetrievalService {
     const parentIds = [
       ...new Set(
         chunks
-          .filter((c) => typeof c.child_index === "number" && c.child_index >= 0 && typeof c.parent_chunk_id === "string" && c.parent_chunk_id.length > 0)
-          .map((c) => c.parent_chunk_id as string),
+          .filter(
+            (c) =>
+              typeof c.child_index === "number" &&
+              c.child_index >= 0 &&
+              typeof c.parent_chunk_id === "string" &&
+              c.parent_chunk_id.length > 0
+          )
+          .map((c) => c.parent_chunk_id as string)
       ),
     ];
 
@@ -275,18 +357,21 @@ export class RetrievalService {
 
     const parents = await ChunkModel.find(
       { chunk_id: { $in: parentIds } },
-      { chunk_id: 1, text: 1, text_len: 1 },
+      { chunk_id: 1, text: 1, text_len: 1 }
     ).lean();
 
     const parentMap = new Map(parents.map((p) => [p.chunk_id ?? "", p] as const));
 
     return chunks.map((chunk) => {
-      if (typeof chunk.child_index !== "number" || chunk.child_index < 0 || !chunk.parent_chunk_id) return chunk;
+      if (typeof chunk.child_index !== "number" || chunk.child_index < 0 || !chunk.parent_chunk_id)
+        return chunk;
 
       const parent = parentMap.get(chunk.parent_chunk_id);
+
       if (!parent?.text) return chunk;
 
       const contextText = extractContextWindow(parent.text, chunk.content, MAX_PARENT_CHARS);
+
       return { ...chunk, content: contextText, text_len: contextText.length };
     });
   }

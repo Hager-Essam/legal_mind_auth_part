@@ -17,14 +17,13 @@ flowchart LR
   R --> D2[(RAG MongoDB / Atlas)]
   Q --> P[DashScope providers]
   A --> M[SMTP or development console]
-  A --> U[Private upload directory]
 ```
 
 ## Runtime layers
 
 Middleware order is request ID, CORS, 2 MiB JSON parser, cookies, optional
 Morgan logging, route handlers, not-found handler, and global error handler.
-Auth registration inserts its upload middleware after the route limiter.
+Auth registration validates a strict JSON body after the route limiter.
 
 App MongoDB stores users, refresh tokens, conversations, and messages. RAG
 MongoDB stores legal chunks and governance-change records. They may share a
@@ -32,12 +31,11 @@ server but use separately configured connections/databases. Atlas Search and
 Vector Search are operator-provisioned and are not created at startup.
 
 Provider configuration exposes a summary and rotates configured API keys
-round-robin within each process. Email uses SMTP or console mode. Private
-uploads are randomized local files.
+round-robin within each process. Email uses SMTP or console mode.
 
 ## Trust boundaries
 
-Browser input, cookies, bearer tokens, uploaded files, stored corpus text, and
+Browser input, cookies, bearer tokens, stored corpus text, and
 provider responses are untrusted. Owner filters protect conversation data.
 Governance filters qualify stored legal material; escaped XML and a system
 prompt tell the generator not to execute corpus instructions. These controls

@@ -13,6 +13,16 @@ type AuthResponse = {
   user: PublicUser;
 };
 
+export type RegistrationPayload = {
+  fullName: string;
+  email: string;
+  password: string;
+  officeName: string;
+  teamSize: "solo" | "small" | "medium" | "large";
+  phone?: string;
+  barAssociationNumber?: string;
+};
+
 type ApiErrorDetails = {
   fields?: Record<string, string[]>;
   issues?: Array<{
@@ -72,12 +82,13 @@ export const login = async (
   return payload.user;
 };
 
-export const register = async (form: FormData): Promise<void> => {
+export const register = async (payload: RegistrationPayload): Promise<void> => {
   await parseResponse(
     await fetch(`${API_URL}/auth/register`, {
       method: "POST",
       credentials: "include",
-      body: form,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     }),
   );
 };

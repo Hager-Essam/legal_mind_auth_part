@@ -4,7 +4,7 @@ export class ProviderHttpError extends Error {
   constructor(
     public readonly status: number | null,
     public readonly retryable: boolean,
-    message: string,
+    message: string
   ) {
     super(message);
     this.name = "ProviderHttpError";
@@ -14,8 +14,10 @@ export class ProviderHttpError extends Error {
 const retryAfterMs = (value: string | null): number | null => {
   if (!value) return null;
   const seconds = Number(value);
+
   if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1_000;
   const date = Date.parse(value);
+
   return Number.isNaN(date) ? null : Math.max(0, date - Date.now());
 };
 
@@ -30,7 +32,7 @@ export const requestProviderText = async (
     timeoutMs: number;
     totalRetryBudgetMs?: number;
     maxAttempts?: number;
-  },
+  }
 ): Promise<string> => {
   const startedAt = Date.now();
   const totalBudgetMs = options.totalRetryBudgetMs ?? options.timeoutMs * 2;
@@ -40,13 +42,12 @@ export const requestProviderText = async (
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     const elapsed = Date.now() - startedAt;
     const remainingBudget = totalBudgetMs - elapsed;
+
     if (remainingBudget <= 0) break;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(
-      () => controller.abort(),
-      Math.min(options.timeoutMs, remainingBudget),
-    );
+    const timeoutId = setTimeout(() => controller.abort(), Math.min(options.timeoutMs, remainingBudget));
+
     try {
       const response = await fetch(url, {
         ...init,
@@ -54,14 +55,16 @@ export const requestProviderText = async (
       });
       // Keep the timeout active until the response body has been read.
       const text = await response.text();
+
       if (response.ok) return text;
 
       const retryable = RETRYABLE_STATUS.has(response.status);
+
       if (!retryable || attempt === maxAttempts) {
         throw new ProviderHttpError(
           response.status,
           retryable,
-          `Provider request failed with status ${response.status}.`,
+          `Provider request failed with status ${response.status}.`
         );
       }
 
@@ -70,17 +73,20 @@ export const requestProviderText = async (
       const jitter = Math.floor(Math.random() * 150);
       const delay = Math.min(
         requestedDelay ?? exponential + jitter,
-        Math.max(0, totalBudgetMs - (Date.now() - startedAt)),
+        Math.max(0, totalBudgetMs - (Date.now() - startedAt))
       );
+
       if (delay > 0) await wait(delay);
     } catch (error) {
       if (error instanceof ProviderHttpError) throw error;
       lastNetworkError = error;
+
       if (attempt === maxAttempts) break;
       const delay = Math.min(
         250 * 2 ** (attempt - 1) + Math.floor(Math.random() * 150),
-        Math.max(0, totalBudgetMs - (Date.now() - startedAt)),
+        Math.max(0, totalBudgetMs - (Date.now() - startedAt))
       );
+
       if (delay > 0) await wait(delay);
     } finally {
       clearTimeout(timeoutId);
@@ -90,10 +96,8 @@ export const requestProviderText = async (
   throw new ProviderHttpError(
     null,
     true,
-    lastNetworkError instanceof Error &&
-      lastNetworkError.name === "AbortError"
+    lastNetworkError instanceof Error && lastNetworkError.name === "AbortError"
       ? "Provider request timed out."
-      : "Provider network request failed.",
+      : "Provider network request failed."
   );
 };
-

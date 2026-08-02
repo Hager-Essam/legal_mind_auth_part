@@ -64,7 +64,10 @@ const chunkSchema = new mongoose.Schema(
     corpusReleaseId: { type: String },
     consolidatedThrough: { type: String },
     sourceTextHash: { type: String },
-    sourceReferences: { type: [mongoose.Schema.Types.Mixed], default: undefined },
+    sourceReferences: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: undefined,
+    },
     verificationMethod: { type: String },
     provenanceStatus: { type: String },
     embeddingModel: { type: String },
@@ -75,7 +78,7 @@ const chunkSchema = new mongoose.Schema(
     embeddingSourceCharacterCount: { type: Number },
     embedding: { type: [Number] },
   },
-  { collection: COLLECTION_NAME, strict: false },
+  { collection: COLLECTION_NAME, strict: false }
 );
 
 export type ChunkDocument = mongoose.InferSchemaType<typeof chunkSchema> & {
@@ -83,4 +86,4 @@ export type ChunkDocument = mongoose.InferSchemaType<typeof chunkSchema> & {
   score?: number;
 };
 
-export const ChunkModel = ragConnection.model<ChunkDocument>("LegalChunk",chunkSchema);
+export const ChunkModel = ragConnection.model<ChunkDocument>("LegalChunk", chunkSchema);

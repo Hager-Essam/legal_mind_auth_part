@@ -1,9 +1,8 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import type { AuthService } from "./auth.service";
-import type { UserRepository } from "./user.repository";
+import type { UserRepository } from "./users/user.repository";
 import { validateBody } from "./auth-validation.middleware";
-import { lawyerIdUpload } from "./auth-upload.middleware";
 import { authenticate } from "./auth.middleware";
 import { createAuthController } from "./auth.controller";
 import {
@@ -41,59 +40,29 @@ export type AuthDependencies = {
 
 export const createAuthRouter = (services: AuthDependencies) => {
   const router = Router();
-  const controller = createAuthController(
-    services.authService,
-    services.userRepository,
-  );
+  const controller = createAuthController(services.authService, services.userRepository);
   const requireAuth = authenticate(services.authService, services.userRepository);
 
-  router.post(
-    "/register",
-    registrationLimiter,
-    lawyerIdUpload.single("lawyerIdDocument"),
-    validateBody(registerSchema),
-    controller.register,
-  );
-  router.post(
-    "/verify-email",
-    validateBody(verifyEmailSchema),
-    controller.verifyEmail,
-  );
+  router.post("/register", registrationLimiter, validateBody(registerSchema), controller.register);
+  router.post("/verify-email", validateBody(verifyEmailSchema), controller.verifyEmail);
   router.post(
     "/resend-verification",
     resendVerificationLimiter,
     validateBody(resendVerificationSchema),
-    controller.resendVerification,
+    controller.resendVerification
   );
-  router.post(
-    "/login",
-    loginLimiter,
-    validateBody(loginSchema),
-    controller.login,
-  );
-  router.post(
-    "/refresh-token",
-    refreshLimiter,
-    validateBody(refreshSchema),
-    controller.refreshToken,
-  );
-  router.post(
-    "/logout",
-    validateBody(refreshSchema),
-    controller.logout,
-  );
+  router.post("/login", loginLimiter, validateBody(loginSchema), controller.login);
+  router.post("/refresh-token", refreshLimiter, validateBody(refreshSchema), controller.refreshToken);
+  router.post("/logout", validateBody(refreshSchema), controller.logout);
   router.post("/logout-all", requireAuth, controller.logoutAll);
   router.post(
     "/forgot-password",
     forgotPasswordLimiter,
     validateBody(forgotPasswordSchema),
-    controller.forgotPassword,
+    controller.forgotPassword
   );
-  router.post(
-    "/reset-password",
-    validateBody(resetPasswordSchema),
-    controller.resetPassword,
-  );
+  router.post("/reset-password", validateBody(resetPasswordSchema), controller.resetPassword);
   router.get("/me", requireAuth, controller.me);
+
   return router;
 };

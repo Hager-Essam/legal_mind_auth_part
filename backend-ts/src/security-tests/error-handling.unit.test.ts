@@ -16,6 +16,7 @@ test("Result captures expected asynchronous failures without throwing", async ()
     throw new Error("expected failure");
   });
   assert.equal(result.ok, false);
+
   if (!result.ok) {
     assert.equal((result.error as Error).message, "expected failure");
   }

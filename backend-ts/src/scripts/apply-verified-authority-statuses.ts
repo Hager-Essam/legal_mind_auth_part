@@ -41,14 +41,17 @@ const values = (entry: AuthorityStatusRegistryEntry) => ({
 const run = async (): Promise<void> => {
   const dryRun = isDryRun() || !process.argv.includes("--apply");
   const mongo = new MongoService(); await mongo.connect();
+
   try {
     const chunks = ragConnection.db!.collection("legal_chunks");
     const changes = ragConnection.db!.collection("corpus_governance_changes");
     const results: Array<{ authorityId: string; matched: number; pending: number }> = [];
+
     for (const entry of authorityStatusRegistry.filter((item) => item.safeToDisableLegacyRetrieval)) {
       const candidates = (await chunks.find(baseFilter(entry), { projection: { embedding: 0, text: 0 } }).toArray()) as Chunk[];
       const matched = candidates.filter((chunk) => matchesAuthorityEntry(chunk, entry));
       const pending = matched.filter((chunk) => !(chunk.corpusReleaseId === MIGRATION_ID && chunk.authorityId === entry.authorityId && chunk.is_retrievable === false));
+
       if (!dryRun && pending.length > 0) {
         const now = new Date();
         await changes.bulkWrite(pending.map((chunk) => ({ updateOne: {
@@ -63,6 +66,7 @@ const run = async (): Promise<void> => {
       }
       results.push({ authorityId: entry.authorityId, matched: matched.length, pending: pending.length });
     }
+
     if (!dryRun) await changes.createIndex({ migrationId: 1, chunkMongoId: 1 }, { unique: true, name: "migration_chunk_unique" });
     console.log(JSON.stringify({ migrationId: MIGRATION_ID, dryRun,
       database: ragConnection.db!.databaseName, collection: "legal_chunks", results,

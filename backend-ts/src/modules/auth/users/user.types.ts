@@ -1,11 +1,6 @@
 import type { Document } from "mongoose";
 
-export const USER_ROLES = [
-  "user",
-  "pending_lawyer",
-  "lawyer",
-  "admin",
-] as const;
+export const USER_ROLES = ["user", "pending_lawyer", "lawyer", "admin"] as const;
 
 export type UserRole = (typeof USER_ROLES)[number];
 
@@ -19,6 +14,8 @@ export type User = {
   officeName?: string;
   teamSize?: TeamSize;
   phone?: string;
+  avatarUrl?: string;
+  avatarObjectKey?: string;
   role: UserRole;
   barAssociationNumber?: string;
   lawyerIdDocument?: string;
@@ -49,6 +46,8 @@ export type CreateUserInput = Pick<User, "email" | "password" | "fullName"> &
       | "officeName"
       | "teamSize"
       | "phone"
+      | "avatarUrl"
+      | "avatarObjectKey"
       | "barAssociationNumber"
       | "lawyerIdDocument"
       | "organizationId"

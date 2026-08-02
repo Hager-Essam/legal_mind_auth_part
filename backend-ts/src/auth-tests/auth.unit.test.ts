@@ -7,14 +7,17 @@ import { AuthService, hashRefreshToken } from "../modules/auth/auth.service";
 import { AUTH_ERROR_CODES, AuthError } from "../modules/auth/auth.errors";
 import { toPublicUser } from "../modules/auth/auth.mapper";
 import { registerSchema } from "../modules/auth/auth.schemas";
-import { refreshTokenSchema } from "../modules/auth/refresh-token.schema";
-import { UserModel } from "../modules/auth/user.model";
-import { userSchema } from "../modules/auth/user.schema";
-import type { UserDocument } from "../modules/auth/user.types";
+import { refreshTokenSchema } from "../modules/auth/refresh-tokens/refresh-token.schema";
+import { UserModel } from "../modules/auth/users/user.model";
+import { userSchema } from "../modules/auth/users/user.schema";
+import type { UserDocument } from "../modules/auth/users/user.types";
 import { ChunkModel } from "../modules/legal-corpus/chunk.model";
-import { appConnection, ragConnection } from "../infrastructure/mongo/mongo.service";
-import type { UserRepository } from "../modules/auth/user.repository";
-import type { RefreshTokenRepository } from "../modules/auth/refresh-token.repository";
+import {
+  appConnection,
+  ragConnection,
+} from "../infrastructure/mongo/mongo.service";
+import type { UserRepository } from "../modules/auth/users/user.repository";
+import type { RefreshTokenRepository } from "../modules/auth/refresh-tokens/refresh-token.repository";
 import type { AuthEmailSender } from "../modules/auth/auth.service";
 
 const createAuthService = (): AuthService =>
@@ -44,12 +47,13 @@ const fakeUser = {
   updatedAt: new Date(),
 } as unknown as UserDocument;
 
-test("public registration rejects privilege and ownership injection", () => {
+test("public registration rejects non-public fields", () => {
   for (const injected of [
     { role: "admin" },
     { organizationId: "attacker-org" },
     { isActive: true },
     { isEmailVerified: true },
+    { lawyerIdDocument: "credential.pdf" },
   ]) {
     const result = registerSchema.safeParse({
       fullName: "Test Lawyer",
@@ -114,6 +118,7 @@ test("access tokens enforce HS256 issuer and audience", () => {
       audience: "legalmind-web",
     }),
   ];
+
   for (const token of invalidTokens) {
     assert.throws(
       () => auth.verifyAccessToken(token),
@@ -126,6 +131,7 @@ test("access tokens enforce HS256 issuer and audience", () => {
 
 test("public user mapping excludes credentials, hashes, and internal fields", () => {
   const serialized = JSON.stringify(toPublicUser(fakeUser));
+
   for (const forbidden of [
     "password",
     "TokenHash",
@@ -147,14 +153,11 @@ test("required user and refresh-token indexes are declared", () => {
   const refreshIndexes = refreshTokenSchema.indexes();
   assert.ok(
     userIndexes.some(
-      ([keys, options]) =>
-        keys.email === 1 && options.unique === true,
+      ([keys, options]) => keys.email === 1 && options.unique === true,
     ),
   );
   assert.ok(
-    userIndexes.some(
-      ([keys]) => keys.role === 1 && keys.isActive === 1,
-    ),
+    userIndexes.some(([keys]) => keys.role === 1 && keys.isActive === 1),
   );
   assert.ok(
     refreshIndexes.some(
@@ -163,4 +166,3 @@ test("required user and refresh-token indexes are declared", () => {
     ),
   );
 });
-

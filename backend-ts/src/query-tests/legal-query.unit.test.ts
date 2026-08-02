@@ -45,6 +45,7 @@ test("greeting-prefixed legal questions use retrieval while social messages rema
   ]) {
     assert.notEqual(classifier.classify(request(query)).category, "chat");
   }
+
   for (const query of ["مرحبا", "شكراً", "كيف حالك؟"]) {
     assert.equal(classifier.classify(request(query)).category, "chat");
   }
@@ -93,6 +94,7 @@ test("grounding qualifies each source independently and fails closed", () => {
     qualifiedChunk({ is_retrievable: false }),
     qualifiedChunk({ authorityStatus: "repealed" }),
   ];
+
   for (const chunk of rejected) {
     assert.equal(evaluateGrounding([chunk]).shouldGenerate, false);
   }
@@ -169,4 +171,4 @@ test("reranker output rejects duplicate, out-of-range, and non-finite results", 
     ),
   );
 });
-
+

@@ -11,26 +11,20 @@ import { createAuthRouter } from "../modules/auth/auth.routes";
 import { createConversationRouter } from "../modules/conversations/conversation.routes";
 import { requestIdMiddleware } from "../shared/http/request-id.middleware";
 import { HttpError } from "../shared/http/http-error";
+import { createUserRouter } from "../modules/users/user.routes";
+import { createBlogBookmarkRouter, createUserBookmarkRouter } from "../modules/bookmarks/bookmark.routes";
+import { createBlogRouter } from "../modules/blogs/blog.routes";
+import { createCommentRouter } from "../modules/comments/comment.routes";
 
 export const createApp = (services: AppServices) => {
   const app = express();
   const corsOptions = {
-    origin: (
-      origin: string | undefined,
-      callback: (error: Error | null, allowed?: boolean) => void,
-    ) => {
+    origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => {
       if (!origin || env.corsOrigins.includes(origin)) {
         callback(null, true);
         return;
       }
-      callback(
-        new HttpError(
-          403,
-          "The request origin is not allowed.",
-          undefined,
-          "CORS_ORIGIN_DENIED",
-        ),
-      );
+      callback(new HttpError(403, "The request origin is not allowed.", undefined, "CORS_ORIGIN_DENIED"));
     },
     credentials: true,
   };
@@ -41,7 +35,11 @@ export const createApp = (services: AppServices) => {
   app.use(cookieParser());
 
   if (env.nodeEnv !== "test") {
-    app.use(morgan("[:date[iso]] :method :url :status :response-time ms - :res[content-length]", { skip: (req) => req.url === "/health" }));
+    app.use(
+      morgan("[:date[iso]] :method :url :status :response-time ms - :res[content-length]", {
+        skip: (req) => req.url === "/health",
+      })
+    );
   }
 
   app.get("/", (_req, res) => {
@@ -54,18 +52,24 @@ export const createApp = (services: AppServices) => {
         "/api/v1/auth",
         "/api/v1/query",
         "/api/v1/conversations",
+        "/api/v1/users",
+        "/api/v1/blogs",
+        "/api/v1/comments",
       ],
     });
   });
 
   app.use(createHealthRouter(services));
   app.use("/api/v1/auth", createAuthRouter(services));
-  app.use(
-    "/api/v1/conversations",
-    createConversationRouter(services),
-  );
+  app.use("/api/v1/users", createUserRouter(services));
+  app.use("/api/v1/users", createUserBookmarkRouter(services));
+  app.use("/api/v1/blogs", createBlogRouter(services));
+  app.use("/api/v1/blogs", createBlogBookmarkRouter(services));
+  app.use("/api/v1/comments", createCommentRouter(services));
+  app.use("/api/v1/conversations", createConversationRouter(services));
   app.use("/api/v1", createQueryRouter(services));
   app.use(notFoundHandler);
   app.use(errorHandler);
+
   return app;
 };

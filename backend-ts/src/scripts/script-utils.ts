@@ -7,4 +7,4 @@ export const printSummary = (
 ): void => {
   console.log(`${label}: ${JSON.stringify(summary)}`);
 };
-
+

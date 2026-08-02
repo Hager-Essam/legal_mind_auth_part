@@ -13,7 +13,7 @@ endpoint-specific. Except for limiter responses, failures use:
 }
 ```
 
-Malformed JSON, Zod/Mongoose/Multer validation, duplicate keys, typed HTTP
+Malformed JSON, Zod/Mongoose validation, duplicate keys, typed HTTP
 errors, missing routes, and unknown errors are normalized. Authentication uses
 `Authorization: Bearer <access-token>`.
 

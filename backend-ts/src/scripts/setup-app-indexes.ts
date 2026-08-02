@@ -1,20 +1,34 @@
 import { ConversationModel } from "../modules/conversations/conversation.model";
 import { MessageModel } from "../modules/conversations/message.model";
-import { RefreshTokenModel } from "../modules/auth/refresh-token.model";
-import { UserModel } from "../modules/auth/user.model";
+import { RefreshTokenModel } from "../modules/auth/refresh-tokens/refresh-token.model";
+import { UserModel } from "../modules/auth/users/user.model";
 import { MongoService } from "../infrastructure/mongo/mongo.service";
 import { isDryRun, printSummary } from "./script-utils";
+import { BookmarkModel } from "../modules/bookmarks/bookmark.model";
+import { BlogModel } from "../modules/blogs/blog.model";
+import { CommentModel } from "../modules/comments/comment.model";
 
-const models = [UserModel, RefreshTokenModel, ConversationModel, MessageModel];
+const models = [
+  UserModel,
+  RefreshTokenModel,
+  ConversationModel,
+  MessageModel,
+  BookmarkModel,
+  BlogModel,
+  CommentModel,
+];
 
 const run = async (): Promise<void> => {
   const dryRun = isDryRun();
   const mongo = new MongoService();
   await mongo.connect();
+
   try {
     let createdOrExisting = 0;
+
     for (const model of models) {
       const declared = model.schema.indexes();
+
       if (!dryRun) await model.createIndexes();
       createdOrExisting += declared.length;
       console.log(
@@ -37,4 +51,3 @@ run().catch((error) => {
   );
   process.exitCode = 1;
 });
-

@@ -4,6 +4,7 @@ import type { LegalChunks } from "./chunk.schema";
 // Maps a raw DB document into the API-facing LegalChunks shape
 export function toLegalChunk(doc: ChunkDocument, score?: number): LegalChunks {
   const similarity_score = typeof score === "number" ? Number(score.toFixed(6)) : undefined;
+
   return {
     chunk_id: doc.chunk_id ?? String(doc._id ?? ""),
     source_file: doc.source_file ?? undefined,

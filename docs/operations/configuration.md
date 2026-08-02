@@ -7,7 +7,6 @@
 | App | `LEGALMIND_NODE_ENV=development`, `APP_NAME`, `API_HOST=0.0.0.0`, `API_PORT=3000`, comma-separated `CORS_ORIGINS` |
 | Auth | `JWT_SECRET` (required in production, min 32), `JWT_ACCESS_EXPIRES_IN=15m`, `REFRESH_TOKEN_DAYS=7`, `FRONTEND_URL=http://localhost:3000`, `REFRESH_COOKIE_SAME_SITE=lax` |
 | Email | `EMAIL_MODE=console`, `EMAIL_FROM`, `EMAIL_HOST`, `EMAIL_PORT=587`, `EMAIL_SECURE=false`, `EMAIL_USER`, `EMAIL_PASSWORD`; SMTP fields required in smtp mode |
-| Upload | `LAWYER_ID_UPLOAD_DIR=uploads/private/lawyer-ids`, `LAWYER_ID_MAX_MB=5` |
 | Mongo | `APP_URI`, `RAG_URI`, `APP_DB=legalmind_app`, `RAG_DB=legalmind_rag`, server/connect timeout 10000, pool max 10/min 0 |
 | Provider | `LLM_PROVIDER=modelstudio`, `EMBEDDING_PROVIDER=modelstudio`, `DASHSCOPE_BASE_URL`, comma-separated `DASHSCOPE_API_KEYS` |
 | Models | `LLM_MODEL=qwen-plus`, `LLM_MODEL_FALLBACK=qwen-turbo`, `EMBEDDING_MODEL=text-embedding-v4`, `EMBEDDING_DIM=1024` |

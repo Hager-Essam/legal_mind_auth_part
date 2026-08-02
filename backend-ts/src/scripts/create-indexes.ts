@@ -81,6 +81,7 @@ async function createIndexes() {
   // ── Summary ────────────────────────────────────────────────────────────────
   console.log("\n── All indexes in legal_chunks ───────────────────────────");
   const all = await col.indexes();
+
   for (const idx of all) {
     const keys = Object.entries(idx.key as Record<string, unknown>)
       .map(([k, v]) => `${k}:${v}`)

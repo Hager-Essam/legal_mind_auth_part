@@ -3,6 +3,7 @@ import { test } from "node:test";
 import request from "supertest";
 import { createApp } from "../app/create-app";
 import type { AppServices } from "../services/service-container";
+import { HttpError } from "../shared/http/http-error";
 import {
   endpointContracts,
   normalizeContractPayload,
@@ -25,6 +26,15 @@ const healthyServices = {
   userRepository: {
     findById: async () => null,
   },
+  blogService: {
+    list: async () => ({ blogs: [], pagination: { page: 1, limit: 10, total: 0, pages: 0 } }),
+    popular: async () => ({ blogs: [] }),
+    trending: async () => ({ blogs: [] }),
+    detail: async () => { throw new HttpError(404, "Blog not found.", undefined, "BLOG_NOT_FOUND"); },
+  },
+  commentService: {
+    list: async () => { throw new HttpError(404, "Blog not found.", undefined, "BLOG_NOT_FOUND"); },
+  },
 } as unknown as AppServices;
 
 const invoke = (
@@ -36,6 +46,8 @@ const invoke = (
       return request(app).get(contract.path);
     case "POST":
       return request(app).post(contract.path).send({});
+    case "PUT":
+      return request(app).put(contract.path).send({});
     case "PATCH":
       return request(app).patch(contract.path).send({});
     case "DELETE":
@@ -44,10 +56,10 @@ const invoke = (
 };
 
 test("the explicit contract table inventories every mounted route", () => {
-  assert.equal(endpointContracts.length, 21);
+  assert.equal(endpointContracts.length, 40);
   assert.equal(
     endpointContracts.filter((contract) => contract.frontendBlocking).length,
-    16,
+    34,
   );
   assert.equal(
     new Set(
@@ -61,6 +73,7 @@ test("the explicit contract table inventories every mounted route", () => {
 
 test("every endpoint contract is reachable through the Express application", async () => {
   const app = createApp(healthyServices);
+
   for (const contract of endpointContracts) {
     const response = await invoke(app, contract);
     assert.equal(

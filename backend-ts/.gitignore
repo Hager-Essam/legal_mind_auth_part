@@ -5,3 +5,15 @@ uploads/
 exports/
 reports/
 tmp/
+
+# Test directories
+src/query-tests/
+src/contract-tests/
+src/chat-tests/
+src/auth-tests/
+src/security-tests/
+src/blog-tests/
+
+# Scripts
+src/scripts/
+

@@ -16,9 +16,7 @@ export class RefreshTokenRepository {
     return RefreshTokenModel.create(input);
   }
 
-  async findActiveByTokenHash(
-    tokenHash: string,
-  ): Promise<RefreshTokenDocument | null> {
+  async findActiveByTokenHash(tokenHash: string): Promise<RefreshTokenDocument | null> {
     return RefreshTokenModel.findOne({
       tokenHash,
       revokedAt: null,
@@ -27,16 +25,14 @@ export class RefreshTokenRepository {
     });
   }
 
-  async findByTokenHash(
-    tokenHash: string,
-  ): Promise<RefreshTokenDocument | null> {
+  async findByTokenHash(tokenHash: string): Promise<RefreshTokenDocument | null> {
     return RefreshTokenModel.findOne({ tokenHash });
   }
 
   async rotateToken(
     currentTokenHash: string,
     replacement: CreateRefreshTokenInput,
-    revokedByIp?: string,
+    revokedByIp?: string
   ): Promise<RefreshTokenDocument | null> {
     const revoked = await RefreshTokenModel.findOneAndUpdate(
       {
@@ -52,30 +48,26 @@ export class RefreshTokenRepository {
           replacedByTokenHash: replacement.tokenHash,
         },
       },
-      { returnDocument: "after" },
+      { returnDocument: "after" }
     );
+
     if (!revoked) return null;
+
     return this.create(replacement);
   }
 
-  async revokeToken(
-    tokenHash: string,
-    revokedByIp?: string,
-  ): Promise<RefreshTokenDocument | null> {
+  async revokeToken(tokenHash: string, revokedByIp?: string): Promise<RefreshTokenDocument | null> {
     return RefreshTokenModel.findOneAndUpdate(
       { tokenHash, revokedAt: null },
       { $set: { revokedAt: new Date(), revokedByIp } },
-      { returnDocument: "after" },
+      { returnDocument: "after" }
     );
   }
 
-  async revokeAllUserTokens(
-    userId: Types.ObjectId | string,
-    revokedByIp?: string,
-  ) {
+  async revokeAllUserTokens(userId: Types.ObjectId | string, revokedByIp?: string) {
     return RefreshTokenModel.updateMany(
       { userId, revokedAt: null },
-      { $set: { revokedAt: new Date(), revokedByIp } },
+      { $set: { revokedAt: new Date(), revokedByIp } }
     );
   }
 }

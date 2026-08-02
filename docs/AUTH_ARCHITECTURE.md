@@ -27,7 +27,7 @@
 - [6. Security & Infrastructure Protection](#6-security--infrastructure-protection)
   - [6.1 Password Hashing](#61-password-hashing)
   - [6.2 Refresh Token Hashing](#62-refresh-token-hashing)
-  - [6.3 Private Lawyer Credential Uploads](#63-private-lawyer-credential-uploads)
+  - [6.3 Registration Credentials](#63-registration-credentials)
   - [6.4 CORS & Cookie Credentials](#64-cors--cookie-credentials)
   - [6.5 Rate Limiting](#65-rate-limiting)
 - [7. Related Documentation](#7-related-documentation)
@@ -105,7 +105,6 @@ res.cookie("refreshToken", token, {
 ### 4.1 Registration & Role Assignment
 * Endpoint: `POST /api/v1/auth/register`
 * Input: `name`, `email`, `password`, `role` (`citizen` or `lawyer`)
-* If role is `lawyer`, `uploadMiddleware` handles optional syndicate card upload.
 * Creates `User` record with `isEmailVerified: false` and sends verification email.
 
 ### 4.2 Email Verification
@@ -169,10 +168,8 @@ Passwords are hashed using **Bcrypt** with a salt round factor of **12** (`bcryp
 ### 6.2 Refresh Token Hashing
 Refresh tokens are never stored in raw text. `AuthService.hashToken(token)` computes a SHA-256 digest (`crypto.createHash('sha256')`) before querying or inserting into `refresh_tokens`.
 
-### 6.3 Private Lawyer Credential Uploads
-Lawyer syndicate ID cards are uploaded via `upload.middleware.ts` (`Multer`).
-* Storage path: `uploads/private/lawyer-ids/` (configured via `LEGALMIND_LAWYER_ID_UPLOAD_DIR`).
-* Security: Files are stored outside public static directories; served only to admins via authenticated download routes.
+### 6.3 Registration Credentials
+Registration accepts profile data as strict JSON and does not collect lawyer-ID documents.
 
 ### 6.4 CORS & Cookie Credentials
 CORS configuration in `src/app/create-app.ts` requires:

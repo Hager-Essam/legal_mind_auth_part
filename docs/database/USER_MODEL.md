@@ -25,7 +25,7 @@ The `User` model defines the database schema for application accounts, storing a
 | `phone` | `String` | No | `undefined` | Contact telephone number. |
 | `role` | `String` | Yes | `'pending_lawyer'` | Enum (`'citizen'`, `'pending_lawyer'`, `'lawyer'`, `'admin'`). |
 | `barAssociationNumber` | `String` | No | `undefined` | Bar association card number. |
-| `lawyerIdDocument` | `String` | No | `undefined` | Private upload filepath to lawyer card document. |
+| `lawyerIdDocument` | `String` | No | `undefined` | Legacy hidden filepath retained only for existing records; signup no longer writes it. |
 | `isActive` | `Boolean` | Yes | `true` | Account active status. |
 | `isEmailVerified` | `Boolean` | Yes | `false` | Email verification flag. |
 | `emailVerificationTokenHash` | `String` | No | `undefined` | SHA-256 digest of email verification token. |

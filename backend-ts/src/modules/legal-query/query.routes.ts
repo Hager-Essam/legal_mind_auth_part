@@ -2,7 +2,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { createQueryController } from "./query.controller";
 import type { AuthService } from "../auth/auth.service";
-import type { UserRepository } from "../auth/user.repository";
+import type { UserRepository } from "../auth/users/user.repository";
 import type { QueryService } from "./query.service";
 import { authenticate } from "../auth/auth.middleware";
 
@@ -11,7 +11,10 @@ const queryLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "TooManyRequests", message: "Please wait before sending more queries. Rate limit: 20 requests per minute." },
+  message: {
+    error: "TooManyRequests",
+    message: "Please wait before sending more queries. Rate limit: 20 requests per minute.",
+  },
 });
 
 export type QueryDependencies = {
@@ -26,7 +29,8 @@ export const createQueryRouter = (services: QueryDependencies) => {
     "/query",
     authenticate(services.authService, services.userRepository),
     queryLimiter,
-    createQueryController(services.queryService),
+    createQueryController(services.queryService)
   );
+
   return router;
 };

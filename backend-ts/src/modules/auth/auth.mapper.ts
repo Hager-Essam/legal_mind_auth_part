@@ -1,4 +1,4 @@
-import type { UserDocument } from "./user.types";
+import type { UserDocument } from "./users/user.types";
 
 export const toPublicUser = (user: UserDocument) => ({
   id: user._id.toString(),
@@ -8,6 +8,7 @@ export const toPublicUser = (user: UserDocument) => ({
   officeName: user.officeName,
   teamSize: user.teamSize,
   phone: user.phone,
+  avatarUrl: user.avatarUrl ?? null,
   barAssociationNumber: user.barAssociationNumber,
   isActive: user.isActive,
   isEmailVerified: user.isEmailVerified,
@@ -15,4 +16,3 @@ export const toPublicUser = (user: UserDocument) => ({
   createdAt: user.createdAt,
   updatedAt: user.updatedAt,
 });
-

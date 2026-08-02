@@ -1,14 +1,7 @@
-import {
-  ARABIC_TO_WESTERN_DIGITS,
-  TASHKEEL_RE,
-  TATWEEL_RE,
-} from "./arabic.patterns";
+import { ARABIC_TO_WESTERN_DIGITS, TASHKEEL_RE, TATWEEL_RE } from "./arabic.patterns";
 
 const normalizeDigits = (text: string): string =>
-  text.replace(
-    /[٠-٩]/g,
-    (digit) => ARABIC_TO_WESTERN_DIGITS[digit] ?? digit,
-  );
+  text.replace(/[٠-٩]/g, (digit) => ARABIC_TO_WESTERN_DIGITS[digit] ?? digit);
 
 const normalizeShared = (text: string): string =>
   normalizeDigits(text)
@@ -22,8 +15,6 @@ const normalizeShared = (text: string): string =>
     .replace(/\s+/g, " ")
     .trim();
 
-export const normalizeArabicQuery = (text: string): string =>
-  normalizeShared(text).replace(/ة/g, "ه");
+export const normalizeArabicQuery = (text: string): string => normalizeShared(text).replace(/ة/g, "ه");
 
-export const normalizeLawName = (text: string): string =>
-  normalizeShared(text);
+export const normalizeLawName = (text: string): string => normalizeShared(text);

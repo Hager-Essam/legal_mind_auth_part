@@ -13,7 +13,7 @@ This document is generated from createApp and the route declarations it mounts. 
 | GET | / | Public | 200 |
 | GET | /health | Public | 200, 503 |
 | GET | /ready | Public | 200, 503 |
-| POST | /api/v1/auth/register | Public; multipart | 201, 400, 409, 429, 503 |
+| POST | /api/v1/auth/register | Public; JSON | 201, 400, 409, 429, 503 |
 | POST | /api/v1/auth/verify-email | Public | 200, 400 |
 | POST | /api/v1/auth/resend-verification | Public | 200, 400, 429, 503 |
 | POST | /api/v1/auth/login | Public | 200, 400, 401, 403, 429 |
@@ -48,7 +48,7 @@ Normalized failure body fields:
 | details | object or array | no |
 | request_id | string | yes |
 
-Known shared error codes include INVALID_JSON, VALIDATION_ERROR, UPLOAD_VALIDATION_ERROR, RESOURCE_ALREADY_EXISTS, DATABASE_VALIDATION_ERROR, INVALID_IDENTIFIER, ROUTE_NOT_FOUND, CORS_ORIGIN_DENIED, INTERNAL_SERVER_ERROR, AUTH_REQUIRED, AUTH_INVALID_TOKEN, AUTH_TOKEN_EXPIRED, AUTH_INVALID_CREDENTIALS, AUTH_EMAIL_NOT_VERIFIED, AUTH_ACCOUNT_DISABLED, AUTH_REFRESH_TOKEN_INVALID, AUTH_REFRESH_TOKEN_REUSED, AUTH_INSUFFICIENT_ROLE, AUTH_EMAIL_ALREADY_EXISTS, AUTH_RESET_TOKEN_INVALID, CONVERSATION_NOT_FOUND, IDEMPOTENCY_KEY_CONFLICT, and CHAT_GENERATION_FAILED. Rate-limit bodies retain their existing endpoint-specific error and message fields and do not guarantee request_id.
+Known shared error codes include INVALID_JSON, VALIDATION_ERROR, RESOURCE_ALREADY_EXISTS, DATABASE_VALIDATION_ERROR, INVALID_IDENTIFIER, ROUTE_NOT_FOUND, CORS_ORIGIN_DENIED, INTERNAL_SERVER_ERROR, AUTH_REQUIRED, AUTH_INVALID_TOKEN, AUTH_TOKEN_EXPIRED, AUTH_INVALID_CREDENTIALS, AUTH_EMAIL_NOT_VERIFIED, AUTH_ACCOUNT_DISABLED, AUTH_REFRESH_TOKEN_INVALID, AUTH_REFRESH_TOKEN_REUSED, AUTH_INSUFFICIENT_ROLE, AUTH_EMAIL_ALREADY_EXISTS, AUTH_RESET_TOKEN_INVALID, CONVERSATION_NOT_FOUND, IDEMPOTENCY_KEY_CONFLICT, and CHAT_GENERATION_FAILED. Rate-limit bodies retain their existing endpoint-specific error and message fields and do not guarantee request_id.
 
 ## System response schemas
 
@@ -60,7 +60,7 @@ GET /ready returns status:"ok"|"degraded" and checks with applicationDatabase:bo
 
 ## Authentication request schemas
 
-POST /register is multipart/form-data. Do not manually set Content-Type.
+POST /register accepts a strict JSON body.
 
 | Field | Type | Required | Constraints |
 |---|---|---:|---|
@@ -71,7 +71,6 @@ POST /register is multipart/form-data. Do not manually set Content-Type.
 | teamSize | string | yes | solo, small, medium, or large |
 | phone | string | no | blank becomes absent, max 30 |
 | barAssociationNumber | string | no | blank becomes absent, max 100 |
-| lawyerIdDocument | file | yes | one PDF/JPG/JPEG/PNG accepted by upload policy |
 
 Other authentication JSON bodies are strict:
 

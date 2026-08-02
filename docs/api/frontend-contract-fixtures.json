@@ -44,14 +44,11 @@
     },
     "POST /api/v1/auth/register": {
       "request": {
-        "multipart": {
           "fullName": "Contract Lawyer",
           "email": "contract@example.test",
           "password": "ContractPass123",
           "officeName": "Contract Office",
-          "teamSize": "solo",
-          "lawyerIdDocument": "<fixture.png>"
-        }
+          "teamSize": "solo"
       },
       "status": 201,
       "body": {

@@ -65,6 +65,7 @@ const desired = [
 
 const canonicalize = (value: unknown): unknown => {
   if (Array.isArray(value)) return value.map(canonicalize);
+
   if (value && typeof value === "object") {
     return Object.fromEntries(
       Object.entries(value as Record<string, unknown>)
@@ -72,6 +73,7 @@ const canonicalize = (value: unknown): unknown => {
         .map(([key, child]) => [key, canonicalize(child)]),
     );
   }
+
   return value;
 };
 
@@ -83,6 +85,7 @@ const run = async (): Promise<void> => {
   const dryRun = isDryRun();
   const mongo = new MongoService();
   await mongo.connect();
+
   try {
     const existing = await ragConnection.db!
       .collection("legal_chunks")
@@ -93,8 +96,10 @@ const run = async (): Promise<void> => {
     let updated = 0;
     let ready = 0;
     let pending = 0;
+
     for (const index of desired) {
       const current = existing.find((candidate) => candidate.name === index.name);
+
       if (current) {
         if (current.type && current.type !== index.type) {
           throw new Error(
@@ -103,6 +108,7 @@ const run = async (): Promise<void> => {
         }
         const actualDefinition =
           current.latestDefinition ?? current.definition;
+
         if (
           actualDefinition &&
           !definitionsMatch(actualDefinition, index.definition)
@@ -122,10 +128,12 @@ const run = async (): Promise<void> => {
           console.log(`existing search index: ${index.name}`);
           alreadyExists += 1;
         }
+
         if (current.queryable === true || current.status === "READY") ready += 1;
         else pending += 1;
         continue;
       }
+
       if (!dryRun) {
         await ragConnection.db!.command({
           createSearchIndexes: "legal_chunks",

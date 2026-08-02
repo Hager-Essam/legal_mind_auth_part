@@ -13,6 +13,7 @@ const toEmbeddingText = (text: string): string => {
   if (text.length <= MAX_EMBEDDING_CHARACTERS) return text;
   const remaining = MAX_EMBEDDING_CHARACTERS - EMBEDDING_OMISSION_MARKER.length;
   const headLength = Math.ceil(remaining / 2);
+
   return text.slice(0, headLength) + EMBEDDING_OMISSION_MARKER + text.slice(-(remaining - headLength));
 };
 type Chunk = { _id: unknown; chunk_id?: string; text?: string };
@@ -21,11 +22,13 @@ const sha256 = (value: string): string => createHash("sha256").update(value).dig
 const run = async (): Promise<void> => {
   const dryRun = isDryRun() || !process.argv.includes("--apply");
   const includeUnpublished = process.argv.includes("--include-unpublished");
+
   if (includeUnpublished && !process.argv.includes("--allow-unverified")) {
     throw new Error("--include-unpublished requires --allow-unverified.");
   }
   const mongo = new MongoService();
   await mongo.connect();
+
   try {
     const chunks = ragConnection.db!.collection("legal_chunks");
     const filter: Record<string, unknown> = {
@@ -44,6 +47,7 @@ const run = async (): Promise<void> => {
     };
     const eligibleCount = await chunks.countDocuments(eligibleFilter);
     const totalCandidates = eligibleCount === 0 ? 0 : await chunks.countDocuments(filter);
+
     if (dryRun) {
       console.log(JSON.stringify({ dryRun, database: ragConnection.db!.databaseName,
         collection: "legal_chunks", totalCandidates,
@@ -58,14 +62,17 @@ const run = async (): Promise<void> => {
     let batch: Chunk[] = [];
     for await (const rawChunk of cursor) {
       batch.push(rawChunk as unknown as Chunk);
+
       if (batch.length >= BATCH_SIZE) { batches.push(batch); batch = []; }
     }
+
     if (batch.length > 0) batches.push(batch);
 
     let nextBatch = 0;
     const processBatch = async (current: Chunk[]): Promise<void> => {
       const sourceTexts = current.map((chunk) => chunk.text?.trim() ?? "");
       const texts = sourceTexts.map(toEmbeddingText);
+
       try {
         const embeddings = await service.embedDocuments(texts);
         await chunks.bulkWrite(current.map((chunk, index) => ({ updateOne: {
@@ -77,6 +84,7 @@ const run = async (): Promise<void> => {
             embeddingSourceCharacterCount: sourceTexts[index]?.length ?? 0 } },
         } })), { ordered: false });
         updated += current.length;
+
         while (updated >= nextProgress) {
           console.log(`reembed progress ${updated}/${totalCandidates}`);
           nextProgress += 100;
@@ -96,6 +104,7 @@ const run = async (): Promise<void> => {
       while (true) {
         const index = nextBatch; nextBatch += 1;
         const current = batches[index];
+
         if (!current) return;
         await processBatch(current);
       }
@@ -103,6 +112,7 @@ const run = async (): Promise<void> => {
     await Promise.all(workers);
     console.log(JSON.stringify({ dryRun, totalCandidates, updated, failed,
       embeddingModel: env.embeddingModel, embeddingDim: env.embeddingDim }, null, 2));
+
     if (failed > 0) process.exitCode = 1;
   } finally { await mongo.close(); }
 };

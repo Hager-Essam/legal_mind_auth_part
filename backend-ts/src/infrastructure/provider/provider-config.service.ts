@@ -20,9 +20,14 @@ export class ProviderConfigService {
 
   getDashScopeApiKey(): string {
     const keys = env.dashscopeApiKeys;
-    if (keys.length === 0) throw new Error("No DashScope API keys configured. Set LEGALMIND_DASHSCOPE_API_KEYS in the environment.");
+
+    if (keys.length === 0)
+      throw new Error(
+        "No DashScope API keys configured. Set LEGALMIND_DASHSCOPE_API_KEYS in the environment."
+      );
     const key = keys[this.keyIndex % keys.length];
     this.keyIndex++;
+
     return key;
   }
 }

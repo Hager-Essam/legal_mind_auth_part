@@ -23,5 +23,5 @@ question-set commit, and environment with any published result. The judge is
 not calibrated and its direct call is not a legal-quality guarantee.
 
 Current coverage gaps include full route/E2E behavior, live Atlas definitions
-and filters, CORS, upload file signatures, SMTP delivery, migration rollback,
+and filters, CORS, SMTP delivery, migration rollback,
 corpus-wide correctness, citation entailment, and contract analysis.

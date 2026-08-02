@@ -5,8 +5,7 @@
 - Express bootstrap, request IDs, exact-origin CORS, JSON/cookie parsing,
   global errors, health/readiness, authentication, standalone query, and
   persistent conversation APIs.
-- Users, refresh-token rotation, email verification/password reset, and private
-  lawyer-ID upload.
+- Users, refresh-token rotation, email verification, and password reset.
 - Three query branches: social chat, direct exact legal reference, and hybrid
   Arabic RAG.
 - Query rewriting, embeddings, Atlas Vector Search, best-effort Atlas Search,

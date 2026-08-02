@@ -1,7 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import type { AuthService } from "../auth/auth.service";
-import type { UserRepository } from "../auth/user.repository";
+import type { UserRepository } from "../auth/users/user.repository";
 import { authenticate } from "../auth/auth.middleware";
 import {
   createConversationController,
@@ -26,23 +26,16 @@ export type ConversationDependencies = ConversationControllerDependencies & {
 
 export const createConversationRouter = (services: ConversationDependencies) => {
   const router = Router();
-  const requireAuth = authenticate(
-    services.authService,
-    services.userRepository,
-  );
+  const requireAuth = authenticate(services.authService, services.userRepository);
   const controller = createConversationController(services);
   router.use(requireAuth);
   router.post("/", controller.create);
   router.get("/", controller.list);
   router.get("/:conversationId", controller.get);
   router.get("/:conversationId/messages", controller.messages);
-  router.post(
-    "/:conversationId/messages",
-    messageLimiter,
-    controller.sendMessage,
-  );
+  router.post("/:conversationId/messages", messageLimiter, controller.sendMessage);
   router.patch("/:conversationId", controller.update);
   router.delete("/:conversationId", controller.remove);
+
   return router;
 };
-

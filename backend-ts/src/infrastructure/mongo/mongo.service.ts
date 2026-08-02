@@ -23,12 +23,9 @@ const connectionOptions = (dbName: string): ConnectOptions => ({
   minPoolSize: env.mongoMinPoolSize,
 });
 
-const openConnection = async (
-  connection: Connection,
-  uri: string,
-  dbName: string,
-): Promise<void> => {
+const openConnection = async (connection: Connection, uri: string, dbName: string): Promise<void> => {
   if (connection.readyState === 1) return;
+
   if (connection.readyState === 2) {
     await connection.asPromise();
     return;
@@ -36,15 +33,14 @@ const openConnection = async (
   await connection.openUri(uri, connectionOptions(dbName));
 };
 
-const connectionHealth = async (
-  connection: Connection,
-  database: string,
-): Promise<MongoConnectionHealth> => {
+const connectionHealth = async (connection: Connection, database: string): Promise<MongoConnectionHealth> => {
   if (connection.readyState !== 1 || !connection.db) {
     return { connected: false, pingOk: false, database };
   }
+
   try {
     await connection.db.command({ ping: 1 });
+
     return { connected: true, pingOk: true, database };
   } catch {
     return { connected: true, pingOk: false, database };
@@ -60,6 +56,7 @@ export class MongoService {
       ]);
     } catch (error) {
       await this.close();
+
       throw error;
     }
   }
@@ -69,6 +66,7 @@ export class MongoService {
       connectionHealth(appConnection, env.appMongoDb),
       connectionHealth(ragConnection, env.ragMongoDb),
     ]);
+
     return { app, rag };
   }
 
@@ -76,7 +74,7 @@ export class MongoService {
     await Promise.all(
       [appConnection, ragConnection].map(async (connection) => {
         if (connection.readyState !== 0) await connection.close();
-      }),
+      })
     );
   }
 }

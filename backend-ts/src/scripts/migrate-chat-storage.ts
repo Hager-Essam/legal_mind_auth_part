@@ -5,6 +5,7 @@ const run = async (): Promise<void> => {
   const dryRun = isDryRun();
   const mongo = new MongoService();
   await mongo.connect();
+
   try {
     const conversations = appConnection.db!.collection("conversations");
     const messages = appConnection.db!.collection("messages");
@@ -20,6 +21,7 @@ const run = async (): Promise<void> => {
     const conversationCount =
       await conversations.countDocuments(conversationFilter);
     const messageCount = await messages.countDocuments(messageFilter);
+
     if (!dryRun) {
       await conversations.updateMany(conversationFilter, [
         {
