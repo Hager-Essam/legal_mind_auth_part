@@ -46,7 +46,6 @@ export type Conversation = {
   title: string;
   status: ConversationStatus;
   jurisdiction: "EG";
-  defaultUserRole: "lawyer" | "citizen";
   summary: string;
   summaryVersion: number;
   activeLegalContext: ActiveLegalContext;

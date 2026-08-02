@@ -63,7 +63,7 @@ export const createServices = (): AppServices => {
   const generationService = new GenerationService(providerConfigService);
   const classifierService = new ClassifierService();
   const legalRefService = new LegalRefService();
-  const queryRewriteService = new QueryRewriteService(providerConfigService);
+  const queryRewriteService = new QueryRewriteService();
   const queryService = new QueryService(
     providerConfigService,
     classifierService,

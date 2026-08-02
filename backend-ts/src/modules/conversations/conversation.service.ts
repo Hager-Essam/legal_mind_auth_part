@@ -29,7 +29,7 @@ export class ConversationService {
     };
   }
 
-  async create(owner: ConversationOwner, input: { title?: string; user_role?: "lawyer" | "citizen" }) {
+  async create(owner: ConversationOwner, input: { title?: string }) {
     return ConversationModel.create({
       conversationId: crypto.randomUUID(),
       ownerUserId: owner.id,
@@ -37,7 +37,6 @@ export class ConversationService {
       title: input.title ?? "New legal conversation",
       status: "active",
       jurisdiction: "EG",
-      defaultUserRole: input.user_role ?? "citizen",
       summary: "",
       summaryVersion: 0,
       activeLegalContext: {

@@ -3,7 +3,6 @@ import { z } from "zod";
 export const createConversationSchema = z
   .object({
     title: z.string().trim().min(1).max(160).optional(),
-    user_role: z.enum(["lawyer", "citizen"]).optional(),
   })
   .strict();
 
@@ -27,7 +26,6 @@ export const sendMessageSchema = z
     content: z.string().trim().min(1).max(2_000),
     idempotency_key: z.string().uuid(),
     top_k: z.number().int().min(1).max(50).default(5),
-    user_role: z.enum(["lawyer", "citizen"]).optional(),
   })
   .strict();
 

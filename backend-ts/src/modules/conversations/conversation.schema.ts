@@ -43,12 +43,6 @@ export const conversationSchema = new Schema<Conversation>(
       required: true,
       immutable: true,
     },
-    defaultUserRole: {
-      type: String,
-      enum: ["lawyer", "citizen"],
-      default: "citizen",
-      required: true,
-    },
     summary: { type: String, default: "" },
     summaryVersion: { type: Number, default: 0 },
     activeLegalContext: {

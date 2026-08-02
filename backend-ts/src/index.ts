@@ -20,7 +20,7 @@ const bootstrap = async () => {
         llm_model: env.llmModel,
         embedding_model: env.embeddingModel,
         hybrid_search: env.enableHybridSearch,
-        query_rewrite: env.enableQueryRewrite,
+        lawyer_query_authority_hints: env.enableAuthorityHints,
         llm_rerank: env.enableLlmRerank,
         rerank_model: env.llmRerankModel,
       })}`

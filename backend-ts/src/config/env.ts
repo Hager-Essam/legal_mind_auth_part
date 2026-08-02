@@ -106,16 +106,6 @@ const envSchema = z
     LEGALMIND_LLM_RERANK_MODEL: z.string().default("qwen3-rerank"),
 
     // ── Query Rewriting ──────────────────────────────────────────
-    LEGALMIND_ENABLE_QUERY_REWRITE: z
-      .union([z.string(), z.boolean()])
-      .transform((v) => v === true || v === "true")
-      .default(true),
-    LEGALMIND_ENABLE_LLM_REWRITE: z
-      .union([z.string(), z.boolean()])
-      .transform((v) => v === true || v === "true")
-      .default(true),
-    LEGALMIND_LLM_REWRITE_MODEL: z.string().default("qwen-turbo"),
-    LEGALMIND_DEFAULT_USER_ROLE: z.enum(["lawyer", "citizen"]).default("citizen"),
     LEGALMIND_ENABLE_AUTHORITY_HINTS: z
       .union([z.string(), z.boolean()])
       .transform((value) => value === true || value === "true")
@@ -227,10 +217,6 @@ export const env = {
   rrfK: parsed.LEGALMIND_RRF_K,
 
   // Query Rewriting
-  enableQueryRewrite: parsed.LEGALMIND_ENABLE_QUERY_REWRITE,
-  enableLlmRewrite: parsed.LEGALMIND_ENABLE_LLM_REWRITE,
-  llmRewriteModel: parsed.LEGALMIND_LLM_REWRITE_MODEL,
-  defaultUserRole: parsed.LEGALMIND_DEFAULT_USER_ROLE,
   enableAuthorityHints: parsed.LEGALMIND_ENABLE_AUTHORITY_HINTS,
 } as const;
 

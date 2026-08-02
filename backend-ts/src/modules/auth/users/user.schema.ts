@@ -41,7 +41,7 @@ export const userSchema = new Schema<UserDocument>(
     role: {
       type: String,
       enum: USER_ROLES,
-      default: "pending_lawyer",
+      default: "lawyer",
       required: true,
     },
     barAssociationNumber: { type: String, trim: true },

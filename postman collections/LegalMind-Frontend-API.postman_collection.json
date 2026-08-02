@@ -413,10 +413,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"query\": \"ما هي حقوق العامل عند إنهاء عقد العمل في مصر؟\",\n  \"top_k\": 5,\n  \"law_category\": \"labor\",\n  \"user_role\": \"citizen\"\n}"
+              "raw": "{\n  \"query\": \"ما هي حقوق العامل عند إنهاء عقد العمل في مصر؟\",\n  \"top_k\": 5,\n  \"law_category\": \"labor\"\n}"
             },
             "url": "{{base_url}}/api/v1/query",
-            "description": "Bearer auth. Stateless RAG query; it is not stored in a conversation. query: 3–2000 chars, top_k: 1–50, law_category and user_role are optional."
+            "description": "Bearer auth. Stateless RAG query; it is not stored in a conversation. query: 3–2000 chars, top_k: 1–50 and law_category is optional."
           }
         }
       ]
@@ -454,7 +454,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Employment rights consultation\",\n  \"user_role\": \"citizen\"\n}"
+              "raw": "{\n  \"title\": \"Employment rights consultation\"\n}"
             },
             "url": "{{base_url}}/api/v1/conversations",
             "description": "Creates a conversation (201) and saves its ID. Both fields are optional; title is 1–160 characters."
@@ -496,7 +496,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"ما هي مدة فترة الإخطار قبل إنهاء عقد العمل؟\",\n  \"idempotency_key\": \"{{$guid}}\",\n  \"top_k\": 5,\n  \"user_role\": \"citizen\"\n}"
+              "raw": "{\n  \"content\": \"ما هي مدة فترة الإخطار قبل إنهاء عقد العمل؟\",\n  \"idempotency_key\": \"{{$guid}}\",\n  \"top_k\": 5\n}"
             },
             "url": "{{base_url}}/api/v1/conversations/{{conversation_id}}/messages",
             "description": "Creates a saved user/assistant message pair (201). idempotency_key must be a UUID. Reuse it only to retry exactly the same message; rate limited to 20/minute."

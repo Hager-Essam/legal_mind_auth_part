@@ -6,10 +6,6 @@ import {
   expandRetrievalQuery,
   type ResolvedAuthorityHint,
 } from "../legal-corpus/law-mapping";
-import { ProviderConfigService } from "../../infrastructure/provider/provider-config.service";
-import { requestProviderText } from "../../infrastructure/provider/provider-http.service";
-
-const LLM_REWRITE_TIMEOUT_MS = 8_000;
 const AUTHORITY_TITLE_CACHE_MS = 5 * 60_000;
 
 type AuthorityTitleLoader = (authorityIds: string[]) => Promise<Map<string, string>>;
@@ -37,18 +33,11 @@ const loadOfficialAuthorityTitles: AuthorityTitleLoader = async (authorityIds) =
   return titles;
 };
 
-const REWRITE_SYSTEM_PROMPT = `Rewrite the user's Egyptian legal question for retrieval.
-Preserve every explicit law, article, case number, date, fact, and qualification.
-Do not invent or infer a law number, article number, authority, penalty, or case number.
-Use legal concepts as search hints, not as authority decisions.
-Return only the rewritten question.`;
-
 export class QueryRewriteService {
   private authorityTitleCache = new Map<string, string>();
   private authorityTitleCacheExpiresAt = 0;
 
   constructor(
-    private readonly providerConfigService: ProviderConfigService,
     private readonly authorityTitleLoader: AuthorityTitleLoader = loadOfficialAuthorityTitles
   ) {}
 
@@ -104,66 +93,9 @@ export class QueryRewriteService {
     };
   }
 
-  async rewrite(query: string, userRole?: "lawyer" | "citizen"): Promise<RewriteResult> {
-    const role = userRole ?? env.defaultUserRole;
-
-    if (role === "lawyer" || !env.enableQueryRewrite || !env.enableLlmRewrite) {
-      return this.buildResult(query, query, false);
-    }
-
-    try {
-      const rewritten = await this.rewriteWithLlm(query);
-
-      if (!rewritten.trim() || rewritten.length > 2_000) {
-        return this.buildResult(query, query, false);
-      }
-
-      return this.buildResult(query, rewritten, true);
-    } catch (error) {
-      console.error(
-        `[QueryRewriteService] Rewrite failed (${error instanceof Error ? error.name : "unknown"}); using the original query.`
-      );
-
-      return this.buildResult(query, query, false);
-    }
-  }
-
-  private async rewriteWithLlm(query: string): Promise<string> {
-    const apiKey = this.providerConfigService.getDashScopeApiKey();
-    const text = await requestProviderText(
-      `${env.dashscopeCompatUrl}/chat/completions`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: env.llmRewriteModel,
-          messages: [
-            { role: "system", content: REWRITE_SYSTEM_PROMPT },
-            { role: "user", content: query },
-          ],
-          temperature: 0,
-          max_tokens: 256,
-        }),
-      },
-      {
-        timeoutMs: LLM_REWRITE_TIMEOUT_MS,
-        totalRetryBudgetMs: 12_000,
-        maxAttempts: 2,
-      }
-    );
-    let payload: {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-
-    try {
-      payload = JSON.parse(text) as typeof payload;
-    } catch {
-      throw new Error("Rewrite provider returned invalid JSON.");
-    }
-
-    return payload.choices?.[0]?.message?.content?.trim() || query;
+  async rewrite(query: string): Promise<RewriteResult> {
+    // LegalMind serves lawyers only. Preserve their legal wording and apply
+    // deterministic authority expansion without audience-specific rewriting.
+    return this.buildResult(query, query, false);
   }
 }

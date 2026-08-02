@@ -2,7 +2,6 @@ export type PublicUser = {
   id: string;
   fullName: string;
   email: string;
-  role: "user" | "pending_lawyer" | "lawyer" | "admin";
   officeName?: string;
   isEmailVerified: boolean;
 };

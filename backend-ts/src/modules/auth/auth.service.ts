@@ -81,7 +81,7 @@ export class AuthService {
     try {
       user = await this.users.create({
         ...input,
-        role: "pending_lawyer",
+        role: "lawyer",
         organizationId: null,
         isActive: true,
         isEmailVerified: false,

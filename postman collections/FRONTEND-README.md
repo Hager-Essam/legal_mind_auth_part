@@ -216,7 +216,6 @@ type PublicUser = {
   id: string;
   fullName: string;
   email: string;
-  role: "lawyer";
   officeName: string;
   teamSize: "solo" | "small" | "medium" | "large";
   phone?: string;
@@ -231,7 +230,8 @@ type PublicUser = {
 ```
 
 The UI may keep the mappings `fullName -> name`, `officeName -> firmName`, and
-`barAssociationNumber -> barId`. Remove API assumptions for `_id`, `avatar`,
+`barAssociationNumber -> barId`. All frontend accounts are lawyers, so no public
+user-role field is returned. Remove API assumptions for `_id`, `avatar`,
 `lawyerIdDocument`, `firstName`, `lastName`, `displayName`, and `lastLogin`.
 `practiceAreas` is currently local UI state and is not persisted by this backend.
 
@@ -328,9 +328,12 @@ Use `POST /api/v1/query` only for stateless questions. Its JSON fields are:
   query: string;          // 3-2000 characters
   top_k?: number;         // 1-50, default 5
   law_category?: string;
-  user_role?: "lawyer" | "citizen";
 }
 ```
+
+LegalMind is lawyer-only. Send only the fields shown above; the strict API
+rejects unknown fields. Conversation creation and message requests likewise
+have no audience-selection field.
 
 For saved chat, create/list conversations and send messages through the
 conversation endpoints. Every sent message needs a new UUID `idempotency_key`.

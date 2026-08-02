@@ -13,7 +13,6 @@ export type SendConversationMessageInput = {
   content: string;
   idempotency_key: string;
   top_k: number;
-  user_role?: "lawyer" | "citizen";
 };
 
 export class ChatOrchestratorService {
@@ -169,7 +168,6 @@ export class ChatOrchestratorService {
       const result = await this.queryService.runQuery({
         query: rewrite.standaloneQuery,
         top_k: input.top_k,
-        user_role: input.user_role ?? conversation.defaultUserRole,
       });
       const sourceSnapshot = this.snapshots.create(result.source_chunks);
       const assistant = await MessageModel.findOneAndUpdate(

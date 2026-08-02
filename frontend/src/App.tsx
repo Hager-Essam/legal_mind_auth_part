@@ -431,7 +431,7 @@ function Workspace({
   const createConversation = async () => {
     const conversation = await apiFetch<Conversation>("/conversations", {
       method: "POST",
-      body: JSON.stringify({ title: "بحث قانوني جديد", user_role: "lawyer" }),
+      body: JSON.stringify({ title: "بحث قانوني جديد" }),
     });
     setConversations((current) => [conversation, ...current]);
     setSelectedId(conversation.conversation_id);
@@ -480,7 +480,6 @@ function Workspace({
             content,
             idempotency_key: idempotencyKey,
             top_k: 5,
-            user_role: "lawyer",
           }),
         },
       );
@@ -563,7 +562,7 @@ function Workspace({
         {conversationCursor ? <button className="load-more" onClick={() => void loadConversations(conversationCursor)}>عرض المزيد</button> : null}
         <div className="sidebar-user">
           <div className="user-monogram">{user.fullName.slice(0, 1)}</div>
-          <span><strong>{user.fullName}</strong><small>{user.role === "pending_lawyer" ? "بانتظار اعتماد المحامي" : user.email}</small></span>
+          <span><strong>{user.fullName}</strong><small>{user.email}</small></span>
           <button className="icon-button" onClick={onLogout} aria-label="تسجيل الخروج"><LogOut size={17} /></button>
         </div>
       </aside>

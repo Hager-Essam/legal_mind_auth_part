@@ -1,6 +1,8 @@
 import type { Document } from "mongoose";
 
-export const USER_ROLES = ["user", "pending_lawyer", "lawyer", "admin"] as const;
+// Every normal product account is a lawyer. Admin remains an internal
+// authorization role for protected moderation operations.
+export const USER_ROLES = ["lawyer", "admin"] as const;
 
 export type UserRole = (typeof USER_ROLES)[number];
 

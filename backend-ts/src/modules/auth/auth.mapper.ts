@@ -4,7 +4,6 @@ export const toPublicUser = (user: UserDocument) => ({
   id: user._id.toString(),
   fullName: user.fullName,
   email: user.email,
-  role: user.role,
   officeName: user.officeName,
   teamSize: user.teamSize,
   phone: user.phone,

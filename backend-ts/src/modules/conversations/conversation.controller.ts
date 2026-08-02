@@ -27,7 +27,6 @@ const conversationResponse = (conversation: Conversation) => ({
   title: conversation.title,
   status: conversation.status,
   jurisdiction: conversation.jurisdiction,
-  default_user_role: conversation.defaultUserRole,
   summary: conversation.summary,
   summary_version: conversation.summaryVersion,
   active_legal_context: conversation.activeLegalContext,

@@ -143,7 +143,7 @@ export class QueryService {
     originalReference?: ParsedLegalReference
   ): Promise<QueryResponse> {
     const original = originalReference ?? parseLegalReference(request.query);
-    const rewrite = await this.queryRewriteService.rewrite(request.query, request.user_role);
+    const rewrite = await this.queryRewriteService.rewrite(request.query);
     const retrievalReference = parseLegalReference(rewrite.rewrittenQuery);
     const mergedReference = mergeReferences(original, retrievalReference);
     const rewrittenRequest: QueryRequest = {
