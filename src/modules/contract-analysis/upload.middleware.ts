@@ -1,9 +1,9 @@
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
-import { ALLOWED_EXTENSIONS, MAX_FILE_SIZE } from '../modules/contract-analysis/contract-analysis.types';
+import { ALLOWED_EXTENSIONS, MAX_FILE_SIZE } from './contract-analysis.types';
 
-const UPLOADS_DIR = path.join(__dirname, "../../uploads");
+const UPLOADS_DIR = path.join(__dirname, "../../../uploads");
 
 const storage = multer.diskStorage({
   destination: UPLOADS_DIR,

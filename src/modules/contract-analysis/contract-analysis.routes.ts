@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { upload } from '../../middlewares/contract-analysis-upload.middleware';
+import { upload } from './upload.middleware';
 import { authenticate } from '../auth/auth.middleware';
 import * as analyzeController from './contract-analysis.controller';
 
