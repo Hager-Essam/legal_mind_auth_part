@@ -1,0 +1,19 @@
+node_modules/
+dist/
+.env
+uploads/
+exports/
+reports/
+tmp/
+corpus/
+
+# Test directories
+src/query-tests/
+src/contract-tests/
+src/chat-tests/
+src/auth-tests/
+src/blog-tests/
+src/security-tests/
+
+# Scripts
+src/scripts/

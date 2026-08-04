@@ -35,6 +35,10 @@ uploads/*
 # Temporary files
 temp/
 src/temp/
+tmp/
+
+# Docs
+docs/
 
 # Test files
 test-*.js
@@ -42,4 +46,4 @@ view-db.js
 
 # Vercel
 .vercel
-.env*
+
