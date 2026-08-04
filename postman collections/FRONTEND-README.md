@@ -1,9 +1,8 @@
 # LegalMind frontend integration guide
 
 This is the authoritative frontend handoff for the HTTP API currently implemented
-in `backend-ts`. The Postman collection contains all 40 registered endpoints.
-Contract analysis and contract generation are not part of the current backend
-and are listed separately so the frontend does not call routes that do not exist.
+in `backend-ts`. The Postman collection contains all registered endpoints, including
+Contract Analysis and Contract Generation.
 
 ## Import into Postman
 
@@ -340,16 +339,9 @@ conversation endpoints. Every sent message needs a new UUID `idempotency_key`.
 Reuse that UUID only when retrying exactly the same message. Preserve returned
 opaque `next_cursor` values instead of parsing or generating them.
 
-## Frontend calls that must remain disabled or mocked
+## Contract analysis and generation endpoints
 
-The current backend does not expose these routes:
-
-- `/api/analyze/*` contract-analysis routes.
-- `/api/generate/*` contract-generation routes.
-
-Do not change these unsupported calls merely by adding `/api/v1`; they will
-still return 404. Keep them explicitly mocked or disabled until their structured
-backend modules are implemented.
+The backend exposes full contract analysis and generation routes under `/api/v1/analyze/*` and `/api/v1/generate/*`. Both folders are included in the Postman collection.
 
 ## What can remain unchanged
 

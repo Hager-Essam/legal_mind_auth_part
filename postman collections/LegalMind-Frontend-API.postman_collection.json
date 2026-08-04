@@ -796,6 +796,618 @@
           }
         }
       ]
+    },
+    {
+      "name": "Contract Analysis",
+      "item": [
+        {
+          "name": "1. Upload Contract",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('jobId', jsonData.data.jobId);",
+                  "    console.log('تم رفع العقد بنجاح');",
+                  "    console.log('معرّف العقد: ' + jsonData.data.jobId);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "ملف العقد (PDF, DOCX, صورة، أو نص)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/analyze",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "description": "رفع ملف عقد العمل للتحليل. يُرجع معرّف العقد (jobId) لاستخدامه في بدء التحليل."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Start Analysis",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    console.log('تم بدء التحليل بنجاح');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analyze/{{jobId}}/start",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze",
+                "{{jobId}}",
+                "start"
+              ]
+            },
+            "description": "بدء تحليل العقد الذي تم رفعه مسبقاً. يجب أن تكون حالة العقد queued."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Job Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analyze/{{jobId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze",
+                "{{jobId}}"
+              ]
+            },
+            "description": "جلب الحالة الحالية للعقد ونتائجه إن وُجدت."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Get All My Jobs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analyze",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "description": "جلب جميع العقود المرتبطة بالمستخدم الحالي."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Get Job Progress Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analyze/{{jobId}}/progress",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze",
+                "{{jobId}}",
+                "progress"
+              ]
+            },
+            "description": "جلب سجلات التقدم للعقد."
+          },
+          "response": []
+        },
+        {
+          "name": "6. Stream Job Progress (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analyze/{{jobId}}/stream",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze",
+                "{{jobId}}",
+                "stream"
+              ]
+            },
+            "description": "فتح اتصال Server-Sent Events لمتابعة تقدم التحليل لحظياً."
+          },
+          "response": []
+        },
+        {
+          "name": "7. Download Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analyze/{{jobId}}/report/download",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze",
+                "{{jobId}}",
+                "report",
+                "download"
+              ]
+            },
+            "description": "تحميل تقرير التحليل كملف Markdown. يجب أن يكون التحليل مكتملاً."
+          },
+          "response": []
+        },
+        {
+          "name": "8. Cancel Analysis",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analyze/{{jobId}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze",
+                "{{jobId}}",
+                "cancel"
+              ]
+            },
+            "description": "إلغاء التحليل الجارٍ. يجب أن تكون حالة العقد queued أو processing."
+          },
+          "response": []
+        },
+        {
+          "name": "9. Delete Job",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "description": "مطلوب"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analyze/{{jobId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze",
+                "{{jobId}}"
+              ]
+            },
+            "description": "حذف العقد وجميع البيانات المرتبطة به."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Contract Generation",
+      "item": [
+        {
+          "name": "1. Create Generation Job",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 202) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set(\"jobId\", jsonData.data.jobId);",
+                  "    console.log(\"تم بدء التوليد بنجاح\");",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt\": \"أريد عقد عمل لمهندس برمجيات براتب 15000 جنيه مصري ومدة سنة وفترة اختبار 3 شهور\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate"
+              ]
+            },
+            "description": "إنشاء طلب توليد عقد عمل جديد باستخدام الذكاء الاصطناعي."
+          }
+        },
+        {
+          "name": "2. Get Job Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate/{{jobId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate",
+                "{{jobId}}"
+              ]
+            },
+            "description": "جلب حالة طلب التوليد (قيد المعالجة، مكتمل، الخ) مع النتيجة النهائية إذا اكتمل."
+          }
+        },
+        {
+          "name": "3. Stream Progress (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate/{{jobId}}/stream",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate",
+                "{{jobId}}",
+                "stream"
+              ]
+            },
+            "description": "بث تحديثات التقدم في الوقت الفعلي باستخدام Server-Sent Events."
+          }
+        },
+        {
+          "name": "4. Update Contract",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"editedMarkdown\": \"# عقد عمل محدث...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate/{{jobId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate",
+                "{{jobId}}"
+              ]
+            },
+            "description": "حفظ تعديلات المستخدم على العقد."
+          }
+        },
+        {
+          "name": "5. Regenerate Contract",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instructions\": \"غيّر الرواتب إلى 20000 جنيه وأضف بند الإقامة\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate/{{jobId}}/regenerate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate",
+                "{{jobId}}",
+                "regenerate"
+              ]
+            },
+            "description": "إعادة توليد العقد مع تعديلات المستخدم. يأخذ النص الحالي والتعليمات، ويُعيد توليد العقد."
+          }
+        },
+        {
+          "name": "6. Validate Contract",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate/{{jobId}}/validate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate",
+                "{{jobId}}",
+                "validate"
+              ]
+            },
+            "description": "إجراء فحص قانوني على العقد المُعدّل."
+          }
+        },
+        {
+          "name": "7. Cancel Generation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate/{{jobId}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate",
+                "{{jobId}}",
+                "cancel"
+              ]
+            },
+            "description": "إلغاء التوليد الجارٍ. يجب أن تكون حالة العقد queued أو processing."
+          }
+        },
+        {
+          "name": "8. Delete Job",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate/{{jobId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate",
+                "{{jobId}}"
+              ]
+            },
+            "description": "حذف طلب التوليد وجميع البيانات المرتبطة به."
+          }
+        },
+        {
+          "name": "9. Get All Generation Jobs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate"
+              ]
+            },
+            "description": "جلب جميع طلبات التوليد للمستخدم الحالي."
+          }
+        },
+        {
+          "name": "10. Download Contract",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate/{{jobId}}/download",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate",
+                "{{jobId}}",
+                "download"
+              ]
+            },
+            "description": "تحميل العقد المولد أو المعدل كملف Markdown."
+          }
+        },
+        {
+          "name": "11. Get Job Progress Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/generate/{{jobId}}/progress",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "generate",
+                "{{jobId}}",
+                "progress"
+              ]
+            },
+            "description": "جلب سجلات التقدم لطلب التوليد."
+          }
+        }
+      ]
     }
   ],
   "variable": [
