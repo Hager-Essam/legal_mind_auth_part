@@ -1,6 +1,0 @@
-node_modules/
-dist/
-dist-unified/
-*.log
-.env
-test-artifacts/

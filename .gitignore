@@ -37,13 +37,19 @@ temp/
 src/temp/
 tmp/
 
+# Frontend
+frontend/
+
 # Docs
 docs/
 
-# Test files
+# Tests
+tests/
+frontend/tests/
 test-*.js
 view-db.js
 
 # Vercel
 .vercel
+
 
