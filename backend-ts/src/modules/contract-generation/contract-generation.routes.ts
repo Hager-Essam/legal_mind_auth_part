@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../auth/auth.middleware';
 import * as generateController from './contract-generation.controller';
-
-const router = Router();
+import type { AppServices } from '../../services/service-container';
 
 /**
  * @swagger
@@ -184,19 +183,26 @@ const router = Router();
  *         description: Markdown file download
  */
 
-// Generation Endpoints
-router.post('/generate', authenticate, generateController.createGenerationJob);
-router.get('/generate', authenticate, generateController.getAllJobs);
-// router.get('/generate/progress', authenticate, generateController.getJobProgress);
-// router.get('/generate/stream', authenticate, generateController.streamJobProgress);
-router.get('/generate/:jobId', authenticate, generateController.getJobStatus);
-router.get('/generate/:jobId/download', authenticate, generateController.downloadContract);
-router.put('/generate/:jobId', authenticate, generateController.updateContract);
-router.post('/generate/:jobId/regenerate', authenticate, generateController.regenerateContract);
-router.post('/generate/:jobId/validate', authenticate, generateController.validateContract);
-router.get('/generate/:jobId/progress', authenticate, generateController.getJobProgress);
-router.get('/generate/:jobId/stream', authenticate, generateController.streamJobProgress);
-router.post('/generate/:jobId/cancel', authenticate, generateController.cancelJob);
-router.delete('/generate/:jobId', authenticate, generateController.deleteJob);
+export const createContractGenerationRouter = (services: AppServices) => {
+  const router = Router();
+  const auth = authenticate(services.authService, services.userRepository);
 
-export default router;
+  // Generation Endpoints
+  router.post('/generate', auth, generateController.createGenerationJob);
+  router.get('/generate', auth, generateController.getAllJobs);
+  // router.get('/generate/progress', auth, generateController.getJobProgress);
+  // router.get('/generate/stream', auth, generateController.streamJobProgress);
+  router.get('/generate/:jobId', auth, generateController.getJobStatus);
+  router.get('/generate/:jobId/download', auth, generateController.downloadContract);
+  router.put('/generate/:jobId', auth, generateController.updateContract);
+  router.post('/generate/:jobId/regenerate', auth, generateController.regenerateContract);
+  router.post('/generate/:jobId/validate', auth, generateController.validateContract);
+  router.get('/generate/:jobId/progress', auth, generateController.getJobProgress);
+  router.get('/generate/:jobId/stream', auth, generateController.streamJobProgress);
+  router.post('/generate/:jobId/cancel', auth, generateController.cancelJob);
+  router.delete('/generate/:jobId', auth, generateController.deleteJob);
+
+  return router;
+};
+
+export default createContractGenerationRouter;
