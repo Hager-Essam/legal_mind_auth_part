@@ -11,6 +11,7 @@ import bookmarkRoutes from './modules/bookmark/bookmark.routes';
 import commentRoutes from './modules/comment/comment.routes';
 import contractAnalysisRoutes from './modules/contract-analysis/contract-analysis.routes';
 import contractGenerationRoutes from './modules/contract-generation/contract-generation.routes';
+import conversationRoutes from './modules/conversation/conversation.routes';
 import userRoutes from './modules/user/user.routes';
 import { specs, swaggerUi } from './config/swagger';
 
@@ -82,6 +83,7 @@ app.use('/api/users', bookmarkRoutes);
 app.use('/api', contractAnalysisRoutes);
 app.use('/api', contractGenerationRoutes);
 app.use('/api', commentRoutes);
+app.use('/api/conversation', conversationRoutes);
 
 app.use('*', (req: Request, res: Response) => {
   res.status(404).json({
