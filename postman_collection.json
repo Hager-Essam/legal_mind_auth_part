@@ -1646,6 +1646,195 @@
           }
         }
       ]
+    },
+    {
+      "name": "Conversation",
+      "item": [
+        {
+          "name": "1. Create Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"سؤال عن قانون العمل\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/conversation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversation"]
+            },
+            "description": "إنشاء محادثة جديدة"
+          },
+          "response": []
+        },
+        {
+          "name": "2. Get All Conversations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/conversation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversation"]
+            },
+            "description": "جلب جميع محادثات المستخدم (بدون الرسائل)"
+          },
+          "response": []
+        },
+        {
+          "name": "3. Get Conversation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/conversation/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversation", "{{conversationId}}"]
+            },
+            "description": "جلب محادثة محددة مع جميع رسائلها"
+          },
+          "response": []
+        },
+        {
+          "name": "4. Rename Conversation",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"العنوان الجديد\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/conversation/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversation", "{{conversationId}}"]
+            },
+            "description": "إعادة تسمية المحادثة"
+          },
+          "response": []
+        },
+        {
+          "name": "5. Delete Conversation",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/conversation/{{conversationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversation", "{{conversationId}}"]
+            },
+            "description": "حذف المحادثة وجميع رسائلها"
+          },
+          "response": []
+        },
+        {
+          "name": "6. Ask Question",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"ما هي أحكام فسخ عقد العمل وفقاً لقانون العمل المصري؟\",\n  \"top_k\": 5,\n  \"user_role\": \"citizen\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/conversation/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversation", "ask"]
+            },
+            "description": "إرسال سؤال قانوني (بدون حفظ)"
+          },
+          "response": []
+        },
+        {
+          "name": "7. Ask & Save to Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"ما هي penalties المترتبة على إخلال العامل بالتزاماته؟\",\n  \"top_k\": 5,\n  \"law_category\": \"قانون العمل\",\n  \"user_role\": \"lawyer\",\n  \"conversationId\": \"{{conversationId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/conversation/ask",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversation", "ask"]
+            },
+            "description": "إرسال سؤال قانوني وحفظه في المحادثة"
+          },
+          "response": []
+        },
+        {
+          "name": "8. Health Check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/conversation/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversation", "health"]
+            },
+            "description": "فحص صحة خدمة المحادثة"
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
@@ -1703,6 +1892,12 @@
       "value": "",
       "type": "string",
       "description": "يُحفظ تلقائياً عند رفع عقد للتحليل"
+    },
+    {
+      "key": "conversationId",
+      "value": "",
+      "type": "string",
+      "description": "يُحفظ تلقائياً عند إنشاء محادثة"
     }
   ]
 }
