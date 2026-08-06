@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { appConnection } from '../../../infrastructure/mongo/mongo.service';
 
 // ============================================================================
 // INTERFACES
@@ -169,7 +170,7 @@ const GeneratedContractSchema = new Schema<IGeneratedContract>(
 GeneratedContractSchema.index({ processedAt: -1 });
 GeneratedContractSchema.index({ 'complianceCheck.compliant': 1 });
 
-export const GeneratedContract = mongoose.model<IGeneratedContract>(
+export const GeneratedContract = appConnection.model<IGeneratedContract>(
   'GeneratedContract',
   GeneratedContractSchema
 );

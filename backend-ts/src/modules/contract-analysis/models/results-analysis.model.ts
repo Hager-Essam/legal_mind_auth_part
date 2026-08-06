@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { appConnection } from '../../../infrastructure/mongo/mongo.service';
 
 // Types matching contract-analysis.service.ts
 interface LegalBasis {
@@ -258,7 +259,7 @@ ResultsAnalysisSchema.index({ processedAt: -1 });
 ResultsAnalysisSchema.index({ 'overall.overall_score': 1 });
 ResultsAnalysisSchema.index({ 'overall.classification': 1 });
 
-export const ResultsAnalysis = mongoose.model<IResultsAnalysis>(
+export const ResultsAnalysis = appConnection.model<IResultsAnalysis>(
   'ResultsAnalysis',
   ResultsAnalysisSchema
 );

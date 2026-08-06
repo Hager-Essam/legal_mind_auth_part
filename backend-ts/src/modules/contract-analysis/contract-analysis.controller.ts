@@ -30,7 +30,7 @@ export const uploadContract = async (
       return;
     }
 
-    const userId = (req as any).user._id.toString();
+    const userId = req.user!.id;
     const jobId = uuidv4();
 
     const contractKey = r2Storage.generateKey(
@@ -88,7 +88,7 @@ export const startAnalysis = async (
 ): Promise<void> => {
   try {
     const jobId = getJobId(req);
-    const userId = (req as any).user._id.toString();
+    const userId = req.user!.id;
 
     const job = await jobRepository.findByIdAndUserId(jobId, userId);
 
@@ -144,7 +144,7 @@ export const getJobStatus = async (
 ): Promise<void> => {
   try {
     const jobId = getJobId(req);
-    const userId = (req as any).user._id.toString();
+    const userId = req.user!.id;
 
     const job = await jobRepository.findByIdAndUserId(jobId, userId);
 
@@ -226,7 +226,7 @@ export const getAllJobs = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const userId = (req as any).user._id.toString();
+    const userId = req.user!.id;
     const jobs = await jobRepository.findAll({
       userId,
       limit: 100,
@@ -267,7 +267,7 @@ export const streamJobProgress = async (
 ): Promise<void> => {
   try {
     const jobId = getJobId(req);
-    const userId = (req as any).user._id.toString();
+    const userId = req.user!.id;
 
     const job = await jobRepository.findByIdAndUserId(jobId, userId);
 
@@ -346,7 +346,7 @@ export const getJobProgress = async (
 ): Promise<void> => {
   try {
     const jobId = getJobId(req);
-    const userId = (req as any).user._id.toString();
+    const userId = req.user!.id;
 
     const job = await jobRepository.findByIdAndUserId(jobId, userId);
 
@@ -382,7 +382,7 @@ export const getJobProgress = async (
 export const cancelJob = async (req: Request, res: Response): Promise<void> => {
   try {
     const jobId = getJobId(req);
-    const userId = (req as any).user._id.toString();
+    const userId = req.user!.id;
 
     const job = await jobRepository.findByIdAndUserId(jobId, userId);
 
@@ -431,7 +431,7 @@ export const cancelJob = async (req: Request, res: Response): Promise<void> => {
 export const deleteJob = async (req: Request, res: Response): Promise<void> => {
   try {
     const jobId = getJobId(req);
-    const userId = (req as any).user._id.toString();
+    const userId = req.user!.id;
 
     const job = await jobRepository.findByIdAndUserId(jobId, userId);
 
@@ -488,7 +488,7 @@ export const downloadReport = async (
 ): Promise<void> => {
   try {
     const jobId = getJobId(req);
-    const userId = (req as any).user._id.toString();
+    const userId = req.user!.id;
 
     const job = await jobRepository.findByIdAndUserId(jobId, userId);
 

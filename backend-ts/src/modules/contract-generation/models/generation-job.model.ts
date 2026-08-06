@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { appConnection } from '../../../infrastructure/mongo/mongo.service';
 
 export interface IProgressLog {
   step: string;
@@ -108,4 +109,4 @@ GenerationJobSchema.index({ createdAt: -1 });
 GenerationJobSchema.index({ status: 1, createdAt: -1 });
 GenerationJobSchema.index({ userId: 1, createdAt: -1 });
 
-export const GenerationJob = mongoose.model<IGenerationJob>('GenerationJob', GenerationJobSchema);
+export const GenerationJob = appConnection.model<IGenerationJob>('GenerationJob', GenerationJobSchema);
