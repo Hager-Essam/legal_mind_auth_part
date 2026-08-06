@@ -4,6 +4,16 @@ This is the authoritative frontend handoff for the HTTP API currently implemente
 in `backend-ts`. The Postman collection contains all registered endpoints, including
 Contract Analysis and Contract Generation.
 
+## Postman File Inventory & Differences
+
+| File Name | Type | Description / Purpose |
+|---|---|---|
+| `LegalMind-Frontend-API.postman_collection.json` | **Collection** | Master collection containing all 60 HTTP endpoints across 9 feature folders (Auth, Users, Conversations, Legal Query, Blogs, Comments, Bookmarks, Contract Analysis, Contract Generation). |
+| `LegalMind-Frontend-Local.postman_environment.json` | **Environment** | Pre-configured Postman environment for local development (`base_url = http://localhost:5000`), with dynamic auto-saving for `access_token`, `conversation_id`, `blog_id`, and `jobId`. |
+| `LegalMind-Frontend-Production.postman_environment.json` | **Environment** | Pre-configured Postman environment for production server deployment (`base_url = https://api.legalmind.eg`). Allows testing live servers without editing collection URLs. |
+| `FRONTEND-README.md` | **Documentation** | Comprehensive integration handoff detailing JSON payloads, JWT authentication, cookies, 204 No Content responses, and error handling. |
+| `postman_collection.json` (root) | **Legacy File** | Historical single collection file prior to `backend-ts` migration. All endpoints have been modernized and merged into `LegalMind-Frontend-API.postman_collection.json`. |
+
 ## Import into Postman
 
 1. Import `LegalMind-Frontend-API.postman_collection.json`.
