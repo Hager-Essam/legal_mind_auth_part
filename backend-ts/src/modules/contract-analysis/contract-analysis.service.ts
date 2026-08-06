@@ -324,8 +324,8 @@ Write a Markdown report including:
 // ============================================================================
 
 export class EgyptianEmploymentContractAnalyzer {
-  private openai: OpenAI | null = null;
-  private qdrant: QdrantClient | null = null;
+  private openai: any = null;
+  private qdrant: any = null;
   private config: Required<Omit<AnalyzerConfig, "qdrantApiKey" | "baseURL">> &
     Pick<AnalyzerConfig, "qdrantApiKey" | "baseURL">;
 
@@ -354,7 +354,7 @@ export class EgyptianEmploymentContractAnalyzer {
     }
   }
 
-  private ensureOpenAI(): OpenAI {
+  private ensureOpenAI(): any {
     if (!this.openai) {
       throw new Error('Missing OPENAI_API_KEY. Configure it before running contract analysis.');
     }
@@ -457,7 +457,7 @@ export class EgyptianEmploymentContractAnalyzer {
     let ocrText = "";
 
     for (let i = 0; i < images.length; i++) {
-      const imagePath = images[i].path || images[i].name;
+      const imagePath = (images[i].path || images[i].name || "") as string;
       const result = await Tesseract.recognize(imagePath, "ara+eng", {
         logger: (m: any) => {
           if (m.status === "recognizing text") {
@@ -709,7 +709,7 @@ export class EgyptianEmploymentContractAnalyzer {
 
     for (const collectionName of collections) {
       try {
-        const searchResult = await this.qdrant.search(collectionName, {
+        const searchResult = await (this.qdrant as any).search(collectionName, {
           vector: queryVector,
           limit: topK * 2,
           with_payload: true,

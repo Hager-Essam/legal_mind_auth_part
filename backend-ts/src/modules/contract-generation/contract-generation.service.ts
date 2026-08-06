@@ -194,8 +194,8 @@ Output ONLY JSON with this structure:
 // ============================================================================
 
 export class EgyptianEmploymentContractGenerator {
-  private openai: OpenAI | null = null;
-  private qdrant: QdrantClient | null = null;
+  private openai: any = null;
+  private qdrant: any = null;
   private config: Required<Omit<GeneratorConfig, 'qdrantApiKey' | 'baseURL'>> &
     Pick<GeneratorConfig, 'qdrantApiKey' | 'baseURL'>;
 
@@ -224,7 +224,7 @@ export class EgyptianEmploymentContractGenerator {
     }
   }
 
-  private ensureOpenAI(): OpenAI {
+  private ensureOpenAI(): any {
     if (!this.openai) {
       throw new Error('Missing OPENAI_API_KEY. Configure it before running contract generation.');
     }
@@ -301,7 +301,7 @@ export class EgyptianEmploymentContractGenerator {
 
     for (const collectionName of collections) {
       try {
-        const searchResult = await this.qdrant.search(collectionName, {
+        const searchResult = await (this.qdrant as any).search(collectionName, {
           vector: queryVector,
           limit: topK * 2,
           with_payload: true,
