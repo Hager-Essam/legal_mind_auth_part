@@ -459,7 +459,7 @@ export class EgyptianEmploymentContractAnalyzer {
     for (let i = 0; i < images.length; i++) {
       const imagePath = images[i].path || images[i].name;
       const result = await Tesseract.recognize(imagePath, "ara+eng", {
-        logger: (m) => {
+        logger: (m: any) => {
           if (m.status === "recognizing text") {
             console.log(`  OCR Page ${i + 1}: ${Math.round(m.progress * 100)}%`);
           }
@@ -685,8 +685,8 @@ export class EgyptianEmploymentContractAnalyzer {
         input: batch,
       });
       // Sort by index to maintain order
-      const sorted = response.data.sort((a, b) => a.index - b.index);
-      allEmbeddings.push(...sorted.map((d) => d.embedding));
+      const sorted = response.data.sort((a: any, b: any) => a.index - b.index);
+      allEmbeddings.push(...sorted.map((d: any) => d.embedding));
     }
 
     return allEmbeddings;

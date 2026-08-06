@@ -454,15 +454,15 @@ export const validateContract = async (
       valid: analysisReport.overall.overall_score >= 70,
       score: analysisReport.overall.overall_score,
       issues: analysisReport.clauses
-        .filter(c => c.compliance.status !== 'compliant')
-        .map(c => ({
+        .filter((c: any) => c.compliance.status !== 'compliant')
+        .map((c: any) => ({
           clause: c.clause_text.substring(0, 80) + (c.clause_text.length > 80 ? '...' : ''),
           status: c.compliance.status,
           explanation: c.compliance.explanation,
           suggestedFix: c.required_action.suggested_fix,
           severity: c.required_action.severity,
         })),
-      compliantClauses: analysisReport.clauses.filter(c => c.compliance.status === 'compliant').length,
+      compliantClauses: analysisReport.clauses.filter((c: any) => c.compliance.status === 'compliant').length,
       totalClauses: analysisReport.clauses.length,
     };
 

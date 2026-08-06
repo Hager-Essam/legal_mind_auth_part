@@ -282,8 +282,8 @@ export class EgyptianEmploymentContractGenerator {
         model: this.config.embeddingModel,
         input: batch,
       });
-      const sorted = response.data.sort((a, b) => a.index - b.index);
-      allEmbeddings.push(...sorted.map((d) => d.embedding));
+      const sorted = response.data.sort((a: any, b: any) => a.index - b.index);
+      allEmbeddings.push(...sorted.map((d: any) => d.embedding));
     }
 
     return allEmbeddings;
