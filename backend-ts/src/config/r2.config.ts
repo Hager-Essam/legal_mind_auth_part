@@ -34,6 +34,7 @@ export class R2StorageService {
     const config = customConfig || getR2Config();
     const endpoint = `https://${config.accountId}.r2.cloudflarestorage.com`;
 
+    // AWS SDK >= 3.729 defaults to flexible checksums that R2 rejects (AccessDenied).
     this.client = new S3Client({
       region: 'auto',
       endpoint,
@@ -41,6 +42,8 @@ export class R2StorageService {
         accessKeyId: config.accessKeyId,
         secretAccessKey: config.secretAccessKey,
       },
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
     });
 
     this.bucketName = config.bucketName;

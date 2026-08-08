@@ -1,6 +1,6 @@
-import OpenAI from 'openai';
-import { QdrantClient } from '@qdrant/js-client-rest';
-import { IPlaceholder, IComplianceCheck, IValidationResult } from './models/generated-contract.model';
+import OpenAI from "openai";
+import { QdrantClient } from "@qdrant/js-client-rest";
+import { IPlaceholder, IComplianceCheck, IValidationResult } from "./models/generated-contract.model";
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -15,13 +15,13 @@ export interface RetrievedDocument {
 }
 
 export interface GenerationOptions {
-  language?: 'ar' | 'ar_en';
-  contractType?: 'employment' | 'freelance' | 'partnership';
+  language?: "ar" | "ar_en";
+  contractType?: "employment" | "freelance" | "partnership";
 }
 
 export interface ProgressEvent {
   step: string;
-  phase: 'start' | 'progress' | 'result' | 'done';
+  phase: "start" | "progress" | "result" | "done";
   message: string;
 }
 
@@ -49,17 +49,17 @@ export interface GenerationResult {
 
 // Reused from analyzer
 const COLLECTION_MAP: Record<string, string[]> = {
-  probation_period: ['egyptian_labor_law', 'legal_qa', 'contract_clauses'],
-  wages: ['egyptian_labor_law', 'ministerial_decrees', 'legal_qa'],
-  working_hours: ['egyptian_labor_law', 'ministerial_decrees'],
-  leave: ['egyptian_labor_law', 'legal_qa'],
-  termination: ['egyptian_labor_law', 'court_rulings', 'legal_qa'],
-  non_compete: ['egyptian_labor_law', 'court_rulings', 'contract_clauses'],
-  confidentiality: ['egyptian_labor_law', 'contract_clauses'],
-  social_insurance: ['egyptian_labor_law', 'ministerial_decrees'],
-  contract_duration: ['egyptian_labor_law', 'contract_clauses', 'legal_qa'],
-  job_description: ['egyptian_labor_law', 'contract_clauses'],
-  default: ['egyptian_labor_law', 'legal_qa'],
+  probation_period: ["egyptian_labor_law", "legal_qa", "contract_clauses"],
+  wages: ["egyptian_labor_law", "ministerial_decrees", "legal_qa"],
+  working_hours: ["egyptian_labor_law", "ministerial_decrees"],
+  leave: ["egyptian_labor_law", "legal_qa"],
+  termination: ["egyptian_labor_law", "court_rulings", "legal_qa"],
+  non_compete: ["egyptian_labor_law", "court_rulings", "contract_clauses"],
+  confidentiality: ["egyptian_labor_law", "contract_clauses"],
+  social_insurance: ["egyptian_labor_law", "ministerial_decrees"],
+  contract_duration: ["egyptian_labor_law", "contract_clauses", "legal_qa"],
+  job_description: ["egyptian_labor_law", "contract_clauses"],
+  default: ["egyptian_labor_law", "legal_qa"],
 };
 
 // ============================================================================
@@ -196,15 +196,15 @@ Output ONLY JSON with this structure:
 export class EgyptianEmploymentContractGenerator {
   private openai: any = null;
   private qdrant: any = null;
-  private config: Required<Omit<GeneratorConfig, 'qdrantApiKey' | 'baseURL'>> &
-    Pick<GeneratorConfig, 'qdrantApiKey' | 'baseURL'>;
+  private config: Required<Omit<GeneratorConfig, "qdrantApiKey" | "baseURL">> &
+    Pick<GeneratorConfig, "qdrantApiKey" | "baseURL">;
 
   constructor(config: GeneratorConfig) {
     this.config = {
-      openaiApiKey: '',
-      qdrantUrl: '',
-      embeddingModel: 'text-embedding-v4',
-      llmModel: 'qwen3.7-plus-2026-05-26',
+      openaiApiKey: "",
+      qdrantUrl: "",
+      embeddingModel: "text-embedding-v4",
+      llmModel: "deepseek-v4-pro",
       temperature: 0.2, // Slightly higher than analysis for generation
       ...config,
     };
@@ -226,14 +226,14 @@ export class EgyptianEmploymentContractGenerator {
 
   private ensureOpenAI(): any {
     if (!this.openai) {
-      throw new Error('Missing OPENAI_API_KEY. Configure it before running contract generation.');
+      throw new Error("Missing OPENAI_API_KEY. Configure it before running contract generation.");
     }
     return this.openai;
   }
 
   private ensureQdrant(): QdrantClient {
     if (!this.qdrant) {
-      throw new Error('Missing QDRANT_URL. Configure it before running contract generation.');
+      throw new Error("Missing QDRANT_URL. Configure it before running contract generation.");
     }
     return this.qdrant;
   }
@@ -242,27 +242,31 @@ export class EgyptianEmploymentContractGenerator {
   // STEP 1: INTENT EXTRACTION
   // ========================================================================
 
-  async extractIntent(prompt: string, contractType: string = 'employment'): Promise<Record<string, any>> {
+  async extractIntent(prompt: string, contractType: string = "employment"): Promise<Record<string, any>> {
     const openai = this.ensureOpenAI();
-    
-    const formattedPrompt = INTENT_EXTRACTION_PROMPT
-      .replace('{prompt}', prompt)
-      .replace('{contract_type}', contractType);
+
+    const formattedPrompt = INTENT_EXTRACTION_PROMPT.replace("{prompt}", prompt).replace(
+      "{contract_type}",
+      contractType
+    );
 
     const response = await openai.chat.completions.create({
       model: this.config.llmModel,
-      messages: [{ role: 'user', content: formattedPrompt }],
+      messages: [{ role: "user", content: formattedPrompt }],
       temperature: 0.1,
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error('Empty intent extraction response');
+    if (!content) throw new Error("Empty intent extraction response");
 
     try {
-      const clean = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      const clean = content
+        .replace(/```json\s*/g, "")
+        .replace(/```\s*/g, "")
+        .trim();
       return JSON.parse(clean);
     } catch (e) {
-      console.error('Failed to parse intent extraction:', content);
+      console.error("Failed to parse intent extraction:", content);
       throw e;
     }
   }
@@ -311,7 +315,7 @@ export class EgyptianEmploymentContractGenerator {
           allResults.push({
             id: point.id as string,
             score: point.score,
-            text: (point.payload?.text_ar as string) || (point.payload?.text as string) || '',
+            text: (point.payload?.text_ar as string) || (point.payload?.text as string) || "",
             metadata: point.payload || {},
             source: collectionName,
           });
@@ -337,19 +341,21 @@ export class EgyptianEmploymentContractGenerator {
 
   async retrieveClauseReferences(spec: Record<string, any>): Promise<RetrievedDocument[]> {
     // Determine which clause types are needed based on the spec
-    const neededClauses = ['job_description', 'contract_duration', 'wages'];
-    
-    if (spec.probation_period) neededClauses.push('probation_period');
-    if (spec.working_hours) neededClauses.push('working_hours');
-    if (spec.leave_entitlements) neededClauses.push('leave');
-    if (spec.termination_notice) neededClauses.push('termination');
-    if (spec.non_compete) neededClauses.push('non_compete');
-    if (spec.confidentiality) neededClauses.push('confidentiality');
-    if (spec.social_insurance) neededClauses.push('social_insurance');
+    const neededClauses = ["job_description", "contract_duration", "wages"];
+
+    if (spec.probation_period) neededClauses.push("probation_period");
+    if (spec.working_hours) neededClauses.push("working_hours");
+    if (spec.leave_entitlements) neededClauses.push("leave");
+    if (spec.termination_notice) neededClauses.push("termination");
+    if (spec.non_compete) neededClauses.push("non_compete");
+    if (spec.confidentiality) neededClauses.push("confidentiality");
+    if (spec.social_insurance) neededClauses.push("social_insurance");
 
     // Create a description for each clause to embed and search
-    const clauseDescriptions = neededClauses.map(type => `Egyptian labor law regarding ${type.replace('_', ' ')}`);
-    
+    const clauseDescriptions = neededClauses.map(
+      (type) => `Egyptian labor law regarding ${type.replace("_", " ")}`
+    );
+
     const embeddings = await this.embedBatch(clauseDescriptions);
     const allRetrieved: RetrievedDocument[] = [];
 
@@ -378,36 +384,41 @@ export class EgyptianEmploymentContractGenerator {
   async generateContract(
     spec: Record<string, any>,
     references: RetrievedDocument[],
-    language: string = 'ar'
+    language: string = "ar"
   ): Promise<string> {
     const openai = this.ensureOpenAI();
 
     const missingFieldsList = Array.isArray(spec.missing_fields)
-      ? spec.missing_fields.map((f: any) => `- ${f.field} → {{${f.field}:${f.label}}}`).join('\n')
-      : 'None';
+      ? spec.missing_fields.map((f: any) => `- ${f.field} → {{${f.field}:${f.label}}}`).join("\n")
+      : "None";
 
     const contextText = references
       .map((doc, i) => `[المصدر ${i + 1} - ${doc.source}]\n${doc.text}`)
-      .join('\n\n');
+      .join("\n\n");
 
-    const formattedPrompt = CONTRACT_GENERATION_PROMPT
-      .replace('{structured_spec}', JSON.stringify(spec, null, 2))
-      .replace('{missing_fields_list}', missingFieldsList)
-      .replace('{retrieved_context}', contextText);
+    const formattedPrompt = CONTRACT_GENERATION_PROMPT.replace(
+      "{structured_spec}",
+      JSON.stringify(spec, null, 2)
+    )
+      .replace("{missing_fields_list}", missingFieldsList)
+      .replace("{retrieved_context}", contextText);
 
-    // If bilingual is requested, we would adjust the prompt here. 
+    // If bilingual is requested, we would adjust the prompt here.
     // For now, we enforce Arabic as per design.
 
     const response = await openai.chat.completions.create({
       model: this.config.llmModel,
-      messages: [{ role: 'user', content: formattedPrompt }],
+      messages: [{ role: "user", content: formattedPrompt }],
       temperature: this.config.temperature,
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error('Empty generation response');
+    if (!content) throw new Error("Empty generation response");
 
-    return content.replace(/```markdown\s*/g, '').replace(/```\s*/g, '').trim();
+    return content
+      .replace(/```markdown\s*/g, "")
+      .replace(/```\s*/g, "")
+      .trim();
   }
 
   // ========================================================================
@@ -423,19 +434,20 @@ export class EgyptianEmploymentContractGenerator {
     while ((match = PLACEHOLDER_REGEX.exec(markdown)) !== null) {
       const field = match[1];
       const label = match[2];
-      
+
       if (!seen.has(field)) {
         seen.add(field);
-        
+
         // Define which fields are strictly required
-        const isRequired = ['employee_name', 'national_id', 'employee_address'].includes(field) 
-                           || !['bonus', 'sick_leave'].includes(field);
-                           
+        const isRequired =
+          ["employee_name", "national_id", "employee_address"].includes(field) ||
+          !["bonus", "sick_leave"].includes(field);
+
         placeholders.push({
           field,
           label,
           required: isRequired,
-          filled: false
+          filled: false,
         });
       }
     }
@@ -447,31 +459,38 @@ export class EgyptianEmploymentContractGenerator {
   // STEP 4: COMPLIANCE PRE-CHECK
   // ========================================================================
 
-  async preCheckCompliance(contractMarkdown: string, references: RetrievedDocument[]): Promise<IComplianceCheck> {
+  async preCheckCompliance(
+    contractMarkdown: string,
+    references: RetrievedDocument[]
+  ): Promise<IComplianceCheck> {
     const openai = this.ensureOpenAI();
 
     const contextText = references
       .map((doc, i) => `[المصدر ${i + 1} - ${doc.source}]\n${doc.text}`)
-      .join('\n\n');
+      .join("\n\n");
 
-    const formattedPrompt = COMPLIANCE_PRECHECK_PROMPT
-      .replace('{contract_text}', contractMarkdown)
-      .replace('{retrieved_context}', contextText);
+    const formattedPrompt = COMPLIANCE_PRECHECK_PROMPT.replace("{contract_text}", contractMarkdown).replace(
+      "{retrieved_context}",
+      contextText
+    );
 
     const response = await openai.chat.completions.create({
       model: this.config.llmModel,
-      messages: [{ role: 'user', content: formattedPrompt }],
+      messages: [{ role: "user", content: formattedPrompt }],
       temperature: 0.1,
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error('Empty compliance precheck response');
+    if (!content) throw new Error("Empty compliance precheck response");
 
     try {
-      const clean = content.replace(new RegExp('```json\\\\s*', 'g'), '').replace(new RegExp('```\\\\s*', 'g'), '').trim();
+      const clean = content
+        .replace(new RegExp("```json\\\\s*", "g"), "")
+        .replace(new RegExp("```\\\\s*", "g"), "")
+        .trim();
       return JSON.parse(clean);
     } catch (e) {
-      console.warn('Failed to parse compliance precheck, returning default valid', e);
+      console.warn("Failed to parse compliance precheck, returning default valid", e);
       return { compliant: true, warnings: [], autoFixesApplied: 0 };
     }
   }
@@ -483,22 +502,25 @@ export class EgyptianEmploymentContractGenerator {
   async validateEditedContract(editedMarkdown: string): Promise<IValidationResult> {
     const openai = this.ensureOpenAI();
 
-    const formattedPrompt = VALIDATION_PROMPT.replace('{contract_text}', editedMarkdown);
+    const formattedPrompt = VALIDATION_PROMPT.replace("{contract_text}", editedMarkdown);
 
     const response = await openai.chat.completions.create({
       model: this.config.llmModel,
-      messages: [{ role: 'user', content: formattedPrompt }],
+      messages: [{ role: "user", content: formattedPrompt }],
       temperature: 0.1,
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error('Empty validation response');
+    if (!content) throw new Error("Empty validation response");
 
     try {
-      const clean = content.replace(new RegExp('```json\\\\s*', 'g'), '').replace(new RegExp('```\\\\s*', 'g'), '').trim();
+      const clean = content
+        .replace(new RegExp("```json\\\\s*", "g"), "")
+        .replace(new RegExp("```\\\\s*", "g"), "")
+        .trim();
       return JSON.parse(clean);
     } catch (e) {
-      console.error('Failed to parse validation response', e);
+      console.error("Failed to parse validation response", e);
       throw e;
     }
   }
@@ -507,26 +529,27 @@ export class EgyptianEmploymentContractGenerator {
   // REGENERATION (modify existing contract)
   // ========================================================================
 
-  async regenerateContract(
-    currentContract: string,
-    instructions: string,
-  ): Promise<string> {
+  async regenerateContract(currentContract: string, instructions: string): Promise<string> {
     const openai = this.ensureOpenAI();
 
-    const formattedPrompt = REGENERATION_PROMPT
-      .replace('{contract_text}', currentContract)
-      .replace('{instructions}', instructions);
+    const formattedPrompt = REGENERATION_PROMPT.replace("{contract_text}", currentContract).replace(
+      "{instructions}",
+      instructions
+    );
 
     const response = await openai.chat.completions.create({
       model: this.config.llmModel,
-      messages: [{ role: 'user', content: formattedPrompt }],
+      messages: [{ role: "user", content: formattedPrompt }],
       temperature: this.config.temperature,
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error('Empty regeneration response');
+    if (!content) throw new Error("Empty regeneration response");
 
-    return content.replace(/```markdown\s*/g, '').replace(/```\s*/g, '').trim();
+    return content
+      .replace(/```markdown\s*/g, "")
+      .replace(/```\s*/g, "")
+      .trim();
   }
 
   // ========================================================================
@@ -537,7 +560,7 @@ export class EgyptianEmploymentContractGenerator {
     prompt: string,
     options: GenerationOptions = {},
     onProgress?: (event: ProgressEvent) => void,
-    isCancelled?: () => boolean | Promise<boolean>,
+    isCancelled?: () => boolean | Promise<boolean>
   ): Promise<GenerationResult> {
     const emit = (event: ProgressEvent) => {
       console.log(`[${event.step}] ${event.message}`);
@@ -546,43 +569,47 @@ export class EgyptianEmploymentContractGenerator {
 
     const checkCancelled = async () => {
       if (await isCancelled?.()) {
-        throw new Error('تم إلغاء التوليد من قبل المستخدم.');
+        throw new Error("تم إلغاء التوليد من قبل المستخدم.");
       }
     };
 
     await await checkCancelled();
 
     // ── STEP 1: Intent Extraction ──
-    emit({ step: '1/5', phase: 'start', message: '🧠 استخراج مواصفات العقد من الوصف...' });
+    emit({ step: "1/5", phase: "start", message: "🧠 استخراج مواصفات العقد من الوصف..." });
     const spec = await this.extractIntent(prompt, options.contractType);
-    emit({ step: '1/5', phase: 'result', message: `✅ تم استخراج ${Object.keys(spec).length} حقول رئيسية` });
+    emit({ step: "1/5", phase: "result", message: `✅ تم استخراج ${Object.keys(spec).length} حقول رئيسية` });
 
     // ── STEP 2: Clause Retrieval ──
     await checkCancelled();
-    emit({ step: '2/5', phase: 'start', message: '📚 جلب المراجع القانونية من قاعدة البيانات...' });
+    emit({ step: "2/5", phase: "start", message: "📚 جلب المراجع القانونية من قاعدة البيانات..." });
     const references = await this.retrieveClauseReferences(spec);
-    emit({ step: '2/5', phase: 'result', message: `✅ تم العثور على ${references.length} مرجع قانوني` });
+    emit({ step: "2/5", phase: "result", message: `✅ تم العثور على ${references.length} مرجع قانوني` });
 
     // ── STEP 3: Contract Generation ──
     await checkCancelled();
-    emit({ step: '3/5', phase: 'start', message: '✍️ توليد نص العقد وفقاً للقانون المصري...' });
+    emit({ step: "3/5", phase: "start", message: "✍️ توليد نص العقد وفقاً للقانون المصري..." });
     const contractMarkdown = await this.generateContract(spec, references, options.language);
-    emit({ step: '3/5', phase: 'result', message: `✅ تم توليد العقد بنجاح (${contractMarkdown.length} حرف)` });
+    emit({
+      step: "3/5",
+      phase: "result",
+      message: `✅ تم توليد العقد بنجاح (${contractMarkdown.length} حرف)`,
+    });
 
     const placeholders = this.extractPlaceholders(contractMarkdown);
 
     // ── STEP 4: Compliance Pre-Check ──
     await checkCancelled();
-    emit({ step: '4/5', phase: 'start', message: '⚖️ فحص الامتثال القانوني المبدئي...' });
+    emit({ step: "4/5", phase: "start", message: "⚖️ فحص الامتثال القانوني المبدئي..." });
     const complianceCheck = await this.preCheckCompliance(contractMarkdown, references);
-    emit({ 
-      step: '4/5', 
-      phase: 'result', 
-      message: `✅ نتيجة الفحص: ${complianceCheck.compliant ? 'مطابق' : 'يوجد تحذيرات'} (${complianceCheck.warnings.length} تحذير)` 
+    emit({
+      step: "4/5",
+      phase: "result",
+      message: `✅ نتيجة الفحص: ${complianceCheck.compliant ? "مطابق" : "يوجد تحذيرات"} (${complianceCheck.warnings.length} تحذير)`,
     });
 
     // ── STEP 5: Complete ──
-    emit({ step: '5/5', phase: 'done', message: '🎉 عملية التوليد اكتملت بنجاح' });
+    emit({ step: "5/5", phase: "done", message: "🎉 عملية التوليد اكتملت بنجاح" });
 
     return {
       contractSpec: spec,

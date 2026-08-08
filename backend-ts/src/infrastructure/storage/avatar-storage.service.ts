@@ -60,6 +60,7 @@ export class R2AvatarStorage implements AvatarStorage {
   }
 
   private configuredClient(config: ReturnType<R2AvatarStorage["configuration"]>) {
+    // AWS SDK >= 3.729 defaults to flexible checksums that R2 rejects (AccessDenied).
     this.client ??= new S3Client({
       region: "auto",
       endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
@@ -67,6 +68,8 @@ export class R2AvatarStorage implements AvatarStorage {
         accessKeyId: config.accessKeyId,
         secretAccessKey: config.secretAccessKey,
       },
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
     });
 
     return this.client;
@@ -75,22 +78,78 @@ export class R2AvatarStorage implements AvatarStorage {
   async upload(userId: string, content: Buffer, contentType: AvatarContentType): Promise<StoredAvatar> {
     const config = this.configuration();
     const key = `avatars/${userId}/${crypto.randomUUID()}.${extensionFor(contentType)}`;
-    await this.configuredClient(config).send(
-      new PutObjectCommand({
-        Bucket: config.bucket,
-        Key: key,
-        Body: content,
-        ContentType: contentType,
-        ContentDisposition: "inline",
-        CacheControl: "public, max-age=31536000, immutable",
-      })
-    );
+
+    try {
+      await this.configuredClient(config).send(
+        new PutObjectCommand({
+          Bucket: config.bucket,
+          Key: key,
+          Body: content,
+          ContentType: contentType,
+          ContentDisposition: "inline",
+          CacheControl: "public, max-age=31536000, immutable",
+        })
+      );
+    } catch (error) {
+      throw this.mapStorageError(error, "upload");
+    }
 
     return { key, url: `${config.publicUrl}/${encodedKey(key)}` };
   }
 
   async delete(key: string): Promise<void> {
     const config = this.configuration();
-    await this.configuredClient(config).send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }));
+
+    try {
+      await this.configuredClient(config).send(new DeleteObjectCommand({ Bucket: config.bucket, Key: key }));
+    } catch (error) {
+      throw this.mapStorageError(error, "delete");
+    }
+  }
+
+  private mapStorageError(error: unknown, operation: "upload" | "delete"): never {
+    if (error instanceof HttpError) {
+      throw error;
+    }
+
+    const code =
+      typeof error === "object" && error !== null && "Code" in error
+        ? String((error as { Code?: unknown }).Code ?? "")
+        : "";
+    const name =
+      typeof error === "object" && error !== null && "name" in error
+        ? String((error as { name?: unknown }).name ?? "")
+        : "";
+    const message =
+      typeof error === "object" && error !== null && "message" in error
+        ? String((error as { message?: unknown }).message ?? "")
+        : String(error);
+
+    const denied =
+      code === "AccessDenied" ||
+      name === "AccessDenied" ||
+      /access denied/i.test(message) ||
+      code === "InvalidAccessKeyId" ||
+      code === "SignatureDoesNotMatch";
+
+    if (denied) {
+      throw new HttpError(
+        503,
+        "Avatar storage rejected the request. Check LEGALMIND_R2_* credentials and that the R2 API token has Object Read & Write on the configured bucket.",
+        {
+          operation,
+          bucket: env.r2Bucket,
+          storageCode: code || name || "AccessDenied",
+        },
+        "AVATAR_STORAGE_ACCESS_DENIED"
+      );
+    }
+
+    throw new HttpError(
+      502,
+      `Avatar storage ${operation} failed.`,
+      { operation, storageCode: code || name || "UnknownError", message },
+      "AVATAR_STORAGE_ERROR"
+    );
   }
 }

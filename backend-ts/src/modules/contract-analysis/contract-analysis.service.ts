@@ -74,8 +74,7 @@ export interface ClauseAnalysis {
 
 export interface OverallScore {
   overall_score: number;
-  classification:
-    "excellent" | "good" | "needs_review" | "high_risk" | "critical";
+  classification: "excellent" | "good" | "needs_review" | "high_risk" | "critical";
   color: "green" | "yellow" | "orange" | "red";
   breakdown: {
     compliance: number;
@@ -164,7 +163,6 @@ EXTRACTED TEXT:
 ═══════════════════════════════════════════════════════════════════
 ⚠️ REMINDER: Your job is ONLY to clean the existing text. Do NOT add anything new.
 Output ONLY the cleaned Arabic text (no comments):`;
-
 
 const SEGMENTATION_PROMPT = `You are an Egyptian labor contract specialist. Your task: split the following employment contract into individual clauses.
 
@@ -331,10 +329,10 @@ export class EgyptianEmploymentContractAnalyzer {
 
   constructor(config: AnalyzerConfig) {
     this.config = {
-      openaiApiKey: '',
-      qdrantUrl: '',
-      embeddingModel: 'text-embedding-v4',
-      llmModel: 'qwen3.7-plus-2026-05-26',//qwen3.7-max-2026-06-08, qwen3.6-plus-2026-04-02, qwen3.7-flash-2026-07-15, kimi-k2.7-code,deepseek-v4-pro
+      openaiApiKey: "",
+      qdrantUrl: "",
+      embeddingModel: "text-embedding-v4",
+      llmModel: "deepseek-v4-pro", //qwen3.7-max-2026-06-08, qwen3.6-plus-2026-04-02, qwen3.7-flash-2026-07-15, kimi-k2.7-code,deepseek-v4-pro
       temperature: 0.1,
       ...config,
     };
@@ -356,14 +354,14 @@ export class EgyptianEmploymentContractAnalyzer {
 
   private ensureOpenAI(): any {
     if (!this.openai) {
-      throw new Error('Missing OPENAI_API_KEY. Configure it before running contract analysis.');
+      throw new Error("Missing OPENAI_API_KEY. Configure it before running contract analysis.");
     }
     return this.openai;
   }
 
   private ensureQdrant(): QdrantClient {
     if (!this.qdrant) {
-      throw new Error('Missing QDRANT_URL. Configure it before running contract analysis.');
+      throw new Error("Missing QDRANT_URL. Configure it before running contract analysis.");
     }
     return this.qdrant;
   }
@@ -402,18 +400,34 @@ export class EgyptianEmploymentContractAnalyzer {
 
     // Check for contract-related keywords to ensure it's actually a contract
     const contractKeywords = [
-      "طرف", "عقد", "عمل", "أجر", "وظيفة", "-company", "contract", "employee",
-      "salary", "work", "hire", "employment", "بند",
-      "المادة", "فسخ", "إجازة", "تأمين", "ساعات", "تجربة",
+      "طرف",
+      "عقد",
+      "عمل",
+      "أجر",
+      "وظيفة",
+      "-company",
+      "contract",
+      "employee",
+      "salary",
+      "work",
+      "hire",
+      "employment",
+      "بند",
+      "المادة",
+      "فسخ",
+      "إجازة",
+      "تأمين",
+      "ساعات",
+      "تجربة",
     ];
     const lowerText = cleaned.toLowerCase();
-    const hasContractKeyword = contractKeywords.some(kw => lowerText.includes(kw.toLowerCase()));
-    
+    const hasContractKeyword = contractKeywords.some((kw) => lowerText.includes(kw.toLowerCase()));
+
     if (!hasContractKeyword) {
       throw new Error(
         `The extracted text does not appear to be an employment contract. ` +
-        `No contract-related keywords found. ` +
-        `Please upload a valid Egyptian employment contract (Arabic or English).`
+          `No contract-related keywords found. ` +
+          `Please upload a valid Egyptian employment contract (Arabic or English).`
       );
     }
 
@@ -437,7 +451,9 @@ export class EgyptianEmploymentContractAnalyzer {
 
       const cleaned = fullText.replace(/[\s\u0000-\u001F\u200B-\u200D\uFEFF]/g, "").trim();
       if (cleaned.length > 10) {
-        console.log(`  ✅ Extracted ${fullText.length} characters via pdfjs-dist (text PDF) — no cleaning needed`);
+        console.log(
+          `  ✅ Extracted ${fullText.length} characters via pdfjs-dist (text PDF) — no cleaning needed`
+        );
         return { text: fullText, needsCleaning: false };
       }
     } catch (err: any) {
@@ -525,16 +541,16 @@ export class EgyptianEmploymentContractAnalyzer {
     const openai = this.ensureOpenAI();
 
     const response = await openai.chat.completions.create({
-        model: this.config.llmModel,
-        messages: [
-          {
-            role: "user",
-            content: CLEANING_PROMPT.replace("{raw_text}", rawText),
-          },
-        ],
-        temperature: this.config.temperature,
-      });
-      return response.choices[0].message.content?.trim() || rawText;
+      model: this.config.llmModel,
+      messages: [
+        {
+          role: "user",
+          content: CLEANING_PROMPT.replace("{raw_text}", rawText),
+        },
+      ],
+      temperature: this.config.temperature,
+    });
+    return response.choices[0].message.content?.trim() || rawText;
     // }
 
     // // For long texts, chunk and clean separately
@@ -608,7 +624,10 @@ export class EgyptianEmploymentContractAnalyzer {
     if (!content) throw new Error("Empty segmentation response");
 
     // Remove markdown code block fences if present
-    const clean = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    const clean = content
+      .replace(/```json\s*/g, "")
+      .replace(/```\s*/g, "")
+      .trim();
 
     // Extract JSON array from response (find first [ and last ])
     const jsonStart = clean.indexOf("[");
@@ -657,9 +676,10 @@ export class EgyptianEmploymentContractAnalyzer {
       // Cap at reasonable max (20 clauses)
       const capped = unique.slice(0, 20);
 
-      console.log(`  Parsed ${clauses.length} raw clauses, ${unique.length} unique, ${capped.length} after cap`);
+      console.log(
+        `  Parsed ${clauses.length} raw clauses, ${unique.length} unique, ${capped.length} after cap`
+      );
       return capped;
-
     } catch (e) {
       console.error("Failed to parse segmentation:", jsonStr.substring(0, 500));
       throw e;
@@ -698,7 +718,7 @@ export class EgyptianEmploymentContractAnalyzer {
   private async retrieveWithVector(
     queryVector: number[],
     clauseType: string,
-    topK: number = 5,
+    topK: number = 5
   ): Promise<RetrievedDocument[]> {
     const collections = COLLECTION_MAP[clauseType] || COLLECTION_MAP.default;
     const allResults: RetrievedDocument[] = [];
@@ -719,10 +739,7 @@ export class EgyptianEmploymentContractAnalyzer {
           allResults.push({
             id: point.id as string,
             score: point.score,
-            text:
-              (point.payload?.text_ar as string) ||
-              (point.payload?.text as string) ||
-              "",
+            text: (point.payload?.text_ar as string) || (point.payload?.text as string) || "",
             metadata: point.payload || {},
             source: collectionName,
           });
@@ -753,17 +770,12 @@ export class EgyptianEmploymentContractAnalyzer {
   /**
    * Analyze a single clause using retrieved legal context
    */
-  async analyzeClause(
-    clause: Clause,
-    retrievedDocs: RetrievedDocument[],
-  ): Promise<ClauseAnalysis> {
+  async analyzeClause(clause: Clause, retrievedDocs: RetrievedDocument[]): Promise<ClauseAnalysis> {
     // Build context string
     const contextText = retrievedDocs
       .map(
         (doc, i) =>
-          `[المصدر ${i + 1} - ${doc.source}]\n${doc.text}\nMetadata: ${JSON.stringify(
-            doc.metadata,
-          )}`,
+          `[المصدر ${i + 1} - ${doc.source}]\n${doc.text}\nMetadata: ${JSON.stringify(doc.metadata)}`
       )
       .join("\n\n");
 
@@ -783,7 +795,10 @@ export class EgyptianEmploymentContractAnalyzer {
     if (!content) throw new Error("Empty analysis response");
 
     try {
-      const clean = content.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+      const clean = content
+        .replace(/```json\s*/g, "")
+        .replace(/```\s*/g, "")
+        .trim();
       return JSON.parse(clean) as ClauseAnalysis;
     } catch (e) {
       console.error("Failed to parse analysis:", content);
@@ -815,9 +830,17 @@ export class EgyptianEmploymentContractAnalyzer {
 
     // Mandatory clause types (12 total)
     const MANDATORY_TYPES = [
-      "job_description", "contract_duration", "probation_period",
-      "wages", "working_hours", "leave", "termination", "non_compete",
-      "confidentiality", "social_insurance", "other",
+      "job_description",
+      "contract_duration",
+      "probation_period",
+      "wages",
+      "working_hours",
+      "leave",
+      "termination",
+      "non_compete",
+      "confidentiality",
+      "social_insurance",
+      "other",
     ];
 
     // 1. COMPLIANCE SCORE (40%)
@@ -828,7 +851,10 @@ export class EgyptianEmploymentContractAnalyzer {
     // 2. RISK SCORE (30%) — lower risk = higher score
     const riskMap: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
     const maxRisk = total * 4;
-    const currentRisk = clauseAnalyses.reduce((sum, c) => sum + (riskMap[c.risk_assessment.category] || 0), 0);
+    const currentRisk = clauseAnalyses.reduce(
+      (sum, c) => sum + (riskMap[c.risk_assessment.category] || 0),
+      0
+    );
     const riskScore = Math.round(30 - (currentRisk / maxRisk) * 30);
 
     // 3. COMPLETENESS SCORE (20%) — mandatory types present
@@ -846,11 +872,22 @@ export class EgyptianEmploymentContractAnalyzer {
     // Classification
     let classification: OverallScore["classification"];
     let color: OverallScore["color"];
-    if (overallScore >= 85) { classification = "excellent"; color = "green"; }
-    else if (overallScore >= 70) { classification = "good"; color = "green"; }
-    else if (overallScore >= 50) { classification = "needs_review"; color = "yellow"; }
-    else if (overallScore >= 30) { classification = "high_risk"; color = "orange"; }
-    else { classification = "critical"; color = "red"; }
+    if (overallScore >= 85) {
+      classification = "excellent";
+      color = "green";
+    } else if (overallScore >= 70) {
+      classification = "good";
+      color = "green";
+    } else if (overallScore >= 50) {
+      classification = "needs_review";
+      color = "yellow";
+    } else if (overallScore >= 30) {
+      classification = "high_risk";
+      color = "orange";
+    } else {
+      classification = "critical";
+      color = "red";
+    }
 
     // Collect top risks
     const topRisks = clauseAnalyses
@@ -914,13 +951,18 @@ export class EgyptianEmploymentContractAnalyzer {
 
     // Color mapping
     const colorEmoji: Record<string, string> = {
-      green: "🟢", yellow: "🟡", orange: "🟠", red: "🔴"
+      green: "🟢",
+      yellow: "🟡",
+      orange: "🟠",
+      red: "🔴",
     };
 
     // Status mapping
     const statusArabic: Record<string, string> = {
-      compliant: "ممتثل", non_compliant: "غير ممتثل",
-      partially_compliant: "ممتثل جزئياً", missing: "مفقود"
+      compliant: "ممتثل",
+      non_compliant: "غير ممتثل",
+      partially_compliant: "ممتثل جزئياً",
+      missing: "مفقود",
     };
 
     // Build report
@@ -1005,7 +1047,7 @@ ${overall.summary}
   async analyze(
     filePath: string,
     onProgress?: (event: ProgressEvent) => void,
-    isCancelled?: () => boolean | Promise<boolean>,
+    isCancelled?: () => boolean | Promise<boolean>
   ): Promise<AnalysisReport> {
     const emit = (event: ProgressEvent) => {
       console.log(`[${event.step}] ${event.message}`);
@@ -1014,7 +1056,7 @@ ${overall.summary}
 
     const checkCancelled = async () => {
       if (await isCancelled?.()) {
-        throw new Error('تم إلغاء التحليل من قبل المستخدم.');
+        throw new Error("تم إلغاء التحليل من قبل المستخدم.");
       }
     };
 
@@ -1026,7 +1068,9 @@ ${overall.summary}
     emit({ step: "1/7", phase: "start", message: "🔍 Step 1/7: Extracting text from document..." });
     const { text: rawText, needsCleaning } = await this.extractText(filePath);
     emit({
-      step: "1/7", phase: "result", message:
+      step: "1/7",
+      phase: "result",
+      message:
         `✅ Extracted ${rawText.length} characters\n` +
         `─────────────────────────────────────\n` +
         `${rawText.substring(0, 500)}${rawText.length > 500 ? "\n... (truncated)" : ""}\n` +
@@ -1042,8 +1086,8 @@ ${overall.summary}
     if (cleanText.includes("لا يوجد محتوى قانوني") || cleanText.includes("لا يوجد نص قانوني")) {
       throw new Error(
         "The uploaded file does not contain an employment contract. " +
-        "The text appears to be garbage or unrelated content (e.g., a profile picture). " +
-        "Please upload a valid Egyptian employment contract."
+          "The text appears to be garbage or unrelated content (e.g., a profile picture). " +
+          "Please upload a valid Egyptian employment contract."
       );
     }
 
@@ -1051,18 +1095,20 @@ ${overall.summary}
     if (cleanLen < 50) {
       throw new Error(
         `Insufficient contract text after cleaning (${cleanLen} characters). ` +
-        `The file may not contain an employment contract. ` +
-        `Please upload a valid Egyptian employment contract.`
+          `The file may not contain an employment contract. ` +
+          `Please upload a valid Egyptian employment contract.`
       );
     }
 
     emit({
-        step: "2/7", phase: "result", message:
-          `✅ Cleaned text: ${cleanText.length} characters\n` +
-          `─────────────────────────────────────\n` +
-          `${cleanText.substring(0, 500)}${cleanText.length > 500 ? "\n... (truncated)" : ""}\n` +
-          `─────────────────────────────────────`,
-      });
+      step: "2/7",
+      phase: "result",
+      message:
+        `✅ Cleaned text: ${cleanText.length} characters\n` +
+        `─────────────────────────────────────\n` +
+        `${cleanText.substring(0, 500)}${cleanText.length > 500 ? "\n... (truncated)" : ""}\n` +
+        `─────────────────────────────────────`,
+    });
 
     // ── STEP 3: Segmentation ──
     await checkCancelled();
@@ -1072,18 +1118,22 @@ ${overall.summary}
     if (clauses.length === 0) {
       throw new Error(
         "No contract clauses could be identified in the document. " +
-        "The file may not contain an employment contract. " +
-        "Please upload a valid Egyptian employment contract."
+          "The file may not contain an employment contract. " +
+          "Please upload a valid Egyptian employment contract."
       );
     }
 
     emit({
-      step: "3/7", phase: "result",
+      step: "3/7",
+      phase: "result",
       message:
         `✅ Found ${clauses.length} clauses:\n` +
-        clauses.map((c, i) =>
-          `  ${i + 1}. [${c.clause_type}] ${c.clause_title || "(no title)"} — ${c.text.substring(0, 80)}${c.text.length > 80 ? "..." : ""}`
-        ).join("\n"),
+        clauses
+          .map(
+            (c, i) =>
+              `  ${i + 1}. [${c.clause_type}] ${c.clause_title || "(no title)"} — ${c.text.substring(0, 80)}${c.text.length > 80 ? "..." : ""}`
+          )
+          .join("\n"),
     });
 
     // ── STEP 4: Batch Embed + Retrieval + Analysis (per clause) ──
@@ -1093,7 +1143,11 @@ ${overall.summary}
     // Batch embed all clauses at once (1 API call instead of N)
     const clauseTexts = clauses.map((c) => c.text);
     const embeddings = await this.embedBatch(clauseTexts);
-    emit({ step: "4/7", phase: "progress", message: `  📦 Embedded ${embeddings.length} clauses in 1 API call` });
+    emit({
+      step: "4/7",
+      phase: "progress",
+      message: `  📦 Embedded ${embeddings.length} clauses in 1 API call`,
+    });
 
     const clauseAnalyses: ClauseAnalysis[] = [];
 
@@ -1102,20 +1156,31 @@ ${overall.summary}
       const clauseStart = Date.now();
 
       emit({
-        step: "4/7", phase: "progress",
+        step: "4/7",
+        phase: "progress",
         message:
           `\n  ┌─ Clause ${i + 1}/${clauses.length}: [${clause.clause_type}] ${clause.clause_title || "untitled"}\n` +
           `  │  Text: ${clause.text.substring(0, 120)}${clause.text.length > 120 ? "..." : ""}`,
       });
 
       // Retrieve using pre-computed vector (no extra API call)
-      emit({ step: "4/7", phase: "progress", message: `  │  📖 Searching legal collections: ${COLLECTION_MAP[clause.clause_type]?.join(", ") || "default"}` });
+      emit({
+        step: "4/7",
+        phase: "progress",
+        message: `  │  📖 Searching legal collections: ${COLLECTION_MAP[clause.clause_type]?.join(", ") || "default"}`,
+      });
       const retrieved = await this.retrieveWithVector(embeddings[i], clause.clause_type, 5);
       emit({
-        step: "4/7", phase: "progress",
+        step: "4/7",
+        phase: "progress",
         message:
           `  │  📖 Retrieved ${retrieved.length} documents:\n` +
-          retrieved.map((d, j) => `  │    ${j + 1}. [${d.source}] score=${d.score.toFixed(3)} — ${d.text.substring(0, 100)}...`).join("\n"),
+          retrieved
+            .map(
+              (d, j) =>
+                `  │    ${j + 1}. [${d.source}] score=${d.score.toFixed(3)} — ${d.text.substring(0, 100)}...`
+            )
+            .join("\n"),
       });
 
       // Analyze
@@ -1124,7 +1189,8 @@ ${overall.summary}
       const clauseTime = ((Date.now() - clauseStart) / 1000).toFixed(1);
 
       emit({
-        step: "4/7", phase: "progress",
+        step: "4/7",
+        phase: "progress",
         message:
           `  │  ✅ Analysis result (${clauseTime}s):\n` +
           `  │     Compliance: ${analysis.compliance.status} (confidence: ${analysis.compliance.confidence})\n` +
@@ -1149,7 +1215,8 @@ ${overall.summary}
     emit({ step: "5/7", phase: "start", message: "📊 Step 5/7: Calculating overall score..." });
     const overall = await this.calculateOverallScore(clauseResults);
     emit({
-      step: "5/7", phase: "result",
+      step: "5/7",
+      phase: "result",
       message:
         `✅ Overall Score: ${overall.overall_score}/100 [${overall.classification}] (${overall.color})\n` +
         `   Breakdown: compliance=${overall.breakdown.compliance} risk=${overall.breakdown.risk} completeness=${overall.breakdown.completeness} balance=${overall.breakdown.balance}\n` +
@@ -1162,14 +1229,16 @@ ${overall.summary}
     emit({ step: "6/7", phase: "start", message: "📄 Step 6/7: Generating Markdown report..." });
     const reportMarkdown = await this.generateReport(overall, clauseResults);
     emit({
-      step: "6/7", phase: "result",
+      step: "6/7",
+      phase: "result",
       message: `✅ Report generated: ${reportMarkdown.length} characters`,
     });
 
     // ── STEP 7: Complete ──
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
     emit({
-      step: "7/7", phase: "done",
+      step: "7/7",
+      phase: "done",
       message: `🎉 Analysis complete! Total time: ${totalTime}s | ${clauses.length} clauses analyzed`,
     });
 
@@ -1188,7 +1257,7 @@ ${overall.summary}
   async analyzeText(
     rawText: string,
     onProgress?: (event: ProgressEvent) => void,
-    isCancelled?: () => boolean | Promise<boolean>,
+    isCancelled?: () => boolean | Promise<boolean>
   ): Promise<AnalysisReport> {
     const emit = (event: ProgressEvent) => {
       console.log(`[${event.step}] ${event.message}`);
@@ -1197,7 +1266,7 @@ ${overall.summary}
 
     const checkCancelled = async () => {
       if (await isCancelled?.()) {
-        throw new Error('تم إلغاء التحقق من قبل المستخدم.');
+        throw new Error("تم إلغاء التحقق من قبل المستخدم.");
       }
     };
 
@@ -1237,7 +1306,8 @@ ${overall.summary}
     }
 
     emit({
-      step: "3/7", phase: "result",
+      step: "3/7",
+      phase: "result",
       message: `✅ Found ${clauses.length} clauses`,
     });
 
@@ -1246,7 +1316,11 @@ ${overall.summary}
     emit({ step: "4/7", phase: "start", message: "📚 Step 4/7: Embedding all clauses in batch..." });
     const clauseTexts = clauses.map((c) => c.text);
     const embeddings = await this.embedBatch(clauseTexts);
-    emit({ step: "4/7", phase: "progress", message: `  📦 Embedded ${embeddings.length} clauses in 1 API call` });
+    emit({
+      step: "4/7",
+      phase: "progress",
+      message: `  📦 Embedded ${embeddings.length} clauses in 1 API call`,
+    });
 
     const clauseAnalyses: ClauseAnalysis[] = [];
 
@@ -1255,13 +1329,15 @@ ${overall.summary}
       const clauseStart = Date.now();
 
       emit({
-        step: "4/7", phase: "progress",
+        step: "4/7",
+        phase: "progress",
         message: `  ┌─ Clause ${i + 1}/${clauses.length}: [${clause.clause_type}] ${clause.clause_title || "untitled"}`,
       });
 
       const retrieved = await this.retrieveWithVector(embeddings[i], clause.clause_type, 5);
       emit({
-        step: "4/7", phase: "progress",
+        step: "4/7",
+        phase: "progress",
         message: `  │  📖 Retrieved ${retrieved.length} documents`,
       });
 
@@ -1270,7 +1346,8 @@ ${overall.summary}
       const clauseTime = ((Date.now() - clauseStart) / 1000).toFixed(1);
 
       emit({
-        step: "4/7", phase: "progress",
+        step: "4/7",
+        phase: "progress",
         message:
           `  │  ✅ Analysis result (${clauseTime}s):\n` +
           `  │     Compliance: ${analysis.compliance.status}\n` +
@@ -1292,7 +1369,8 @@ ${overall.summary}
     emit({ step: "5/7", phase: "start", message: "📊 Step 5/7: Calculating overall score..." });
     const overall = await this.calculateOverallScore(clauseResults);
     emit({
-      step: "5/7", phase: "result",
+      step: "5/7",
+      phase: "result",
       message: `✅ Overall Score: ${overall.overall_score}/100 [${overall.classification}]`,
     });
 
@@ -1300,12 +1378,17 @@ ${overall.summary}
     await checkCancelled();
     emit({ step: "6/7", phase: "start", message: "📄 Step 6/7: Generating Markdown report..." });
     const reportMarkdown = await this.generateReport(overall, clauseResults);
-    emit({ step: "6/7", phase: "result", message: `✅ Report generated: ${reportMarkdown.length} characters` });
+    emit({
+      step: "6/7",
+      phase: "result",
+      message: `✅ Report generated: ${reportMarkdown.length} characters`,
+    });
 
     // ── STEP 7: Complete ──
     const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
     emit({
-      step: "7/7", phase: "done",
+      step: "7/7",
+      phase: "done",
       message: `🎉 التحقق اكتمل! الوقت: ${totalTime}s | ${clauses.length} مواد`,
     });
 
@@ -1317,4 +1400,3 @@ ${overall.summary}
     };
   }
 }
-

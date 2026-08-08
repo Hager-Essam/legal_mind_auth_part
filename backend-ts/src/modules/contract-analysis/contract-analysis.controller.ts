@@ -19,7 +19,7 @@ export const healthCheck = (_req: Request, res: Response): void => {
 
 export const uploadContract = async (
   req: Request & { file?: Express.Multer.File },
-  res: Response,
+  res: Response
 ): Promise<void> => {
   try {
     if (!req.file) {
@@ -33,16 +33,8 @@ export const uploadContract = async (
     const userId = req.user!.id;
     const jobId = uuidv4();
 
-    const contractKey = r2Storage.generateKey(
-      jobId,
-      req.file.originalname,
-      "contracts",
-    );
-    const contractUrl = await r2Storage.uploadFile(
-      req.file.path,
-      contractKey,
-      req.file.mimetype,
-    );
+    const contractKey = r2Storage.generateKey(jobId, req.file.originalname, "contracts");
+    const contractUrl = await r2Storage.uploadFile(req.file.path, contractKey, req.file.mimetype);
 
     const job = await jobRepository.create({
       id: jobId,
@@ -82,10 +74,7 @@ export const uploadContract = async (
   }
 };
 
-export const startAnalysis = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const startAnalysis = async (req: Request, res: Response): Promise<void> => {
   try {
     const jobId = getJobId(req);
     const userId = req.user!.id;
@@ -102,16 +91,13 @@ export const startAnalysis = async (
 
     if (job.status !== "queued") {
       const statusMessages: Record<string, string> = {
-        processing:
-          "العقد قيد التحليل حالياً. يُرجى الانتظار حتى اكتمال التحليل.",
+        processing: "العقد قيد التحليل حالياً. يُرجى الانتظار حتى اكتمال التحليل.",
         completed: "تم تحليل هذا العقد بالفعل. يمكنك الاطلاع على النتائج.",
         failed: "فشل التحليل سابقاً. يُرجى رفع العقد مجدداً.",
       };
       res.status(409).json({
         success: false,
-        message:
-          statusMessages[job.status] ||
-          "حالة العقد غير صالحة للبدء في التحليل.",
+        message: statusMessages[job.status] || "حالة العقد غير صالحة للبدء في التحليل.",
       });
       return;
     }
@@ -138,10 +124,7 @@ export const startAnalysis = async (
   }
 };
 
-export const getJobStatus = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const getJobStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const jobId = getJobId(req);
     const userId = req.user!.id;
@@ -166,9 +149,7 @@ export const getJobStatus = async (
     };
 
     if (job.status === "completed" && job.analysisId) {
-      const analysis = await resultsAnalysisRepository.findById(
-        job.analysisId.toString(),
-      );
+      const analysis = await resultsAnalysisRepository.findById(job.analysisId.toString());
 
       if (analysis) {
         response.result = {
@@ -187,13 +168,10 @@ export const getJobStatus = async (
     }
 
     if (job.status === "processing") {
-      const lastEvent = job.progressLogs
-        .filter((e) => e.step !== "done" && e.step !== "error")
-        .pop();
+      const lastEvent = job.progressLogs.filter((e) => e.step !== "done" && e.step !== "error").pop();
 
       if (lastEvent) {
-        response.currentStage =
-          STAGE_NAMES[lastEvent.step] || "جاري المعالجة...";
+        response.currentStage = STAGE_NAMES[lastEvent.step] || "جاري المعالجة...";
         response.currentStep = lastEvent.step;
         response.totalSteps = "7/7";
         const stepNum = parseInt(lastEvent.step.split("/")[0], 10);
@@ -221,10 +199,7 @@ export const getJobStatus = async (
   }
 };
 
-export const getAllJobs = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const getAllJobs = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
     const jobs = await jobRepository.findAll({
@@ -261,10 +236,7 @@ export const getAllJobs = async (
   }
 };
 
-export const streamJobProgress = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const streamJobProgress = async (req: Request, res: Response): Promise<void> => {
   try {
     const jobId = getJobId(req);
     const userId = req.user!.id;
@@ -312,10 +284,7 @@ export const streamJobProgress = async (
 
         job.progressLogs = updatedJob.progressLogs;
 
-        if (
-          updatedJob.status === "completed" ||
-          updatedJob.status === "failed"
-        ) {
+        if (updatedJob.status === "completed" || updatedJob.status === "failed") {
           clearInterval(pollInterval);
           res.end();
         }
@@ -340,10 +309,7 @@ export const streamJobProgress = async (
   }
 };
 
-export const getJobProgress = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const getJobProgress = async (req: Request, res: Response): Promise<void> => {
   try {
     const jobId = getJobId(req);
     const userId = req.user!.id;
@@ -394,7 +360,7 @@ export const cancelJob = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    if (job.status !== 'queued' && job.status !== 'processing') {
+    if (job.status !== "queued" && job.status !== "processing") {
       res.status(400).json({
         success: false,
         message: `لا يمكن إلغاء العقد في الحالة الحالية (${job.status}).`,
@@ -402,21 +368,21 @@ export const cancelJob = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    await jobRepository.updateStatus(job.id, 'cancelled', {
+    await jobRepository.updateStatus(job.id, "cancelled", {
       completedAt: new Date(),
     });
 
     await jobRepository.addProgressLog(job.id, {
-      step: 'cancelled',
-      phase: 'done',
-      message: '⛔ تم إلغاء التحليل من قبل المستخدم.',
+      step: "cancelled",
+      phase: "done",
+      message: "⛔ تم إلغاء التحليل من قبل المستخدم.",
       timestamp: new Date(),
     });
 
     res.json({
       success: true,
       message: "تم إلغاء التحليل بنجاح.",
-      data: { jobId, status: 'cancelled' },
+      data: { jobId, status: "cancelled" },
     });
   } catch (error: any) {
     console.error("خطأ في إلغاء العقد:", error);
@@ -482,10 +448,7 @@ export const deleteJob = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const downloadReport = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const downloadReport = async (req: Request, res: Response): Promise<void> => {
   try {
     const jobId = getJobId(req);
     const userId = req.user!.id;
@@ -516,9 +479,7 @@ export const downloadReport = async (
       return;
     }
 
-    const analysis = await resultsAnalysisRepository.findById(
-      job.analysisId.toString(),
-    );
+    const analysis = await resultsAnalysisRepository.findById(job.analysisId.toString());
 
     if (!analysis) {
       res.status(404).json({
@@ -556,10 +517,23 @@ export const downloadReport = async (
   <head>
     <meta charset="utf-8" />
     <style>
-      /* Applies to page 1, 2, 3... — all four sides */
+      :root {
+        --lm-brand: #003ec7;
+        --lm-brand-deep: #0038b6;
+        --lm-navy: #0b1326;
+        --lm-ink: #152033;
+        --lm-muted: #5c6b82;
+        --lm-accent: #d69e2e;
+        --lm-soft: #adc7f7;
+        --lm-surface: #f0f4ff;
+        --lm-paper: #ffffff;
+        --lm-rule: #d8e0ef;
+        --lm-rule-strong: #c3cde3;
+      }
+
       @page {
         size: A4;
-        margin: 20mm 18mm 20mm 18mm;
+        margin: 18mm 16mm 18mm 16mm;
       }
 
       * {
@@ -572,137 +546,164 @@ export const downloadReport = async (
         padding: 0;
         direction: rtl;
         text-align: right;
-        color: #191c1e;
-        background: #ffffff;
-        font-family: Tahoma, "Segoe UI", Arial, sans-serif;
-        font-size: 12px;
-        line-height: 1.75;
+        color: var(--lm-ink);
+        background: var(--lm-paper);
+        font-family: "IBM Plex Sans Arabic", Tahoma, "Segoe UI", Arial, sans-serif;
+        font-size: 12.5px;
+        line-height: 1.85;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
 
-      /* Content wrapper only — do NOT add large padding here
-         (it won't repeat on new pages). Use @page + generatePdf margin. */
+      /* Do NOT pad .page heavily — padding does not repeat on new pages */
       .page {
         max-width: 100%;
+        position: relative;
       }
 
-      /* ── Brand header ── */
+      /* ── Header ── */
       .report-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        padding: 0 0 16px;
-        margin-bottom: 18px;
-        border-bottom: 3px solid #003ec7;
+        gap: 20px;
+        padding: 0 0 14px;
+        margin-bottom: 0;
+        border-bottom: 2px solid var(--lm-brand);
       }
 
       .brand-block {
         display: flex;
         align-items: center;
         gap: 12px;
+        min-width: 0;
       }
 
       .brand-logo {
-        width: 48px;
-        height: 48px;
+        width: 44px;
+        height: 44px;
         flex-shrink: 0;
       }
 
-      .brand-logo img,
       .brand-logo svg {
-        width: 48px;
-        height: 48px;
+        width: 44px;
+        height: 44px;
         display: block;
       }
 
       .brand-text {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 3px;
+        min-width: 0;
       }
 
       .brand-name {
-        font-size: 18px;
+        font-size: 17px;
         font-weight: 700;
-        color: #0b1326;
+        color: var(--lm-navy);
         letter-spacing: -0.02em;
         line-height: 1.2;
       }
 
       .brand-name span {
-        color: #003ec7;
-        margin-right: 4px;
+        color: var(--lm-brand);
+        margin-right: 5px;
       }
 
       .brand-tagline {
         font-size: 10px;
-        color: #5a6478;
+        color: var(--lm-muted);
         font-weight: 600;
+        letter-spacing: 0.01em;
       }
 
       .report-meta {
         text-align: left;
         direction: ltr;
-        font-size: 10px;
-        color: #5a6478;
-        line-height: 1.5;
+        font-size: 9.5px;
+        color: var(--lm-muted);
+        line-height: 1.55;
+        flex-shrink: 0;
+        padding: 6px 10px;
+        border: 1px solid var(--lm-rule);
+        border-radius: 8px;
+        background: var(--lm-surface);
       }
 
       .report-meta strong {
         display: block;
-        color: #003ec7;
-        font-size: 11px;
+        color: var(--lm-brand);
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
         margin-bottom: 2px;
       }
 
-      /* ── Accent bar ── */
+      /* Thin brand rule — institutional, print-safe */
       .accent-bar {
-        height: 4px;
-        margin: -18px 0 22px;
+        height: 3px;
+        margin: 0 0 22px;
         background: linear-gradient(
           90deg,
-          #d69e2e 0%,
-          #003ec7 55%,
-          #adc7f7 100%
+          var(--lm-accent) 0%,
+          var(--lm-brand) 42%,
+          var(--lm-soft) 100%
         );
-        border-radius: 999px;
       }
 
-      /* ── Content ── */
+      /* ── Body ── */
       .report-body {
-        color: #191c1e;
+        color: var(--lm-ink);
+        text-align: justify;
+      }
+
+      .report-body > :first-child {
+        margin-top: 0;
       }
 
       .report-body h1 {
-        font-size: 22px;
-        color: #0b1326;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--lm-navy);
         margin: 0 0 14px;
         padding-bottom: 8px;
-        border-bottom: 1px solid #d8e3f8;
+        line-height: 1.35;
+        border-bottom: 1px solid var(--lm-rule);
+        text-align: right;
       }
 
       .report-body h2 {
-        font-size: 16px;
-        color: #003ec7;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--lm-brand);
         margin: 22px 0 10px;
-        padding: 6px 10px;
-        background: #f0f4ff;
-        border-right: 4px solid #003ec7;
-        border-radius: 0 6px 6px 0;
+        padding: 0 0 6px 0;
+        line-height: 1.4;
+        border-bottom: 1px solid var(--lm-rule);
+        background: transparent;
+        text-align: right;
+        page-break-after: avoid;
       }
 
       .report-body h3 {
-        font-size: 14px;
-        color: #0b1326;
-        margin: 18px 0 8px;
+        font-size: 13.5px;
+        font-weight: 700;
+        color: var(--lm-navy);
+        margin: 16px 0 8px;
+        line-height: 1.45;
+        page-break-after: avoid;
       }
 
       .report-body h4,
       .report-body h5,
       .report-body h6 {
         font-size: 12.5px;
+        font-weight: 700;
         color: #24304a;
         margin: 14px 0 6px;
+        page-break-after: avoid;
       }
 
       .report-body p {
@@ -712,7 +713,7 @@ export const downloadReport = async (
       .report-body ul,
       .report-body ol {
         margin: 0 0 12px;
-        padding-right: 22px;
+        padding-right: 1.35rem;
         padding-left: 0;
       }
 
@@ -720,45 +721,52 @@ export const downloadReport = async (
         margin-bottom: 4px;
       }
 
+      .report-body li + li {
+        margin-top: 2px;
+      }
+
       .report-body strong {
-        color: #0b1326;
+        color: var(--lm-navy);
+        font-weight: 700;
       }
 
       .report-body a {
-        color: #003ec7;
-        text-decoration: none;
+        color: var(--lm-brand);
+        text-decoration: underline;
+        text-underline-offset: 2px;
       }
 
       .report-body hr {
         border: 0;
-        border-top: 1px solid #d8e3f8;
+        border-top: 1px solid var(--lm-rule);
         margin: 18px 0;
       }
 
       .report-body blockquote {
         margin: 12px 0;
         padding: 10px 14px;
-        border-right: 4px solid #d69e2e;
+        border-right: 3px solid var(--lm-accent);
         border-left: 0;
-        background: #fffaf0;
-        color: #4a5568;
-        border-radius: 0 6px 6px 0;
+        background: rgba(0, 62, 199, 0.04);
+        color: var(--lm-muted);
+        border-radius: 0 8px 8px 0;
       }
 
       .report-body pre {
         background: #f4f7fc;
-        border: 1px solid #d8e3f8;
+        border: 1px solid var(--lm-rule);
         border-radius: 8px;
         padding: 12px;
         overflow-x: auto;
         direction: ltr;
         text-align: left;
         font-size: 11px;
+        line-height: 1.55;
       }
 
       .report-body code {
-        background: #f0f4ff;
-        color: #003ec7;
+        background: var(--lm-surface);
+        color: var(--lm-brand);
         padding: 1px 5px;
         border-radius: 4px;
         font-family: Consolas, "Courier New", monospace;
@@ -771,26 +779,31 @@ export const downloadReport = async (
         color: inherit;
       }
 
+      .report-body mark {
+        background: rgba(214, 158, 46, 0.28);
+        border-radius: 3px;
+        padding: 0 0.15em;
+      }
+
       .report-body table {
         width: 100%;
         border-collapse: collapse;
         margin: 14px 0 18px;
-        font-size: 11px;
-        overflow: hidden;
-        border-radius: 8px;
+        font-size: 11.5px;
+        page-break-inside: avoid;
       }
 
       .report-body th,
       .report-body td {
-        border: 1px solid #d8e3f8;
-        padding: 9px 11px;
+        border: 1px solid var(--lm-rule);
+        padding: 8px 10px;
         text-align: right;
         vertical-align: top;
       }
 
       .report-body th {
-        background: #003ec7;
-        color: #ffffff;
+        background: rgba(0, 62, 199, 0.07);
+        color: var(--lm-brand);
         font-weight: 700;
       }
 
@@ -798,108 +811,144 @@ export const downloadReport = async (
         background: #f7f9ff;
       }
 
+      /* Keep headings with following content when possible */
+      .report-body h1,
+      .report-body h2,
+      .report-body h3,
+      .report-body h4 {
+        break-after: avoid;
+      }
+
+      .report-body p,
+      .report-body li {
+        orphans: 3;
+        widows: 3;
+      }
+
       /* ── Footer ── */
       .report-footer {
-        margin-top: 32px;
-        padding-top: 14px;
-        border-top: 2px solid #e6ecf8;
+        margin-top: 28px;
+        padding-top: 12px;
+        border-top: 1.5px solid var(--lm-rule-strong);
         font-size: 9.5px;
-        color: #5a6478;
-        line-height: 1.6;
+        color: var(--lm-muted);
+        line-height: 1.65;
+        page-break-inside: avoid;
+      }
+
+      .report-footer .footer-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
       }
 
       .report-footer .footer-brand {
-        color: #003ec7;
+        color: var(--lm-brand);
         font-weight: 700;
       }
 
+      .report-footer .footer-en {
+        direction: ltr;
+        text-align: left;
+        font-size: 9px;
+        color: var(--lm-muted);
+        opacity: 0.9;
+      }
+
       .report-footer .disclaimer {
-        margin-top: 6px;
-        padding: 8px 10px;
-        background: #f8faff;
-        border: 1px solid #e6ecf8;
+        margin-top: 8px;
+        padding: 9px 11px;
+        background: var(--lm-surface);
+        border: 1px solid var(--lm-rule);
+        border-right: 3px solid var(--lm-brand);
         border-radius: 6px;
+        color: #434656;
       }
     </style>
   </head>
   <body>
-  <div class="page">
-    <header class="report-header">
-      <div class="brand-block">
-        <div class="brand-logo">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 100 100"
-            fill="none"
-            aria-hidden="true"
-          >
-            <rect width="100" height="100" rx="22" fill="#0b1326" />
-            <defs>
-              <linearGradient
-                id="lmGrad"
-                x1="0"
-                y1="0"
-                x2="100"
-                y2="100"
-                gradientUnits="userSpaceOnUse"
-              >
-                <stop offset="0%" stop-color="#003ec7" />
-                <stop offset="100%" stop-color="#adc7f7" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M50 12 L85 24 C85 55 70 78 50 88 C30 78 15 55 15 24 Z"
-              stroke="url(#lmGrad)"
-              stroke-width="7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <circle cx="50" cy="35" r="5.5" fill="#d69e2e" />
-            <path
-              d="M35 52 L65 52"
-              stroke="#003ec7"
-              stroke-width="5"
-              stroke-linecap="round"
-            />
-            <path d="M50 35 L50 65" stroke="url(#lmGrad)" stroke-width="5" />
-            <path
-              d="M42 65 L58 65"
-              stroke="#d69e2e"
-              stroke-width="5.5"
-              stroke-linecap="round"
-            />
-          </svg>
-        </div>
-        <div class="brand-text">
-          <div class="brand-name">ليجال مايند<span>AI</span></div>
-          <div class="brand-tagline">
-            تقرير تحليل عقد العمل • محرك التدقيق المعرفي
+    <div class="page">
+      <header class="report-header">
+        <div class="brand-block">
+          <div class="brand-logo">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 100 100"
+              fill="none"
+              aria-hidden="true"
+            >
+              <rect width="100" height="100" rx="22" fill="#0b1326" />
+              <defs>
+                <linearGradient
+                  id="lmGrad"
+                  x1="0"
+                  y1="0"
+                  x2="100"
+                  y2="100"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0%" stop-color="#003ec7" />
+                  <stop offset="100%" stop-color="#adc7f7" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M50 12 L85 24 C85 55 70 78 50 88 C30 78 15 55 15 24 Z"
+                stroke="url(#lmGrad)"
+                stroke-width="7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <circle cx="50" cy="35" r="5.5" fill="#d69e2e" />
+              <path
+                d="M35 52 L65 52"
+                stroke="#003ec7"
+                stroke-width="5"
+                stroke-linecap="round"
+              />
+              <path d="M50 35 L50 65" stroke="url(#lmGrad)" stroke-width="5" />
+              <path
+                d="M42 65 L58 65"
+                stroke="#d69e2e"
+                stroke-width="5.5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-name">ليجال مايند<span>AI</span></div>
+            <div class="brand-tagline">
+              تقرير تحليل عقد • محرك التدقيق المعرفي
+            </div>
           </div>
         </div>
-      </div>
-      <div class="report-meta">
-        <strong>LegalMind Report</strong>
-        Confidential • Generated automatically
-      </div>
-    </header>
+        <div class="report-meta">
+          <strong>LegalMind Report</strong>
+          Confidential · Auto-generated
+        </div>
+      </header>
 
-    <div class="accent-bar"></div>
+      <div class="accent-bar" aria-hidden="true"></div>
 
-    <main class="report-body">${htmlContent}</main>
+      <main class="report-body">${htmlContent}</main>
 
-    <footer class="report-footer">
-      <div>
-        إعداد آلي بواسطة
-        <span class="footer-brand">ليجال مايند AI</span>
-        — لا يُغني عن مراجعة محامٍ مختص.
-      </div>
-      <div class="disclaimer">
-        تنبيه قانوني: هذا التقرير ناتج عن نظام تحليل آلي، ويُقدَّم لأغراض
-        استرشادية فقط. يُنصح بمراجعة النتائج من محامٍ متخصص قبل الاعتماد عليها
-        في أي إجراء قانوني أو تعاقدي.
-      </div>
-    </footer>
-  </div>
+      <footer class="report-footer">
+        <div class="footer-row">
+          <div>
+            إعداد آلي بواسطة
+            <span class="footer-brand">ليجال مايند AI</span>
+            — لا يُغني عن مراجعة محامٍ مختص.
+          </div>
+          <div class="footer-en">legalmind.ai</div>
+        </div>
+        <div class="disclaimer">
+          تنبيه قانوني: هذا التقرير ناتج عن نظام تحليل آلي، ويُقدَّم لأغراض
+          استرشادية فقط. يُنصح بمراجعة النتائج من محامٍ متخصص قبل الاعتماد عليها
+          في أي إجراء قانوني أو تعاقدي.
+        </div>
+      </footer>
+    </div>
   </body>
 </html>
 `;
@@ -919,10 +968,7 @@ export const downloadReport = async (
     const pdfBuffer = await generatePdf(file, options);
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${reportName}"`,
-    );
+    res.setHeader("Content-Disposition", `attachment; filename="${reportName}"`);
     res.status(200).send(pdfBuffer);
   } catch (error: any) {
     console.error("خطأ في تحميل التقرير:", error);
