@@ -13,7 +13,7 @@ export class CommentService {
 
   private objectId(value: string, label: string): Types.ObjectId {
     if (!isValidObjectId(value)) {
-      throw new HttpError(400, `The ${label} ID is invalid.`, undefined, "INVALID_IDENTIFIER");
+      throw new HttpError(400, `${label} ID غير صالح.`, undefined, "INVALID_IDENTIFIER");
     }
 
     return new Types.ObjectId(value);
@@ -22,15 +22,10 @@ export class CommentService {
   async create(blogId: string, userId: string, content: string) {
     const blog = await this.blogs.findById(this.objectId(blogId, "blog"));
 
-    if (!blog) throw new HttpError(404, "Blog not found.", undefined, "BLOG_NOT_FOUND");
+    if (!blog) throw new HttpError(404, "المقال غير موجود.", undefined, "BLOG_NOT_FOUND");
 
     if (blog.status !== "published") {
-      throw new HttpError(
-        400,
-        "Comments are allowed only on published blogs.",
-        undefined,
-        "BLOG_NOT_PUBLISHED"
-      );
+      throw new HttpError(400, "يسمح للتعليقات فقط على المقالات المنشورة.", undefined, "BLOG_NOT_PUBLISHED");
     }
 
     return toCommentResponse(await this.comments.create(blog._id, this.objectId(userId, "user"), content));
@@ -40,7 +35,7 @@ export class CommentService {
     const blog = await this.blogs.findById(this.objectId(blogId, "blog"));
 
     if (!blog || blog.status !== "published") {
-      throw new HttpError(404, "Blog not found.", undefined, "BLOG_NOT_FOUND");
+      throw new HttpError(404, "المقال غير موجود.", undefined, "BLOG_NOT_FOUND");
     }
     const result = await this.comments.listByBlog(blog._id, page, limit);
 
@@ -62,20 +57,20 @@ export class CommentService {
     if (updated) return toCommentResponse(updated);
 
     if (!(await this.comments.findById(id))) {
-      throw new HttpError(404, "Comment not found.", undefined, "COMMENT_NOT_FOUND");
+      throw new HttpError(404, "التعليق غير موجود.", undefined, "COMMENT_NOT_FOUND");
     }
 
-    throw new HttpError(403, "You may update only your own comments.", undefined, "COMMENT_FORBIDDEN");
+    throw new HttpError(403, "يمكنك تحديث فقط التعليقات الخاصة بك.", undefined, "COMMENT_FORBIDDEN");
   }
 
   async remove(commentId: string, userId: string, role: UserRole): Promise<void> {
     const id = this.objectId(commentId, "comment");
     const comment = await this.comments.findById(id);
 
-    if (!comment) throw new HttpError(404, "Comment not found.", undefined, "COMMENT_NOT_FOUND");
+    if (!comment) throw new HttpError(404, "التعليق غير موجود.", undefined, "COMMENT_NOT_FOUND");
 
     if (comment.author.toString() !== userId && role !== "admin") {
-      throw new HttpError(403, "You may delete only your own comments.", undefined, "COMMENT_FORBIDDEN");
+      throw new HttpError(403, "يمكنك حذف فقط التعليقات الخاصة بك.", undefined, "COMMENT_FORBIDDEN");
     }
     await this.comments.deleteById(id);
   }

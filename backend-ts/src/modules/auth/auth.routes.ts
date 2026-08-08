@@ -23,7 +23,7 @@ const limiter = (windowMs: number, max: number) =>
     legacyHeaders: false,
     message: {
       error: "AUTH_RATE_LIMITED",
-      message: "Too many authentication attempts. Please try again later.",
+      message: "تم إرسال الكثير من طلبات التسجيل. يرجى المحاولة مرة أخرى لاحقًا.",
     },
   });
 

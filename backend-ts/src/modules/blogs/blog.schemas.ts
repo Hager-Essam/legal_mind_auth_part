@@ -18,7 +18,7 @@ export const createBlogSchema = z
   .strict();
 
 export const updateBlogSchema = createBlogSchema.partial().refine((value) => Object.keys(value).length > 0, {
-  message: "At least one blog field must be supplied.",
+  message: "يجب عليك تقديم على الأقل حقل واحد للمقال.",
 });
 
 export const updateBlogStatusSchema = z
@@ -32,7 +32,7 @@ export const updateBlogStatusSchema = z
       context.addIssue({
         code: "custom",
         path: ["rejectionReason"],
-        message: "A rejection reason is required when rejecting a blog.",
+        message: "يجب عليك تقديم سبب الرفض عند رفض المقال.",
       });
     }
   });

@@ -60,10 +60,10 @@ export class AuthService {
       return accessTokenPayloadSchema.parse(decoded);
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        throw new AuthError(401, AUTH_ERROR_CODES.tokenExpired, "The access token has expired.");
+        throw new AuthError(401, AUTH_ERROR_CODES.tokenExpired, "رمز الدخول غير صالح.");
       }
 
-      throw new AuthError(401, AUTH_ERROR_CODES.invalidToken, "The access token is invalid.");
+      throw new AuthError(401, AUTH_ERROR_CODES.invalidToken, "رمز الدخول غير صالح.");
     }
   }
 
@@ -72,7 +72,7 @@ export class AuthService {
       throw new AuthError(
         409,
         AUTH_ERROR_CODES.emailAlreadyExists,
-        "An account with this email already exists."
+        "يوجد حساب بهذا البريد الإلكتروني بالفعل."
       );
     }
 
@@ -91,7 +91,7 @@ export class AuthService {
         throw new AuthError(
           409,
           AUTH_ERROR_CODES.emailAlreadyExists,
-          "An account with this email already exists."
+          "يوجد حساب بهذا البريد الإلكتروني بالفعل."
         );
       }
 
@@ -106,11 +106,7 @@ export class AuthService {
     } catch {
       await this.users.deleteById(user._id);
 
-      throw new AuthError(
-        503,
-        "AUTH_EMAIL_DELIVERY_FAILED",
-        "Registration could not be completed. Please try again later."
-      );
+      throw new AuthError(503, "AUTH_EMAIL_DELIVERY_FAILED", "تم إرجاع إجابة فارغة من الموفر.");
     }
 
     return user;
@@ -128,7 +124,11 @@ export class AuthService {
     const user = await this.users.findByEmailWithPassword(email);
 
     if (!user || !(await user.comparePassword(password))) {
-      throw new AuthError(401, AUTH_ERROR_CODES.invalidCredentials, "Email or password is incorrect.");
+      throw new AuthError(
+        401,
+        AUTH_ERROR_CODES.invalidCredentials,
+        "البريد الإلكتروني أو كلمة المرور غير صالحة."
+      );
     }
     this.assertUserMayLogin(user);
     await this.users.updateLastLogin(user._id);
@@ -156,7 +156,7 @@ export class AuthService {
         throw new AuthError(
           401,
           AUTH_ERROR_CODES.refreshTokenReused,
-          "Refresh token reuse was detected. Sign in again."
+          "تم استخدام رمز تحديث مرة أخرى. يرجى تسجيل الدخول مرة أخرى."
         );
       }
 
@@ -190,7 +190,7 @@ export class AuthService {
       throw new AuthError(
         401,
         AUTH_ERROR_CODES.refreshTokenReused,
-        "Refresh token reuse was detected. Sign in again."
+        "تم استخدام رمز تحديث مرة أخرى. يرجى تسجيل الدخول مرة أخرى."
       );
     }
 
@@ -222,7 +222,7 @@ export class AuthService {
       user.passwordResetTokenHash = undefined;
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
-      console.error("[AuthService] Password reset email delivery failed.");
+      console.error("[AuthService] تحديث كلمة المرور غير صالح.");
     }
   }
 
@@ -242,7 +242,7 @@ export class AuthService {
       throw new AuthError(
         400,
         AUTH_ERROR_CODES.resetTokenInvalid,
-        "The password reset token is invalid or expired."
+        "رمز إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية."
       );
     }
     const updated = await this.users.updatePassword(user._id, password);
@@ -251,7 +251,7 @@ export class AuthService {
       throw new AuthError(
         400,
         AUTH_ERROR_CODES.resetTokenInvalid,
-        "The password reset token is invalid or expired."
+        "رمز إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية."
       );
     }
     await this.refreshTokens.revokeAllUserTokens(updated._id, ipAddress);
@@ -260,7 +260,7 @@ export class AuthService {
     try {
       await this.email.sendPasswordResetConfirmation(updated.email, updated.fullName);
     } catch {
-      console.error("[AuthService] Password reset confirmation email failed.");
+      console.error("[AuthService] تحديث كلمة المرور غير صالح.");
     }
 
     return session;
@@ -274,7 +274,7 @@ export class AuthService {
       throw new AuthError(
         400,
         "AUTH_VERIFICATION_TOKEN_INVALID",
-        "The email verification token is invalid or expired."
+        "رمز التحقق من البريد الإلكتروني غير صالح أو منتهي الصلاحية."
       );
     }
     user.isEmailVerified = true;
@@ -297,11 +297,7 @@ export class AuthService {
       user.emailVerificationExpires = undefined;
       await user.save({ validateBeforeSave: false });
 
-      throw new AuthError(
-        503,
-        "AUTH_EMAIL_DELIVERY_FAILED",
-        "The verification email could not be sent. Please try again later."
-      );
+      throw new AuthError(503, "AUTH_EMAIL_DELIVERY_FAILED", "تم إرجاع إجابة فارغة من الموفر.");
     }
   }
 
@@ -330,11 +326,15 @@ export class AuthService {
 
   private assertUserMayLogin(user: UserDocument): void {
     if (!user.isActive) {
-      throw new AuthError(403, AUTH_ERROR_CODES.accountDisabled, "This account is disabled.");
+      throw new AuthError(403, AUTH_ERROR_CODES.accountDisabled, "الحساب غير مفعل.");
     }
 
     if (!user.isEmailVerified) {
-      throw new AuthError(403, AUTH_ERROR_CODES.emailNotVerified, "Verify your email before signing in.");
+      throw new AuthError(
+        403,
+        AUTH_ERROR_CODES.emailNotVerified,
+        "يرجى التحقق من بريدك الإلكتروني قبل تسجيل الدخول."
+      );
     }
   }
 }

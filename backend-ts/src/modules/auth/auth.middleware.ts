@@ -21,21 +21,25 @@ export const authenticate = (authService: AuthService, users: UserRepository): R
       const token = bearerToken(request);
 
       if (!token) {
-        throw new AuthError(401, AUTH_ERROR_CODES.required, "Authentication is required.");
+        throw new AuthError(401, AUTH_ERROR_CODES.required, "يجب عليك تسجيل الدخول لتسجيل الدخول.");
       }
       const payload = authService.verifyAccessToken(token);
       const user = await users.findById(payload.sub);
 
       if (!user) {
-        throw new AuthError(401, AUTH_ERROR_CODES.invalidToken, "The access token is invalid.");
+        throw new AuthError(401, AUTH_ERROR_CODES.invalidToken, "رمز الدخول غير صالح.");
       }
 
       if (!user.isActive) {
-        throw new AuthError(403, AUTH_ERROR_CODES.accountDisabled, "This account is disabled.");
+        throw new AuthError(403, AUTH_ERROR_CODES.accountDisabled, "الحساب غير مفعل.");
       }
 
       if (!user.isEmailVerified) {
-        throw new AuthError(403, AUTH_ERROR_CODES.emailNotVerified, "Verify your email before continuing.");
+        throw new AuthError(
+          403,
+          AUTH_ERROR_CODES.emailNotVerified,
+          "يرجى التحقق من بريدك الإلكتروني قبل المتابعة."
+        );
       }
       request.user = {
         id: user._id.toString(),
@@ -55,17 +59,13 @@ export const authenticate = (authService: AuthService, users: UserRepository): R
 export const authorize = (...roles: UserRole[]): RequestHandler => {
   return (request, _response, next): void => {
     if (!request.user) {
-      next(new AuthError(401, AUTH_ERROR_CODES.required, "Authentication is required."));
+      next(new AuthError(401, AUTH_ERROR_CODES.required, "يجب عليك تسجيل الدخول لتسجيل الدخول."));
       return;
     }
 
     if (!roles.includes(request.user.role)) {
       next(
-        new AuthError(
-          403,
-          AUTH_ERROR_CODES.insufficientRole,
-          "This account does not have permission to perform that action."
-        )
+        new AuthError(403, AUTH_ERROR_CODES.insufficientRole, "الحساب ليس لديه صلاحية لإجراء هذا الإجراء.")
       );
       return;
     }
@@ -97,7 +97,7 @@ export const optionalAuth = (authService: AuthService, users: UserRepository): R
         };
       }
     } catch {
-      // Optional authentication deliberately treats invalid credentials as absent.
+      // التحقق الاختياري يتعامل مع البيانات غير الصالحة كمفردة من الوجود.
     }
     next();
   };

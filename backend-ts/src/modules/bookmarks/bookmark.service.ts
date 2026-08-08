@@ -7,7 +7,7 @@ export class BookmarkService {
 
   private blogObjectId(blogId: string): Types.ObjectId {
     if (!isValidObjectId(blogId)) {
-      throw new HttpError(400, "The blog ID is invalid.", undefined, "INVALID_BLOG_ID");
+      throw new HttpError(400, "المقال ID غير صالح.", undefined, "INVALID_BLOG_ID");
     }
 
     return new Types.ObjectId(blogId);
@@ -17,7 +17,7 @@ export class BookmarkService {
     const objectId = this.blogObjectId(blogId);
 
     if (!(await this.bookmarks.publishedBlogExists(objectId))) {
-      throw new HttpError(404, "Blog not found.", undefined, "BLOG_NOT_FOUND");
+      throw new HttpError(404, "المقال غير موجود.", undefined, "BLOG_NOT_FOUND");
     }
 
     return this.bookmarks.toggle(ownerUserId, objectId);
@@ -25,7 +25,7 @@ export class BookmarkService {
 
   async remove(ownerUserId: string, bookmarkId: string): Promise<void> {
     if (!(await this.bookmarks.removeOwned(ownerUserId, bookmarkId))) {
-      throw new HttpError(404, "Bookmark not found.", undefined, "BOOKMARK_NOT_FOUND");
+      throw new HttpError(404, "المفضلة غير موجودة.", undefined, "BOOKMARK_NOT_FOUND");
     }
   }
 

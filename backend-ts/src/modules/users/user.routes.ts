@@ -20,7 +20,7 @@ const avatarLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     error: "AVATAR_RATE_LIMITED",
-    message: "Too many avatar uploads. Please try again later.",
+    message: "تم تحميل الكثير من الصور الشخصية. يرجى المحاولة مرة أخرى لاحقًا.",
   },
 });
 

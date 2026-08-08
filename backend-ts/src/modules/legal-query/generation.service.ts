@@ -114,14 +114,14 @@ export class GenerationService {
     );
 
     if (!text.trim()) {
-      throw new Error("Provider returned an empty response.");
+      throw new Error("تم إرجاع إجابة فارغة من الموفر.");
     }
     let payload: DashScopeChatCompletionResponse;
 
     try {
       payload = JSON.parse(text) as DashScopeChatCompletionResponse;
     } catch {
-      throw new Error("Provider returned invalid JSON.");
+      throw new Error("تم إرجاع JSON غير صالح من الموفر.");
     }
     const answer = this.extractAnswerText(payload);
 

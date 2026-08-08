@@ -64,7 +64,7 @@ export class BlogService {
     const viewer = viewerId ? this.objectId(viewerId, "user") : undefined;
     const blog = await this.blogs.findVisibleById(id, viewer);
 
-    if (!blog) throw new HttpError(404, "Blog not found.", undefined, "BLOG_NOT_FOUND");
+    if (!blog) throw new HttpError(404, "المقال غير موجود.", undefined, "BLOG_NOT_FOUND");
     const isPublished = blog.status === "published";
     const bookmarked = viewerId && isPublished ? await this.bookmarks.isBookmarked(viewerId, id) : false;
 
@@ -82,20 +82,20 @@ export class BlogService {
     if (updated) return toBlogResponse(updated);
 
     if (!(await this.blogs.findById(this.objectId(blogId)))) {
-      throw new HttpError(404, "Blog not found.", undefined, "BLOG_NOT_FOUND");
+      throw new HttpError(404, "المقال غير موجود.", undefined, "BLOG_NOT_FOUND");
     }
 
-    throw new HttpError(403, "You may update only your own blogs.", undefined, "BLOG_FORBIDDEN");
+    throw new HttpError(403, "يمكنك تحديث فقط المقالات الخاصة بك.", undefined, "BLOG_FORBIDDEN");
   }
 
   async remove(blogId: string, userId: string, role: UserRole): Promise<void> {
     const id = this.objectId(blogId);
     const blog = await this.blogs.findById(id);
 
-    if (!blog) throw new HttpError(404, "Blog not found.", undefined, "BLOG_NOT_FOUND");
+    if (!blog) throw new HttpError(404, "المقال غير موجود.", undefined, "BLOG_NOT_FOUND");
 
     if (blog.author.toString() !== userId && role !== "admin") {
-      throw new HttpError(403, "You may delete only your own blogs.", undefined, "BLOG_FORBIDDEN");
+      throw new HttpError(403, "يمكنك حذف فقط المقالات الخاصة بك.", undefined, "BLOG_FORBIDDEN");
     }
     await Promise.all([this.bookmarks.removeByBlog(id), this.comments.deleteByBlog(id)]);
     await this.blogs.deleteById(id);
@@ -104,7 +104,7 @@ export class BlogService {
   async updateStatus(blogId: string, status: BlogStatus, rejectionReason?: string) {
     const updated = await this.blogs.updateStatus(this.objectId(blogId), status, rejectionReason);
 
-    if (!updated) throw new HttpError(404, "Blog not found.", undefined, "BLOG_NOT_FOUND");
+    if (!updated) throw new HttpError(404, "المقال غير موجود.", undefined, "BLOG_NOT_FOUND");
 
     return toBlogResponse(updated);
   }

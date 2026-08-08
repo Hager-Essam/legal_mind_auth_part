@@ -13,7 +13,7 @@ const queryLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     error: "TooManyRequests",
-    message: "Please wait before sending more queries. Rate limit: 20 requests per minute.",
+    message: "يرجى الانتظار قبل إرسال المزيد من الاستعلامات. الحد المسموح به: 20 استعلام في الدقيقة.",
   },
 });
 

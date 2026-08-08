@@ -16,7 +16,7 @@ export const validateSourceCitations = (answer: string, evidenceCount: number): 
   });
 
   if (evidenceCount > 0 && validCitationCount === 0) {
-    throw new Error("Generated answer did not contain a valid source citation.");
+    throw new Error("الجواب المولد لم يحتوي على إشارة توثيقية صالحة.");
   }
 
   return sanitized.trim();

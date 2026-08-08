@@ -18,7 +18,7 @@ type RerankResult = {
 
 export const validateRerankResults = (payload: RerankResult, chunkCount: number, topK: number): void => {
   if (!Array.isArray(payload.results) || payload.results.length === 0 || payload.results.length > topK) {
-    throw new Error("Reranker returned an invalid result count.");
+    throw new Error("تم إرجاع عدد إجابات غير صالح من الموفر.");
   }
   const indexes = new Set<number>();
 
@@ -29,7 +29,7 @@ export const validateRerankResults = (payload: RerankResult, chunkCount: number,
       result.index >= chunkCount ||
       indexes.has(result.index)
     ) {
-      throw new Error("Reranker returned an invalid or duplicate index.");
+      throw new Error("تم إرجاع رقم إجابة غير صالح أو مكرر من الموفر.");
     }
 
     if (
@@ -37,7 +37,7 @@ export const validateRerankResults = (payload: RerankResult, chunkCount: number,
       result.relevance_score < 0 ||
       result.relevance_score > 1
     ) {
-      throw new Error("Reranker returned an invalid relevance score.");
+      throw new Error("تم إرجاع درجة الصلاحية المرتبطة بالإجابة غير صالحة من الموفر.");
     }
     indexes.add(result.index);
   }
@@ -120,7 +120,7 @@ export class RerankerService {
     );
 
     if (!text || !text.trim()) {
-      throw new Error("Rerank API returned empty response");
+      throw new Error("تم إرجاع إجابة فارغة من الموفر.");
     }
 
     let payload: RerankResult;
@@ -128,7 +128,7 @@ export class RerankerService {
     try {
       payload = JSON.parse(text) as RerankResult;
     } catch {
-      throw new Error("Reranker returned invalid JSON.");
+      throw new Error("تم إرجاع JSON غير صالح من الموفر.");
     }
     validateRerankResults(payload, chunks.length, topK);
 

@@ -6,7 +6,7 @@ import { updateProfileSchema } from "./user-profile.schemas";
 
 const authenticatedUserId = (request: Request): string => {
   if (!request.user) {
-    throw new HttpError(401, "Authentication is required.", undefined, "AUTH_REQUIRED");
+    throw new HttpError(401, "يجب عليك تسجيل الدخول لتحديث الملف الشخصي.", undefined, "AUTH_REQUIRED");
   }
 
   return request.user.id;
@@ -18,7 +18,7 @@ export const createUserController = (profiles: UserProfileService) => ({
       const input = updateProfileSchema.parse(request.body);
       const user = await profiles.update(authenticatedUserId(request), input);
       response.json({
-        message: "Profile updated successfully.",
+        message: "تم تحديث الملف الشخصي بنجاح.",
         user: toPublicUser(user),
       });
     } catch (error) {
@@ -30,7 +30,7 @@ export const createUserController = (profiles: UserProfileService) => ({
     try {
       const user = await profiles.uploadAvatar(authenticatedUserId(request), request.file);
       response.json({
-        message: "Avatar uploaded successfully.",
+        message: "تم تحميل الصورة الشخصية بنجاح.",
         user: toPublicUser(user),
       });
     } catch (error) {

@@ -13,7 +13,7 @@ export const updateProfileSchema = z
   })
   .strict()
   .refine((value) => Object.keys(value).length > 0, {
-    message: "At least one profile field must be supplied.",
+    message: "يجب عليك تقديم على الأقل حقل واحد في الملف الشخصي.",
   });
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

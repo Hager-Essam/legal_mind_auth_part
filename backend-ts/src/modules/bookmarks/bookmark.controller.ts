@@ -5,7 +5,7 @@ import { listBookmarksSchema } from "./bookmark.schemas";
 
 const userId = (request: Request): string => {
   if (!request.user) {
-    throw new HttpError(401, "Authentication is required.", undefined, "AUTH_REQUIRED");
+    throw new HttpError(401, "يجب عليك تسجيل الدخول لتسجيل الدخول.", undefined, "AUTH_REQUIRED");
   }
 
   return request.user.id;

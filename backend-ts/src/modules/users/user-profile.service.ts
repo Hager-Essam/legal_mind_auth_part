@@ -35,7 +35,7 @@ export class UserProfileService {
     const user = await this.users.updateById(userId, input);
 
     if (!user) {
-      throw new HttpError(404, "User not found.", undefined, "USER_NOT_FOUND");
+      throw new HttpError(404, "المستخدم غير موجود.", undefined, "USER_NOT_FOUND");
     }
 
     return user;
@@ -43,23 +43,18 @@ export class UserProfileService {
 
   async uploadAvatar(userId: string, file: Express.Multer.File | undefined): Promise<UserDocument> {
     if (!file) {
-      throw new HttpError(400, "An avatar file is required.", undefined, "AVATAR_REQUIRED");
+      throw new HttpError(400, "يجب عليك تحميل صورة الملف الشخصي.", undefined, "AVATAR_REQUIRED");
     }
     const detectedType = detectAvatarContentType(file.buffer);
 
     if (!detectedType || detectedType !== file.mimetype) {
-      throw new HttpError(
-        400,
-        "The avatar content does not match a supported image type.",
-        undefined,
-        "AVATAR_CONTENT_INVALID"
-      );
+      throw new HttpError(400, "نوع الصورة المحملة غير مدعوم.", undefined, "AVATAR_CONTENT_INVALID");
     }
 
     const current = await this.users.findByIdWithAvatarStorage(userId);
 
     if (!current) {
-      throw new HttpError(404, "User not found.", undefined, "USER_NOT_FOUND");
+      throw new HttpError(404, "المستخدم غير موجود.", undefined, "USER_NOT_FOUND");
     }
 
     const stored = await this.avatars.upload(userId, file.buffer, detectedType);
@@ -72,7 +67,7 @@ export class UserProfileService {
       });
 
       if (!updated) {
-        throw new HttpError(404, "User not found.", undefined, "USER_NOT_FOUND");
+        throw new HttpError(404, "المستخدم غير موجود.", undefined, "USER_NOT_FOUND");
       }
     } catch (error) {
       await this.avatars.delete(stored.key).catch(() => undefined);
@@ -82,7 +77,7 @@ export class UserProfileService {
 
     if (current.avatarObjectKey && current.avatarObjectKey !== stored.key) {
       await this.avatars.delete(current.avatarObjectKey).catch((error) => {
-        console.error("Failed to delete replaced R2 avatar", error);
+        console.error("فشل حذف الصورة الشخصية المستبدلة", error);
       });
     }
 

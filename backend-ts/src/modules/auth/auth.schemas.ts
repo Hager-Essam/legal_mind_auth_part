@@ -3,16 +3,16 @@ import { normalizeEmail } from "./users/user.schema";
 
 const passwordSchema = z
   .string()
-  .min(8, "Password must contain at least 8 characters.")
-  .max(128, "Password must contain at most 128 characters.")
-  .regex(/[a-z]/, "Password must include a lowercase letter.")
-  .regex(/[A-Z]/, "Password must include an uppercase letter.")
-  .regex(/[0-9]/, "Password must include a number.");
+  .min(8, "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل.")
+  .max(128, "يجب أن تحتوي كلمة المرور على 128 حرف على الأكثر.")
+  .regex(/[a-z]/, "يجب أن تحتوي كلمة المرور على حرف صغير على الأقل.")
+  .regex(/[A-Z]/, "يجب أن تحتوي كلمة المرور على حرف كبير على الأقل.")
+  .regex(/[0-9]/, "يجب أن تحتوي كلمة المرور على رقم على الأقل.");
 
 const emailSchema = z
   .string()
   .trim()
-  .email("Enter a valid email address.")
+  .email("يجب عليك إدخال بريد إلكتروني صالح.")
   .transform((value) => normalizeEmail(value));
 
 const optionalTrimmedString = (maximum: number) =>
@@ -26,17 +26,17 @@ export const registerSchema = z
     fullName: z
       .string()
       .trim()
-      .min(2, "Full name must contain at least 2 characters.")
-      .max(100, "Full name must contain at most 100 characters."),
+      .min(2, "يجب أن تحتوي الاسم الكامل على 2 أحرف على الأقل.")
+      .max(100, "يجب أن تحتوي الاسم الكامل على 100 حرف على الأكثر."),
     email: emailSchema,
     password: passwordSchema,
     officeName: z
       .string()
       .trim()
-      .min(1, "Office name is required.")
-      .max(200, "Office name must contain at most 200 characters."),
+      .min(1, "يجب عليك تقديم اسم المكتب.")
+      .max(200, "يجب أن تحتوي اسم المكتب على 200 حرف على الأكثر."),
     teamSize: z.enum(["solo", "small", "medium", "large"], {
-      error: "Select a valid team size.",
+      error: "يجب عليك تحديد حجم الفريق الصالح.",
     }),
     phone: optionalTrimmedString(30),
     barAssociationNumber: optionalTrimmedString(100),

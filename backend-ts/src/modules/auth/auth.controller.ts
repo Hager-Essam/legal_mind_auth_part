@@ -19,7 +19,7 @@ export const createAuthController = (authService: AuthService, users: UserReposi
     }
     const user = result.value;
     response.status(201).json({
-      message: "Registration succeeded. Verify your email before signing in.",
+      message: "تم التسجيل بنجاح. يرجى التحقق من بريدك الإلكتروني قبل تسجيل الدخول.",
       user: toPublicUser(user),
     });
   },
@@ -42,7 +42,7 @@ export const createAuthController = (authService: AuthService, users: UserReposi
       const token = tokenFromRequest(request);
 
       if (!token) {
-        throw new AuthError(401, AUTH_ERROR_CODES.refreshTokenInvalid, "A refresh token is required.");
+        throw new AuthError(401, AUTH_ERROR_CODES.refreshTokenInvalid, "يجب عليك تقديم رمز تحديث.");
       }
       const result = await authService.refreshToken(token, request.ip);
       setRefreshCookie(response, result.refreshToken);
@@ -71,7 +71,7 @@ export const createAuthController = (authService: AuthService, users: UserReposi
   logoutAll: async (request: Request, response: Response, next: NextFunction) => {
     try {
       if (!request.user) {
-        throw new AuthError(401, AUTH_ERROR_CODES.required, "Authentication is required.");
+        throw new AuthError(401, AUTH_ERROR_CODES.required, "يجب عليك تسجيل الدخول لتسجيل الخروج.");
       }
       await authService.logoutAll(request.user.id, request.ip);
       clearRefreshCookie(response);
@@ -85,7 +85,7 @@ export const createAuthController = (authService: AuthService, users: UserReposi
     try {
       await authService.forgotPassword(request.body.email);
       response.json({
-        message: "If the email is registered, a password reset link will be sent.",
+        message: "إذا كان البريد الإلكتروني مسجل, سيتم إرسال رابط إعادة تعيين كلمة المرور.",
       });
     } catch (error) {
       next(error);
@@ -97,7 +97,7 @@ export const createAuthController = (authService: AuthService, users: UserReposi
       const result = await authService.resetPassword(request.body.token, request.body.password, request.ip);
       setRefreshCookie(response, result.refreshToken);
       response.json({
-        message: "Password reset succeeded.",
+        message: "تم إعادة تعيين كلمة المرور بنجاح.",
         access_token: result.accessToken,
         user: toPublicUser(result.user),
       });
@@ -109,7 +109,7 @@ export const createAuthController = (authService: AuthService, users: UserReposi
   verifyEmail: async (request: Request, response: Response, next: NextFunction) => {
     try {
       await authService.verifyEmail(request.body.token);
-      response.json({ message: "Email verification succeeded." });
+      response.json({ message: "تم التحقق من بريدك الإلكتروني بنجاح." });
     } catch (error) {
       next(error);
     }
@@ -119,7 +119,7 @@ export const createAuthController = (authService: AuthService, users: UserReposi
     try {
       await authService.resendVerification(request.body.email);
       response.json({
-        message: "If the account exists and is unverified, a verification email will be sent.",
+        message: "إذا كان الحساب موجود وغير متحقق, سيتم إرسال بريد إلكتروني للتحقق.",
       });
     } catch (error) {
       next(error);

@@ -4,7 +4,8 @@ import type { CommentService } from "./comment.service";
 import { commentBodySchema, listCommentsSchema } from "./comment.schemas";
 
 const authenticated = (request: Request) => {
-  if (!request.user) throw new HttpError(401, "Authentication is required.", undefined, "AUTH_REQUIRED");
+  if (!request.user)
+    throw new HttpError(401, "يجب عليك تسجيل الدخول لتسجيل الدخول.", undefined, "AUTH_REQUIRED");
 
   return request.user;
 };
@@ -27,7 +28,7 @@ export const createCommentController = (comments: CommentService) => ({
         authenticated(request).id,
         input.content
       );
-      response.status(201).json({ message: "Comment created successfully.", comment });
+      response.status(201).json({ message: "تم إنشاء التعليق بنجاح.", comment });
     } catch (error) {
       next(error);
     }
@@ -41,7 +42,7 @@ export const createCommentController = (comments: CommentService) => ({
         authenticated(request).id,
         input.content
       );
-      response.json({ message: "Comment updated successfully.", comment });
+      response.json({ message: "تم تحديث التعليق بنجاح.", comment });
     } catch (error) {
       next(error);
     }

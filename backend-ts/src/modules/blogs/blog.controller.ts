@@ -11,7 +11,8 @@ import {
 } from "./blog.schemas";
 
 const authenticated = (request: Request) => {
-  if (!request.user) throw new HttpError(401, "Authentication is required.", undefined, "AUTH_REQUIRED");
+  if (!request.user)
+    throw new HttpError(401, "يجب عليك تسجيل الدخول لتسجيل الدخول.", undefined, "AUTH_REQUIRED");
 
   return request.user;
 };
@@ -73,7 +74,7 @@ export const createBlogController = (blogs: BlogService) => ({
   create: async (request: Request, response: Response, next: NextFunction) => {
     try {
       const blog = await blogs.create(authenticated(request).id, createBlogSchema.parse(request.body));
-      response.status(201).json({ message: "Blog created successfully.", blog });
+      response.status(201).json({ message: "تم إنشاء المقال بنجاح.", blog });
     } catch (error) {
       next(error);
     }
@@ -95,7 +96,7 @@ export const createBlogController = (blogs: BlogService) => ({
         authenticated(request).id,
         updateBlogSchema.parse(request.body)
       );
-      response.json({ message: "Blog updated successfully.", blog });
+      response.json({ message: "تم تحديث المقال بنجاح.", blog });
     } catch (error) {
       next(error);
     }
@@ -119,7 +120,7 @@ export const createBlogController = (blogs: BlogService) => ({
         input.status,
         input.rejectionReason
       );
-      response.json({ message: "Blog status updated successfully.", blog });
+      response.json({ message: "تم تحديث حالة المقال بنجاح.", blog });
     } catch (error) {
       next(error);
     }
