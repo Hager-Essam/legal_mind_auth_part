@@ -47,14 +47,14 @@ export class EmbeddingService {
       { timeoutMs: 20_000, totalRetryBudgetMs: 35_000 }
     );
 
-    if (!text.trim()) throw new Error("Provider returned an empty embedding response.");
+    if (!text.trim()) throw new Error("تم إرجاع إجابة فارغة من الموفر.");
 
     let payload: DashScopeEmbeddingResponse;
 
     try {
       payload = JSON.parse(text) as DashScopeEmbeddingResponse;
     } catch {
-      throw new Error("Provider returned invalid embedding JSON.");
+      throw new Error("تم إرجاع إجابة غير صالحة من الموفر.");
     }
 
     // MaaS native response: output.embeddings[].embedding
@@ -63,7 +63,7 @@ export class EmbeddingService {
 
     if (rawEmbeddings.length !== sanitizedTexts.length) {
       throw new Error(
-        `Embedding count mismatch. Expected ${sanitizedTexts.length}, got ${rawEmbeddings.length}.`
+        `عدد التضمينات غير متطابق. متوقع ${sanitizedTexts.length}, حصل على ${rawEmbeddings.length}.`
       );
     }
 
@@ -75,7 +75,7 @@ export class EmbeddingService {
         embedding.length !== env.embeddingDim ||
         !embedding.every((value) => typeof value === "number" && Number.isFinite(value))
       ) {
-        throw new Error(`Embedding ${index} must contain exactly ${env.embeddingDim} finite values.`);
+        throw new Error(`التضمين ${index} يجب أن يحتوي على ${env.embeddingDim} قيمة محددة.`);
       }
 
       return embedding;
