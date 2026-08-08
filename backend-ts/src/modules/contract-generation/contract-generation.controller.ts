@@ -9,6 +9,14 @@ import { GENERATION_STAGE_NAMES } from '../contract-generation/contract-generati
 import { generator } from '../../config/generator.config';
 import { analyzer } from '../../config/analyzer.config';
 
+const STATUS_LABELS_AR: Record<string, string> = {
+  queued: 'في الانتظار',
+  processing: 'قيد المعالجة',
+  completed: 'مكتمل',
+  failed: 'فشل',
+  cancelled: 'ملغى',
+};
+
 const getJobId = (req: Request): string => req.params.jobId as string;
 
 export const createGenerationJob = async (
@@ -21,7 +29,7 @@ export const createGenerationJob = async (
     if (!prompt || typeof prompt !== 'string' || prompt.trim() === '') {
       res.status(400).json({
         success: false,
-        message: 'الرجاء إدخال وصف العقد المطلوب (prompt).',
+        message: 'الرجاء إدخال وصف العقد المطلوب.',
       });
       return;
     }
@@ -312,7 +320,7 @@ export const updateContract = async (
     if (!editedMarkdown || typeof editedMarkdown !== 'string') {
       res.status(400).json({
         success: false,
-        message: 'الرجاء توفير النص المعدل (editedMarkdown).',
+        message: 'الرجاء توفير النص المعدّل للعقد.',
       });
       return;
     }
@@ -356,7 +364,7 @@ export const regenerateContract = async (
     if (!instructions || typeof instructions !== 'string' || instructions.trim() === '') {
       res.status(400).json({
         success: false,
-        message: 'الرجاء توفير تعديلات التوليد (instructions).',
+        message: 'الرجاء كتابة تعليمات التعديل.',
       });
       return;
     }
@@ -552,7 +560,7 @@ export const cancelJob = async (req: Request, res: Response): Promise<void> => {
     if (job.status !== 'queued' && job.status !== 'processing') {
       res.status(400).json({
         success: false,
-        message: `لا يمكن إلغاء العقد في الحالة الحالية (${job.status}).`,
+        message: `لا يمكن إلغاء العقد في الحالة الحالية (${STATUS_LABELS_AR[job.status] || job.status}).`,
       });
       return;
     }

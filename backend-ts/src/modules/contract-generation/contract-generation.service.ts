@@ -226,14 +226,14 @@ export class EgyptianEmploymentContractGenerator {
 
   private ensureOpenAI(): any {
     if (!this.openai) {
-      throw new Error("Missing OPENAI_API_KEY. Configure it before running contract generation.");
+      throw new Error("مفتاح واجهة الذكاء الاصطناعي غير مضبوط. يُرجى إعداد OPENAI_API_KEY قبل تشغيل التوليد.");
     }
     return this.openai;
   }
 
   private ensureQdrant(): QdrantClient {
     if (!this.qdrant) {
-      throw new Error("Missing QDRANT_URL. Configure it before running contract generation.");
+      throw new Error("عنوان قاعدة المتجهات غير مضبوط. يُرجى إعداد QDRANT_URL قبل تشغيل التوليد.");
     }
     return this.qdrant;
   }
@@ -257,7 +257,7 @@ export class EgyptianEmploymentContractGenerator {
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error("Empty intent extraction response");
+    if (!content) throw new Error("استجابة استخراج مواصفات العقد فارغة.");
 
     try {
       const clean = content
@@ -266,8 +266,8 @@ export class EgyptianEmploymentContractGenerator {
         .trim();
       return JSON.parse(clean);
     } catch (e) {
-      console.error("Failed to parse intent extraction:", content);
-      throw e;
+      console.error("فشل تحليل استخراج مواصفات العقد:", content);
+      throw new Error("فشل تحليل مواصفات العقد المستخرجة من النموذج.");
     }
   }
 
@@ -321,7 +321,7 @@ export class EgyptianEmploymentContractGenerator {
           });
         }
       } catch (err) {
-        console.warn(`Collection ${collectionName} not found or error:`, err);
+        console.warn(`المجموعة ${collectionName} غير موجودة أو حدث خطأ:`, err);
       }
     }
 
@@ -413,7 +413,7 @@ export class EgyptianEmploymentContractGenerator {
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error("Empty generation response");
+    if (!content) throw new Error("استجابة توليد نص العقد فارغة.");
 
     return content
       .replace(/```markdown\s*/g, "")
@@ -481,7 +481,7 @@ export class EgyptianEmploymentContractGenerator {
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error("Empty compliance precheck response");
+    if (!content) throw new Error("استجابة فحص الامتثال المبدئي فارغة.");
 
     try {
       const clean = content
@@ -490,7 +490,7 @@ export class EgyptianEmploymentContractGenerator {
         .trim();
       return JSON.parse(clean);
     } catch (e) {
-      console.warn("Failed to parse compliance precheck, returning default valid", e);
+      console.warn("فشل تحليل فحص الامتثال المبدئي — سيتم اعتبار العقد مقبولاً افتراضياً", e);
       return { compliant: true, warnings: [], autoFixesApplied: 0 };
     }
   }
@@ -511,7 +511,7 @@ export class EgyptianEmploymentContractGenerator {
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error("Empty validation response");
+    if (!content) throw new Error("استجابة التحقق من صحة العقد فارغة.");
 
     try {
       const clean = content
@@ -520,8 +520,8 @@ export class EgyptianEmploymentContractGenerator {
         .trim();
       return JSON.parse(clean);
     } catch (e) {
-      console.error("Failed to parse validation response", e);
-      throw e;
+      console.error("فشل تحليل نتيجة التحقق من العقد", e);
+      throw new Error("فشل تحليل نتيجة التحقق من العقد.");
     }
   }
 
@@ -544,7 +544,7 @@ export class EgyptianEmploymentContractGenerator {
     });
 
     const content = response.choices[0].message.content;
-    if (!content) throw new Error("Empty regeneration response");
+    if (!content) throw new Error("استجابة إعادة توليد العقد فارغة.");
 
     return content
       .replace(/```markdown\s*/g, "")

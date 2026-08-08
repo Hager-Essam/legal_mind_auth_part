@@ -30,7 +30,7 @@ export async function processGenerationJob(job: IGenerationJob): Promise<void> {
       };
       
       await generationJobRepository.addProgressLog(job.id, progressLog);
-      console.log(`[GenerationJob ${job.id}] ${event.step}: ${event.message}`);
+      console.log(`[مهمة التوليد ${job.id}] ${event.step}: ${event.message}`);
     };
 
     await onProgress({ step: '0/5', phase: 'start', message: '📥 استلام الطلب وتجهيز المدخلات...' });
@@ -51,7 +51,7 @@ export async function processGenerationJob(job: IGenerationJob): Promise<void> {
     // Check if job was deleted during generation
     const jobStillExists = await generationJobRepository.findById(job.id);
     if (!jobStillExists) {
-      console.log(`GenerationJob ${job.id} was deleted during generation — aborting.`);
+      console.log(`تم حذف مهمة التوليد ${job.id} أثناء المعالجة — تم الإيقاف.`);
       return;
     }
 
@@ -87,7 +87,7 @@ export async function processGenerationJob(job: IGenerationJob): Promise<void> {
     });
 
   } catch (error: any) {
-    console.error(`GenerationJob ${job.id} failed:`, error);
+    console.error(`فشلت مهمة التوليد ${job.id}:`, error);
 
     // Don't mark as failed if already cancelled
     const fresh = await generationJobRepository.findById(job.id);
@@ -95,7 +95,7 @@ export async function processGenerationJob(job: IGenerationJob): Promise<void> {
       return;
     }
 
-    const errorMessage = error?.message || 'Unknown error occurred during generation';
+    const errorMessage = error?.message || 'حدث خطأ غير معروف أثناء توليد العقد.';
 
     await generationJobRepository.updateStatus(job.id, 'failed', {
       error: errorMessage,
@@ -105,7 +105,7 @@ export async function processGenerationJob(job: IGenerationJob): Promise<void> {
     await generationJobRepository.addProgressLog(job.id, {
       step: 'error',
       phase: 'done',
-      message: `❌ Error: ${errorMessage}`,
+      message: `❌ خطأ: ${errorMessage}`,
       timestamp: new Date(),
     });
   }

@@ -6,16 +6,16 @@ import type { AppServices } from '../../services/service-container';
 /**
  * @swagger
  * tags:
- *   name: Contract Generation
- *   description: Contract generation endpoints
+ *   name: توليد العقود
+ *   description: نقاط نهاية توليد العقود
  */
 
 /**
  * @swagger
  * /api/generate:
  *   post:
- *     summary: Create a new contract generation job
- *     tags: [Contract Generation]
+ *     summary: إنشاء مهمة توليد عقد جديدة
+ *     tags: [توليد العقود]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -40,24 +40,24 @@ import type { AppServices } from '../../services/service-container';
  *                 default: employment
  *     responses:
  *       202:
- *         description: Job accepted and processing started
+ *         description: تم استلام الطلب وبدأت المعالجة
  * 
  *   get:
- *     summary: Get all generation jobs for current user
- *     tags: [Contract Generation]
+ *     summary: جلب كل مهام التوليد للمستخدم الحالي
+ *     tags: [توليد العقود]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of jobs
+ *         description: قائمة المهام
  */
 
 /**
  * @swagger
  * /api/generate/{jobId}:
  *   get:
- *     summary: Get status and result of a generation job
- *     tags: [Contract Generation]
+ *     summary: جلب حالة ونتيجة مهمة التوليد
+ *     tags: [توليد العقود]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -68,11 +68,11 @@ import type { AppServices } from '../../services/service-container';
  *           type: string
  *     responses:
  *       200:
- *         description: Job status and generated contract if completed
+ *         description: حالة المهمة والعقد المُولَّد إن اكتمل
  * 
  *   put:
- *     summary: Save user edits to generated contract
- *     tags: [Contract Generation]
+ *     summary: حفظ تعديلات المستخدم على العقد
+ *     tags: [توليد العقود]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -94,11 +94,11 @@ import type { AppServices } from '../../services/service-container';
  *                 type: string
  *     responses:
  *       200:
- *         description: Edits saved successfully
+ *         description: تم حفظ التعديلات بنجاح
  * 
  *   delete:
- *     summary: Delete a generation job and all associated data
- *     tags: [Contract Generation]
+ *     summary: حذف مهمة التوليد وكل البيانات المرتبطة
+ *     tags: [توليد العقود]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -109,16 +109,16 @@ import type { AppServices } from '../../services/service-container';
  *           type: string
  *     responses:
  *       200:
- *         description: Job deleted successfully
+ *         description: تم حذف المهمة بنجاح
  */
 
 /**
  * @swagger
  * /api/generate/{jobId}/regenerate:
  *   post:
- *     summary: Regenerate contract with user instructions
- *     description: Modify an existing contract according to user instructions using AI.
- *     tags: [Contract Generation]
+ *     summary: إعادة توليد العقد حسب تعليمات المستخدم
+ *     description: تعديل عقد موجود وفق تعليمات المستخدم باستخدام الذكاء الاصطناعي.
+ *     tags: [توليد العقود]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -138,22 +138,22 @@ import type { AppServices } from '../../services/service-container';
  *             properties:
  *               instructions:
  *                 type: string
- *                 example: غيّر الرواتب إلى 20000 جنيه وأضف بند الإقامة
+ *                 example: غيّر الراتب إلى 20000 جنيه وأضف بند الإقامة
  *     responses:
  *       200:
- *         description: Contract regenerated successfully
+ *         description: تم إعادة توليد العقد بنجاح
  *       400:
- *         description: Instructions are required
+ *         description: تعليمات التعديل مطلوبة
  *       404:
- *         description: Contract not ready or not found
+ *         description: العقد غير جاهز أو غير موجود
  */
 
 /**
  * @swagger
  * /api/generate/{jobId}/validate:
  *   post:
- *     summary: Validate an edited contract for compliance
- *     tags: [Contract Generation]
+ *     summary: فحص امتثال العقد المعدّل
+ *     tags: [توليد العقود]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -164,12 +164,12 @@ import type { AppServices } from '../../services/service-container';
  *           type: string
  *     responses:
  *       200:
- *         description: Validation results
+ *         description: نتائج الفحص
  * 
  * /api/generate/{jobId}/download:
  *   get:
- *     summary: Download generated contract as Markdown file
- *     tags: [Contract Generation]
+ *     summary: تنزيل العقد المُولَّد كملف Markdown
+ *     tags: [توليد العقود]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -180,7 +180,7 @@ import type { AppServices } from '../../services/service-container';
  *           type: string
  *     responses:
  *       200:
- *         description: Markdown file download
+ *         description: تنزيل ملف Markdown
  */
 
 export const createContractGenerationRouter = (services: AppServices) => {
