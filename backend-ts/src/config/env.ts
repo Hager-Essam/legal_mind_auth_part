@@ -20,7 +20,12 @@ const envSchema = z
     LEGALMIND_NODE_ENV: z.enum(["development", "test", "staging", "production"]).default("development"),
     LEGALMIND_APP_NAME: z.string().default("LegalMind API TS"),
     LEGALMIND_API_HOST: z.string().default("0.0.0.0"),
-    LEGALMIND_API_PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+    LEGALMIND_API_PORT: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(65535)
+      .default(process.env.PORT ? Number(process.env.PORT) : 3000),
     LEGALMIND_CORS_ORIGINS: z.string().optional(),
 
     // Authentication
@@ -160,7 +165,7 @@ export const env = {
   jwtSecret: parsed.LEGALMIND_JWT_SECRET ?? "legalmind-development-only-secret-change-before-production",
   jwtAccessExpiresIn: parsed.LEGALMIND_JWT_ACCESS_EXPIRES_IN,
   refreshTokenDays: parsed.LEGALMIND_REFRESH_TOKEN_DAYS,
-  frontendUrl: parsed.LEGALMIND_FRONTEND_URL,
+  frontendUrl: parsed.LEGALMIND_FRONTEND_URL.replace(/\/+$/, ""),
   refreshCookieSameSite: parsed.LEGALMIND_REFRESH_COOKIE_SAME_SITE,
 
   // Email

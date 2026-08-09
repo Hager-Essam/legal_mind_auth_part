@@ -17,11 +17,11 @@ export interface R2Config {
 
 const getR2Config = (): R2Config => {
   return {
-    accountId: process.env.R2_ACCOUNT_ID || '',
-    accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-    bucketName: process.env.R2_BUCKET_NAME || 'legal-mind-contracts',
-    publicUrl: process.env.R2_PUBLIC_URL,
+    accountId: process.env.R2_ACCOUNT_ID || process.env.LEGALMIND_R2_ACCOUNT_ID || '',
+    accessKeyId: process.env.R2_ACCESS_KEY_ID || process.env.LEGALMIND_R2_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || process.env.LEGALMIND_R2_SECRET_ACCESS_KEY || '',
+    bucketName: process.env.R2_BUCKET_NAME || process.env.LEGALMIND_R2_BUCKET || 'contract-analyzer-bucket',
+    publicUrl: process.env.R2_PUBLIC_URL || process.env.LEGALMIND_R2_PUBLIC_URL,
   };
 };
 
@@ -197,7 +197,7 @@ export class R2StorageService {
     if (this.publicUrl) {
       return `${this.publicUrl}/${key}`;
     }
-    const accountId = process.env.R2_ACCOUNT_ID || '';
+    const accountId = process.env.R2_ACCOUNT_ID || process.env.LEGALMIND_R2_ACCOUNT_ID || '';
     return `https://${this.bucketName}.${accountId}.r2.cloudflarestorage.com/${key}`;
   }
 
