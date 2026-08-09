@@ -17,6 +17,7 @@ import { createBlogRouter } from "../modules/blogs/blog.routes";
 import { createCommentRouter } from "../modules/comments/comment.routes";
 import { createContractAnalysisRouter } from "../modules/contract-analysis/contract-analysis.routes";
 import { createContractGenerationRouter } from "../modules/contract-generation/contract-generation.routes";
+import { createDashboardRouter } from "../modules/dashboard/dashboard.routes";
 
 export const createApp = (services: AppServices) => {
   const app = express();
@@ -59,6 +60,7 @@ export const createApp = (services: AppServices) => {
         "/api/v1/comments",
         "/api/v1/analyze",
         "/api/v1/generate",
+        "/api/v1/dashboard",
       ],
     });
   });
@@ -74,6 +76,7 @@ export const createApp = (services: AppServices) => {
   app.use("/api/v1", createQueryRouter(services));
   app.use("/api/v1", createContractAnalysisRouter(services));
   app.use("/api/v1", createContractGenerationRouter(services));
+  app.use("/api/v1/dashboard", createDashboardRouter(services));
   app.use(notFoundHandler);
   app.use(errorHandler);
 

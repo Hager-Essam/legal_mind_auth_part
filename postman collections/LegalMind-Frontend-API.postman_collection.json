@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "d7b2aa44-4bd1-4f40-a6ef-6bc30987d29b",
     "name": "LegalMind API — Frontend Integration",
-    "description": "Complete frontend collection for all 40 public backend endpoints. Import it with a LegalMind Frontend environment. Login stores the bearer access token automatically; refresh cookies remain HTTP-only in Postman's cookie jar. Registration is JSON-only; only the dedicated avatar endpoint uses multipart/form-data.",
+    "description": "Complete frontend collection for all 43 public backend endpoints. Import it with a LegalMind Frontend environment. Login stores the bearer access token automatically; refresh cookies remain HTTP-only in Postman's cookie jar. Registration is JSON-only; only the dedicated avatar endpoint uses multipart/form-data.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -931,7 +931,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/analyze",
+              "raw": "{{base_url}}/api/v1/analyze?page=1&limit=20",
               "host": [
                 "{{base_url}}"
               ],
@@ -939,9 +939,21 @@
                 "api",
                 "v1",
                 "analyze"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة (افتراضي: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "عدد العناصر في الصفحة (1-100، افتراضي: 20)"
+                }
               ]
             },
-            "description": "جلب جميع العقود المرتبطة بالمستخدم الحالي."
+            "description": "جلب جميع العقود المرتبطة بالمستخدم الحالي مع pagination. الاستجابة تتضمن data (مصفوفة العقود) و pagination (page, limit, total, pages)."
           },
           "response": []
         },
@@ -1342,7 +1354,7 @@
               }
             ],
             "url": {
-              "raw": "{{base_url}}/api/v1/generate",
+              "raw": "{{base_url}}/api/v1/generate?page=1&limit=20",
               "host": [
                 "{{base_url}}"
               ],
@@ -1350,9 +1362,21 @@
                 "api",
                 "v1",
                 "generate"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة (افتراضي: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "عدد العناصر في الصفحة (1-100، افتراضي: 20)"
+                }
               ]
             },
-            "description": "جلب جميع طلبات التوليد للمستخدم الحالي."
+            "description": "جلب جميع طلبات التوليد للمستخدم الحالي مع pagination. الاستجابة تتضمن data (مصفوفة الطلبات) و pagination (page, limit, total, pages)."
           }
         },
         {
@@ -1406,6 +1430,118 @@
             },
             "description": "جلب سجلات التقدم لطلب التوليد."
           }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "description": "Daily activity feed for the authenticated user. Aggregates records from analyses, generations, blogs, conversations, bookmarks, and comments.",
+      "item": [
+        {
+          "name": "Daily activity feed",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/activity?startDate=2026-08-01&endDate=2026-08-09&page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "activity"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2026-08-01",
+                  "description": "تاريخ البداية (YYYY-MM-DD). افتراضي: قبل 7 أيام."
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-08-09",
+                  "description": "تاريخ النهاية (YYYY-MM-DD). افتراضي: اليوم."
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة (افتراضي: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "عدد الأيام في الصفحة (1-50، افتراضي: 10)"
+                }
+              ]
+            },
+            "description": "جلب سجلات النشاطات اليومية للمستخدم الحالي مع pagination. الاستجابة تتضمن daily (مصفوفة الأيام) و pagination (page, limit, total, pages). المدى الأقصى 90 يوماً."
+          },
+          "response": []
+        },
+        {
+          "name": "Daily activity (default range)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/activity?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "activity"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة (افتراضي: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "عدد الأيام في الصفحة (1-50، افتراضي: 10)"
+                }
+              ]
+            },
+            "description": "جلب النشاطات بدون تحديد نطاق تواريخ. يُرجع آخر 7 أيام بشكل افتراضي مع pagination."
+          },
+          "response": []
+        },
+        {
+          "name": "Daily activity (single day)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/dashboard/activity?startDate=2026-08-09&endDate=2026-08-09",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "activity"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2026-08-09",
+                  "description": "تاريخ البداية"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-08-09",
+                  "description": "تاريخ النهاية"
+                }
+              ]
+            },
+            "description": "جلب نشاطات يوم واحد فقط."
+          },
+          "response": []
         }
       ]
     }
