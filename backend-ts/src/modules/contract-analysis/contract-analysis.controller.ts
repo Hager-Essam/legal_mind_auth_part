@@ -10,6 +10,7 @@ import { jobRepository } from "../contract-analysis/repositories/job.repository"
 import { resultsAnalysisRepository } from "../contract-analysis/repositories/results-analysis.repository";
 import { r2Storage } from "../../config/r2.config";
 import { STAGE_NAMES } from "../contract-analysis/contract-analysis.types";
+import { listJobsQuerySchema } from "../contract-analysis/contract-analysis.schemas";
 
 const getJobId = (req: Request): string => req.params.jobId as string;
 
@@ -202,12 +203,19 @@ export const getJobStatus = async (req: Request, res: Response): Promise<void> =
 export const getAllJobs = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const jobs = await jobRepository.findAll({
-      userId,
-      limit: 100,
-      sortBy: "createdAt",
-      sortOrder: "desc",
-    });
+    const input = listJobsQuerySchema.parse(req.query);
+    const skip = (input.page - 1) * input.limit;
+
+    const [jobs, total] = await Promise.all([
+      jobRepository.findAll({
+        userId,
+        limit: input.limit,
+        skip,
+        sortBy: "createdAt",
+        sortOrder: "desc",
+      }),
+      jobRepository.count({ userId }),
+    ]);
 
     const allJobs = jobs.map((job) => ({
       jobId: job.id,
@@ -225,6 +233,12 @@ export const getAllJobs = async (req: Request, res: Response): Promise<void> => 
       success: true,
       message: `تم جلب ${allJobs.length} عقد بنجاح.`,
       data: allJobs,
+      pagination: {
+        page: input.page,
+        limit: input.limit,
+        total,
+        pages: Math.ceil(total / input.limit),
+      },
     });
   } catch (error: any) {
     console.error("خطأ في جلب العقود:", error);
