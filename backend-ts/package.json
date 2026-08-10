@@ -6,6 +6,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "tunnel": "tsx src/scripts/start-tunnel.ts",
+    "tunnel:ngrok": "npx ngrok http --url=bacteria-reforest-cupping.ngrok-free.dev 5001",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -75,6 +77,7 @@
     "mongodb-memory-server": "^11.2.0",
     "supertest": "^7.2.2",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "untun": "^0.2.2"
   }
 }
