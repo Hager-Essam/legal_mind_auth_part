@@ -24,6 +24,8 @@ import { BlogRepository } from "../modules/blogs/blog.repository";
 import { BlogService } from "../modules/blogs/blog.service";
 import { CommentRepository } from "../modules/comments/comment.repository";
 import { CommentService } from "../modules/comments/comment.service";
+import { DashboardRepository } from "../modules/dashboard/dashboard.repository";
+import { DashboardService } from "../modules/dashboard/dashboard.service";
 
 export type AppServices = {
   mongoService: MongoService;
@@ -52,6 +54,8 @@ export type AppServices = {
   blogService: BlogService;
   commentRepository: CommentRepository;
   commentService: CommentService;
+  dashboardRepository: DashboardRepository;
+  dashboardService: DashboardService;
 };
 
 export const createServices = (): AppServices => {
@@ -94,6 +98,8 @@ export const createServices = (): AppServices => {
   const commentRepository = new CommentRepository();
   const blogService = new BlogService(blogRepository, bookmarkRepository, commentRepository);
   const commentService = new CommentService(commentRepository, blogRepository);
+  const dashboardRepository = new DashboardRepository();
+  const dashboardService = new DashboardService(dashboardRepository);
 
   return {
     mongoService,
@@ -122,5 +128,7 @@ export const createServices = (): AppServices => {
     blogService,
     commentRepository,
     commentService,
+    dashboardRepository,
+    dashboardService,
   };
 };

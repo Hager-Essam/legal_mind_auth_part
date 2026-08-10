@@ -6,6 +6,7 @@ import { generationJobRepository } from '../contract-generation/repositories/gen
 import { generatedContractRepository } from '../contract-generation/repositories/generated-contract.repository';
 import { r2Storage } from '../../config/r2.config';
 import { GENERATION_STAGE_NAMES } from '../contract-generation/contract-generation.types';
+import { listJobsQuerySchema } from '../contract-generation/contract-generation.schemas';
 import { generator } from '../../config/generator.config';
 import { analyzer } from '../../config/analyzer.config';
 
@@ -161,12 +162,19 @@ export const getAllJobs = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const jobs = await generationJobRepository.findAll({
-      userId,
-      limit: 100,
-      sortBy: 'createdAt',
-      sortOrder: 'desc',
-    });
+    const input = listJobsQuerySchema.parse(req.query);
+    const skip = (input.page - 1) * input.limit;
+
+    const [jobs, total] = await Promise.all([
+      generationJobRepository.findAll({
+        userId,
+        limit: input.limit,
+        skip,
+        sortBy: 'createdAt',
+        sortOrder: 'desc',
+      }),
+      generationJobRepository.count({ userId }),
+    ]);
 
     const allJobs = jobs.map((job) => ({
       jobId: job.id,
@@ -180,6 +188,12 @@ export const getAllJobs = async (
       success: true,
       message: `تم جلب ${allJobs.length} طلب توليد بنجاح.`,
       data: allJobs,
+      pagination: {
+        page: input.page,
+        limit: input.limit,
+        total,
+        pages: Math.ceil(total / input.limit),
+      },
     });
   } catch (error: any) {
     console.error('خطأ في جلب الطلبات:', error);
