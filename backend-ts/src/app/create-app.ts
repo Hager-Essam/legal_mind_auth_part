@@ -20,6 +20,7 @@ import { createContractGenerationRouter } from "../modules/contract-generation/c
 
 export const createApp = (services: AppServices) => {
   const app = express();
+  app.set("trust proxy", 1);
   const corsOptions = {
     origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => {
       if (!origin || env.corsOrigins.includes(origin)) {
@@ -29,6 +30,7 @@ export const createApp = (services: AppServices) => {
       callback(new HttpError(403, "The request origin is not allowed.", undefined, "CORS_ORIGIN_DENIED"));
     },
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
   };
 
   app.use(requestIdMiddleware);

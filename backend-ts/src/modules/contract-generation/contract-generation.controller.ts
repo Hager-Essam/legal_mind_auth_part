@@ -213,7 +213,6 @@ export const streamJobProgress = async (
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       Connection: 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
     });
 
     for (const event of job.progressLogs) {

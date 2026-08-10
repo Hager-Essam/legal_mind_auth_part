@@ -10,7 +10,7 @@ const splitCsv = (value: string | undefined): string[] => {
 
   return value
     .split(",")
-    .map((entry) => entry.trim())
+    .map((entry) => entry.trim().replace(/\/+$/, ""))
     .filter(Boolean);
 };
 

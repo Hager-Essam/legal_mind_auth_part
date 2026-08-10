@@ -255,7 +255,6 @@ export const streamJobProgress = async (req: Request, res: Response): Promise<vo
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
-      "Access-Control-Allow-Origin": "*",
     });
 
     for (const event of job.progressLogs) {
