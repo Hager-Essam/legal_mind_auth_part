@@ -24,10 +24,24 @@ export const createApp = (services: AppServices) => {
   app.set("trust proxy", 1);
   const corsOptions = {
     origin: (origin: string | undefined, callback: (error: Error | null, allowed?: boolean) => void) => {
-      if (!origin || env.corsOrigins.includes(origin)) {
+      // Allow requests with no origin (like mobile apps, curl, Postman) or if origin is in the allowed list
+      if (!origin) {
         callback(null, true);
         return;
       }
+      
+      // In development, allow all localhost origins
+      if (env.nodeEnv === 'development' && origin.includes('localhost')) {
+        callback(null, true);
+        return;
+      }
+      
+      if (env.corsOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      
+      console.log(`[CORS] Blocked origin: ${origin}, allowed origins:`, env.corsOrigins);
       callback(new HttpError(403, "The request origin is not allowed.", undefined, "CORS_ORIGIN_DENIED"));
     },
     credentials: true,
@@ -71,7 +85,13 @@ export const createApp = (services: AppServices) => {
   app.use("/api/v1/auth", createAuthRouter(services));
   app.use("/api/v1/users", createUserRouter(services));
   app.use("/api/v1/users", createUserBookmarkRouter(services));
-  app.use("/api/v1/blogs", createBlogRouter(services));
+  app.use("/api/v1/blogs", createBlogRouter({
+    authService: services.authService,
+    userRepository: services.userRepository,
+    blogService: services.blogService,
+    commentService: services.commentService,
+    blogImageStorage: services.blogImageStorageService,
+  }));
   app.use("/api/v1/blogs", createBlogBookmarkRouter(services));
   app.use("/api/v1/comments", createCommentRouter(services));
   app.use("/api/v1/conversations", createConversationRouter(services));

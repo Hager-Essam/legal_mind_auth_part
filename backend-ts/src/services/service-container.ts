@@ -17,6 +17,7 @@ import { ConversationMemoryService } from "../modules/conversations/conversation
 import { SourceSnapshotService } from "../modules/conversations/source-snapshot.service";
 import { ChatOrchestratorService } from "../modules/conversations/chat-orchestrator.service";
 import { R2AvatarStorage } from "../infrastructure/storage/avatar-storage.service";
+import { R2BlogImageStorage } from "../infrastructure/storage/blog-image-storage.service";
 import { UserProfileService } from "../modules/users/user-profile.service";
 import { BookmarkRepository } from "../modules/bookmarks/bookmark.repository";
 import { BookmarkService } from "../modules/bookmarks/bookmark.service";
@@ -47,6 +48,7 @@ export type AppServices = {
   sourceSnapshotService: SourceSnapshotService;
   chatOrchestratorService: ChatOrchestratorService;
   avatarStorageService: R2AvatarStorage;
+  blogImageStorageService: R2BlogImageStorage;
   userProfileService: UserProfileService;
   bookmarkRepository: BookmarkRepository;
   bookmarkService: BookmarkService;
@@ -91,6 +93,7 @@ export const createServices = (): AppServices => {
     queryService
   );
   const avatarStorageService = new R2AvatarStorage();
+  const blogImageStorageService = new R2BlogImageStorage();
   const userProfileService = new UserProfileService(userRepository, avatarStorageService);
   const bookmarkRepository = new BookmarkRepository();
   const bookmarkService = new BookmarkService(bookmarkRepository);
@@ -121,6 +124,7 @@ export const createServices = (): AppServices => {
     sourceSnapshotService,
     chatOrchestratorService,
     avatarStorageService,
+    blogImageStorageService,
     userProfileService,
     bookmarkRepository,
     bookmarkService,

@@ -9,6 +9,8 @@ import {
   updateBlogSchema,
   updateBlogStatusSchema,
 } from "./blog.schemas";
+import type { BlogImageStorage } from "../../infrastructure/storage/blog-image-storage.service";
+import { BLOG_IMAGE_CONTENT_TYPES } from "../../infrastructure/storage/blog-image-storage.service";
 
 const authenticated = (request: Request) => {
   if (!request.user)
@@ -17,7 +19,7 @@ const authenticated = (request: Request) => {
   return request.user;
 };
 
-export const createBlogController = (blogs: BlogService) => ({
+export const createBlogController = (blogs: BlogService, blogImageStorage?: BlogImageStorage) => ({
   list: async (request: Request, response: Response, next: NextFunction) => {
     try {
       const input = listBlogsSchema.parse(request.query);
@@ -121,6 +123,49 @@ export const createBlogController = (blogs: BlogService) => ({
         input.rejectionReason
       );
       response.json({ message: "تم تحديث حالة المقال بنجاح.", blog });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  uploadImage: async (request: Request, response: Response, next: NextFunction) => {
+    try {
+      if (!blogImageStorage) {
+        throw new HttpError(503, "Image upload is not configured.", undefined, "IMAGE_UPLOAD_NOT_CONFIGURED");
+      }
+
+      const user = authenticated(request);
+      const file = request.file;
+
+      if (!file) {
+        throw new HttpError(400, "No image file provided.", undefined, "NO_FILE");
+      }
+
+      // Validate file size (max 5MB)
+      const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+      if (file.size > MAX_SIZE) {
+        throw new HttpError(400, "Image file is too large. Maximum size is 5MB.", undefined, "FILE_TOO_LARGE");
+      }
+
+      // Validate content type
+      if (!BLOG_IMAGE_CONTENT_TYPES.includes(file.mimetype as any)) {
+        throw new HttpError(
+          400,
+          "Invalid image format. Allowed formats: JPEG, PNG, WebP, GIF.",
+          undefined,
+          "INVALID_FORMAT"
+        );
+      }
+
+      const uploaded = await blogImageStorage.upload(user.id, file.buffer, file.mimetype as any);
+
+      response.status(201).json({
+        message: "تم رفع الصورة بنجاح.",
+        image: {
+          url: uploaded.url,
+          key: uploaded.key,
+        },
+      });
     } catch (error) {
       next(error);
     }
