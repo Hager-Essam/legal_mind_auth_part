@@ -638,6 +638,24 @@
           }
         },
         {
+          "name": "Upload blog image",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/v1/blogs/upload-image",
+            "description": "Bearer auth. Upload a blog cover image to Cloudflare R2. Select one file in the image field. Accepted: JPEG, PNG, WebP, or GIF; maximum 5 MB. MIME type is validated. The backend streams the in-memory file to R2 and returns the public URL. Do not manually set Content-Type because Postman/browser must add the multipart boundary. Success: 201 { message, image: { url, key } }. Use the returned URL for the coverImage field when creating or updating a blog."
+          }
+        },
+        {
           "name": "List my blogs",
           "event": [
             {
