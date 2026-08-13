@@ -8,7 +8,7 @@ Contract Analysis and Contract Generation.
 
 | File Name | Type | Description / Purpose |
 |---|---|---|
-| `LegalMind-Frontend-API.postman_collection.json` | **Collection** | Master collection containing all 60 HTTP endpoints across 9 feature folders (Auth, Users, Conversations, Legal Query, Blogs, Comments, Bookmarks, Contract Analysis, Contract Generation). |
+| `LegalMind-Frontend-API.postman_collection.json` | **Collection** | Master collection containing all 63 HTTP endpoints across 10 feature folders (Auth, Users, Conversations, Legal Query, Blogs, Comments, Bookmarks, Contract Analysis, Contract Generation, Payments). |
 | `LegalMind-Frontend-Local.postman_environment.json` | **Environment** | Pre-configured Postman environment for local development (`base_url = http://localhost:5000`), with dynamic auto-saving for `access_token`, `conversation_id`, `blog_id`, and `jobId`. |
 | `LegalMind-Frontend-Production.postman_environment.json` | **Environment** | Pre-configured Postman environment for production server deployment (`base_url = https://api.legalmind.eg`). Allows testing live servers without editing collection URLs. |
 | `FRONTEND-README.md` | **Documentation** | Comprehensive integration handoff detailing JSON payloads, JWT authentication, cookies, 204 No Content responses, and error handling. |
@@ -110,6 +110,20 @@ All four endpoints require bearer authentication.
 | POST | `/api/v1/blogs/:blogId/comments` | Bearer | Add a comment to a published blog. |
 | PUT | `/api/v1/comments/:commentId` | Bearer/author | Update an owned comment. |
 | DELETE | `/api/v1/comments/:commentId` | Bearer/author or admin | Delete; returns 204. |
+
+### Payments (3)
+
+| Method | Path | Authentication | Frontend use |
+|---|---|---|---|
+| POST | `/api/v1/payments/checkout` | Bearer | Create a Stripe Checkout Session. Returns `{ sessionId, url }`. Open the URL in browser to complete payment. |
+| GET | `/api/v1/payments/checkout/status?session_id=` | Bearer | Check session payment status and DB status after completing payment. |
+| GET | `/api/v1/payments/history?page=&limit=&status=` | Bearer | Paginated payment history. Filter by status: pending, succeeded, failed, canceled, refunded. |
+
+**Webhook** (Stripe → Backend, not frontend):
+
+| Method | Path | Authentication | Notes |
+|---|---|---|---|
+| POST | `/api/v1/payments/webhook` | Stripe signature | Receives Stripe events. Raw body required. Not called by frontend. |
 
 ## Required frontend changes
 
@@ -377,7 +391,8 @@ The backend exposes full contract analysis and generation routes under `/api/v1/
 8. Adapt bookmark normalization, toggle, list, and deletion.
 9. Connect blog browsing, author CRUD, bookmarks, and comments.
 10. Connect legal query and conversation flows.
-11. Disable analysis/generation network calls and run Postman end to end.
+11. Create a checkout session, complete payment in browser, verify status and history.
+12. Disable analysis/generation network calls and run Postman end to end.
 
 ## Recommended Postman workflow
 
@@ -389,7 +404,8 @@ The backend exposes full contract analysis and generation routes under `/api/v1/
 6. Create a conversation, send a message, list messages, update, and delete.
 7. Create a blog, browse lists/detail, update it, and test its comments.
 8. Toggle the blog bookmark, list bookmarks, then delete by `bookmark_id`.
-9. Delete test comments/blogs before testing refresh and logout last.
+9. Create a checkout session, complete payment with test card, check status and history.
+10. Delete test comments/blogs before testing refresh and logout last.
 
 Internal migrations, corpus imports, index setup, and evaluation scripts are not
 HTTP endpoints and therefore do not belong in the Postman collection.

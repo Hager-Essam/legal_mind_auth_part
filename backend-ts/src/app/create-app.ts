@@ -18,6 +18,7 @@ import { createCommentRouter } from "../modules/comments/comment.routes";
 import { createContractAnalysisRouter } from "../modules/contract-analysis/contract-analysis.routes";
 import { createContractGenerationRouter } from "../modules/contract-generation/contract-generation.routes";
 import { createDashboardRouter } from "../modules/dashboard/dashboard.routes";
+import { createPaymentRouter, createWebhookRouter } from "../modules/payments/payment.routes";
 
 export const createApp = (services: AppServices) => {
   const app = express();
@@ -36,6 +37,9 @@ export const createApp = (services: AppServices) => {
 
   app.use(requestIdMiddleware);
   app.use(cors(corsOptions));
+
+  app.use("/api/v1/payments", createWebhookRouter(services));
+
   app.use(express.json({ limit: "2mb" }));
   app.use(cookieParser());
 
@@ -63,6 +67,7 @@ export const createApp = (services: AppServices) => {
         "/api/v1/analyze",
         "/api/v1/generate",
         "/api/v1/dashboard",
+        "/api/v1/payments",
       ],
     });
   });
@@ -79,6 +84,7 @@ export const createApp = (services: AppServices) => {
   app.use("/api/v1", createContractAnalysisRouter(services));
   app.use("/api/v1", createContractGenerationRouter(services));
   app.use("/api/v1/dashboard", createDashboardRouter(services));
+  app.use("/api/v1/payments", createPaymentRouter(services));
   app.use(notFoundHandler);
   app.use(errorHandler);
 

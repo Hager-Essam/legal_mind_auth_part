@@ -110,6 +110,11 @@ const envSchema = z
       .default(true),
     LEGALMIND_LLM_RERANK_MODEL: z.string().default("qwen3-rerank"),
 
+    // ── Stripe ─────────────────────────────────────────────────
+    LEGALMIND_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+    LEGALMIND_STRIPE_SECRET_KEY: z.string().optional(),
+    LEGALMIND_STRIPE_WEBHOOK_SECRET: z.string().optional(),
+
     // ── Query Rewriting ──────────────────────────────────────────
     LEGALMIND_ENABLE_AUTHORITY_HINTS: z
       .union([z.string(), z.boolean()])
@@ -223,6 +228,11 @@ export const env = {
 
   // Query Rewriting
   enableAuthorityHints: parsed.LEGALMIND_ENABLE_AUTHORITY_HINTS,
+
+  // Stripe
+  stripePublishableKey: parsed.LEGALMIND_STRIPE_PUBLISHABLE_KEY,
+  stripeSecretKey: parsed.LEGALMIND_STRIPE_SECRET_KEY,
+  stripeWebhookSecret: parsed.LEGALMIND_STRIPE_WEBHOOK_SECRET,
 } as const;
 
 export type Env = typeof env;

@@ -26,6 +26,8 @@ import { CommentRepository } from "../modules/comments/comment.repository";
 import { CommentService } from "../modules/comments/comment.service";
 import { DashboardRepository } from "../modules/dashboard/dashboard.repository";
 import { DashboardService } from "../modules/dashboard/dashboard.service";
+import { PaymentRepository } from "../modules/payments/payment.repository";
+import { PaymentService } from "../modules/payments/payment.service";
 
 export type AppServices = {
   mongoService: MongoService;
@@ -56,6 +58,8 @@ export type AppServices = {
   commentService: CommentService;
   dashboardRepository: DashboardRepository;
   dashboardService: DashboardService;
+  paymentRepository: PaymentRepository;
+  paymentService: PaymentService;
 };
 
 export const createServices = (): AppServices => {
@@ -100,6 +104,8 @@ export const createServices = (): AppServices => {
   const commentService = new CommentService(commentRepository, blogRepository);
   const dashboardRepository = new DashboardRepository();
   const dashboardService = new DashboardService(dashboardRepository);
+  const paymentRepository = new PaymentRepository();
+  const paymentService = new PaymentService(paymentRepository);
 
   return {
     mongoService,
@@ -130,5 +136,7 @@ export const createServices = (): AppServices => {
     commentService,
     dashboardRepository,
     dashboardService,
+    paymentRepository,
+    paymentService,
   };
 };

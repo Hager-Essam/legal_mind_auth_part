@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "d7b2aa44-4bd1-4f40-a6ef-6bc30987d29b",
     "name": "LegalMind API — Frontend Integration",
-    "description": "Complete frontend collection for all 43 public backend endpoints. Import it with a LegalMind Frontend environment. Login stores the bearer access token automatically; refresh cookies remain HTTP-only in Postman's cookie jar. Registration is JSON-only; only the dedicated avatar endpoint uses multipart/form-data.",
+    "description": "Complete frontend collection for all 46 public backend endpoints. Import it with a LegalMind Frontend environment. Login stores the bearer access token automatically; refresh cookies remain HTTP-only in Postman's cookie jar. Registration is JSON-only; only the dedicated avatar endpoint uses multipart/form-data. Payment endpoints require Stripe test keys configured in the backend.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -1544,6 +1544,116 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Payments",
+      "description": "Stripe checkout and payment history. All requests require bearer auth. Create a checkout session, complete payment in browser with test card 4242 4242 4242 4242, then check status and history.",
+      "item": [
+        {
+          "name": "Create checkout session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.sessionId) {",
+                  "    pm.collectionVariables.set('stripe_session_id', body.sessionId);",
+                  "    if (pm.environment.name) pm.environment.set('stripe_session_id', body.sessionId);",
+                  "  }",
+                  "  if (body.url) {",
+                  "    pm.collectionVariables.set('stripe_checkout_url', body.url);",
+                  "    if (pm.environment.name) pm.environment.set('stripe_checkout_url', body.url);",
+                  "    console.log('Stripe Checkout URL: ' + body.url);",
+                  "    console.log('Open this URL in a browser to complete payment.');",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"pro-monthly\",\n  \"amount\": 2999,\n  \"currency\": \"usd\",\n  \"description\": \"Pro Plan - Monthly\",\n  \"metadata\": {\n    \"feature\": \"contract-analysis\"\n  }\n}"
+            },
+            "url": "{{base_url}}/api/v1/payments/checkout",
+            "description": "Bearer auth. Creates a Stripe Checkout Session and returns { sessionId, url }. Open the URL in a browser to complete payment with a test card (4242 4242 4242 4242). Rate limited to 20 requests per 15 minutes. The script captures stripe_session_id and stripe_checkout_url."
+          }
+        },
+        {
+          "name": "Get checkout session status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/checkout/status?session_id={{stripe_session_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "checkout",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "session_id",
+                  "value": "{{stripe_session_id}}",
+                  "description": "Stripe Checkout Session ID (captured from create checkout session)"
+                }
+              ]
+            },
+            "description": "Bearer auth. Returns Stripe session payment_status and local DB status. Use after completing payment in the browser to verify the webhook processed the payment."
+          }
+        },
+        {
+          "name": "Payment history",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/history?page=1&limit=10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "رقم الصفحة (افتراضي: 1)"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "عدد العناصر (1-50، افتراضي: 10)"
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "فلتر حسب الحالة: pending|succeeded|failed|canceled|refunded (اختياري)"
+                }
+              ]
+            },
+            "description": "Bearer auth. Returns paginated payment history for the current user. Each item includes id, plan_id, amount, currency, status, description, stripe_session_id, and created_at."
+          }
+        }
+      ]
     }
   ],
   "variable": [
@@ -1574,6 +1684,16 @@
     },
     {
       "key": "comment_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "stripe_session_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "stripe_checkout_url",
       "value": "",
       "type": "string"
     }
