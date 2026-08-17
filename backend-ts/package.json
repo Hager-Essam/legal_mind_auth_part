@@ -75,10 +75,14 @@
     "@types/nodemailer": "^8.0.1",
     "@types/supertest": "^7.2.1",
     "@types/uuid": "^10.0.0",
+    "@vercel/node": "^3.2.29",
     "mongodb-memory-server": "^11.2.0",
     "supertest": "^7.2.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "untun": "^0.2.2"
+  },
+  "engines": {
+    "node": ">=18.x"
   }
 }
