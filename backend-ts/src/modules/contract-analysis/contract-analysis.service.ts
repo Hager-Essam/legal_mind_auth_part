@@ -222,6 +222,16 @@ Anti-Hallucination Rules:
 - Do NOT invent court rulings
 - If ambiguous, say so clearly
 
+CRITICAL: Enum Field Values — Use EXACT English values ONLY (NO Arabic):
+- compliance.status: "compliant" | "non_compliant" | "partially_compliant" | "missing"
+- compliance.confidence: "high" | "medium" | "low"
+- legal_basis[].relevance: "direct" | "indirect"
+- risk_assessment.category: "low" | "medium" | "high" | "critical"
+- party_balance.favored_party: "employer" | "employee" | "neutral"
+- required_action.action_needed: true | false (boolean)
+- required_action.severity: "info" | "warning" | "critical"
+- comparison_to_standard.deviation: "none" | "minor" | "major"
+
 Output only JSON:
 {
   "clause_id": "...",
@@ -332,7 +342,7 @@ export class EgyptianEmploymentContractAnalyzer {
       openaiApiKey: "",
       qdrantUrl: "",
       embeddingModel: "text-embedding-v4",
-      llmModel: "deepseek-v4-pro", //qwen3.7-max-2026-06-08, qwen3.6-plus-2026-04-02, qwen3.7-flash-2026-07-15, kimi-k2.7-code,deepseek-v4-pro
+      llmModel: "qwen-mt-turbo", //qwen3.7-max-2026-06-08, qwen3.6-plus-2026-04-02, qwen3.7-flash-2026-07-15, kimi-k2.7-code,deepseek-v4-pro
       temperature: 0.1,
       ...config,
     };

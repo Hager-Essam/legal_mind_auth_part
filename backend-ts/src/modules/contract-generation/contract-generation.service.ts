@@ -204,7 +204,7 @@ export class EgyptianEmploymentContractGenerator {
       openaiApiKey: "",
       qdrantUrl: "",
       embeddingModel: "text-embedding-v4",
-      llmModel: "deepseek-v4-pro",
+      llmModel: "qwen-mt-turbo",
       temperature: 0.2, // Slightly higher than analysis for generation
       ...config,
     };
